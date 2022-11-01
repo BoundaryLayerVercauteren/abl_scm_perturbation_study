@@ -10,18 +10,24 @@ class Parameters:
     save_ini_cond: bool = True  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 2  # hour
+    T_end_h: float = 50  # hour
     T_end: float = T_end_h * 3600  # seconds
-    dt: float = 1  # seconds
-    SimEnd: int = int(T_end / dt)  # number of time steps
+    dt: float = 10  # seconds
+    num_steps: int = int(T_end / dt)  # number of time steps
+
+    perturbation_param: str = 'none'  # specify to which equation a perturbation is added
+    perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
+    perturbation_strength: float = 0.05  # strength of perturbation
+    perturbation_start: int = int(0.0 * 3600 / dt)  # start time of perturbation
+    perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     # file name for initial conditions
     init_cond_path: str = 'T_end_' + str(T_end_h) + 'h_'
 
-    # what time steps to save
-    SimSav: float = 1  # in seconds
-    Save_dt: int = int(SimSav / dt)
-    Save_tot: int = int(T_end / SimSav)
+    # time steps to save
+    save_dt: float = 60  # in seconds
+    save_dt_sim: int = int(save_dt / dt)
+    save_num_steps: int = int(T_end / save_dt)
 
     Nz: int = 100  # number of point/ domain resolution
     z0: float = 0.044  # roughness length in meter
@@ -52,7 +58,7 @@ class Parameters:
     EPS: float = 1E-16  # An imaginary numerical zero. Somehow the sqrt() of fenics needs this
 
     # closure specific parameters
-    tau: float = 3600 * 1  # relaxation time scale
+    tau: float = 3600 * 6  # relaxation time scale
     min_tke: float = 1e-4  # minimum allowed TKE level
     Pr_t: float = 0.85  # turbulent Prandtl number
     alpha: float = 0.46  # eddy viscosity parametrization constant
@@ -74,7 +80,7 @@ class Output_variables:
 
 def initialize_project_variables():
     params = Parameters()
-    fparams = Fenics_Parameters
+    fenics_params = Fenics_Parameters
     output = Output_variables
 
-    return params, fparams, output
+    return params, fenics_params, output

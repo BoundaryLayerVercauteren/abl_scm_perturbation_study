@@ -17,8 +17,8 @@ import os
 import json
 
 # project related imports
-from single_column_model.model import solve_PDE_model as fut
-from single_column_model.model import utility_functions as ut
+from single_column_model.model import define_PDE_model as fut
+from single_column_model.model import solve_PDE_model as ut
 
 
 def create_solution_directory(params):
@@ -100,13 +100,13 @@ def calc_variables_np(params, fparams, us, vs):
 
 
 def initialize(output, params):
-    output.U_save = np.zeros((params.Nz, params.Save_tot))
-    output.V_save = np.zeros((params.Nz, params.Save_tot))
-    output.T_save = np.zeros((params.Nz, params.Save_tot))
-    output.k_save = np.zeros((params.Nz, params.Save_tot))
-    output.Ri_save = np.zeros((params.Nz, params.Save_tot))
-    output.Kh_save = np.zeros((params.Nz, params.Save_tot))
-    output.Km_save = np.zeros((params.Nz, params.Save_tot))
+    output.U_save = np.zeros((params.Nz, params.save_num_steps))
+    output.V_save = np.zeros((params.Nz, params.save_num_steps))
+    output.T_save = np.zeros((params.Nz, params.save_num_steps))
+    output.k_save = np.zeros((params.Nz, params.save_num_steps))
+    output.Ri_save = np.zeros((params.Nz, params.save_num_steps))
+    output.Kh_save = np.zeros((params.Nz, params.save_num_steps))
+    output.Km_save = np.zeros((params.Nz, params.save_num_steps))
 
     return output
 
@@ -121,21 +121,16 @@ def save_solution(output, params, fparams, file_spec=''):
 
     saveFile = h5py.File(str(output.solution_directory) + 'solution_' + file_spec + '.h5', 'w')
 
-    U_ds = saveFile.create_dataset('/U', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
-    V_ds = saveFile.create_dataset('/V', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
-    T_ds = saveFile.create_dataset('/Temp', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
-    k_ds = saveFile.create_dataset('/TKE', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
-    Ri_ds = saveFile.create_dataset('/Ri', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
-    Kh_ds = saveFile.create_dataset('/Kh', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
-    Km_ds = saveFile.create_dataset('/Km', (params.Nz, params.Save_tot), h5py.h5t.IEEE_F64BE)
+    U_ds = saveFile.create_dataset('/u', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    V_ds = saveFile.create_dataset('/v', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    T_ds = saveFile.create_dataset('/theta', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    k_ds = saveFile.create_dataset('/TKE', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    Ri_ds = saveFile.create_dataset('/Ri', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    Kh_ds = saveFile.create_dataset('/Kh', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    Km_ds = saveFile.create_dataset('/Km', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
 
     z_ds = saveFile.create_dataset('/z', (np.size(fparams.z), 1), h5py.h5t.IEEE_F64BE)
-
-    SimStart_ds = saveFile.create_dataset('/SimStart', (1, 1), h5py.h5t.IEEE_F64BE)
-    SimEnd_ds = saveFile.create_dataset('/SimEnd', (1, 1), h5py.h5t.IEEE_F64BE)
-
-    dt_ds = saveFile.create_dataset('/dt', (1, 1), h5py.h5t.IEEE_F64BE)
-    dts_ds = saveFile.create_dataset('/sdt', (1, 1), h5py.h5t.IEEE_F64BE)
+    t_ds = saveFile.create_dataset('/t', (1, params.save_num_steps))
 
     U_ds[...] = output.U_save
     V_ds[...] = output.V_save
@@ -146,10 +141,7 @@ def save_solution(output, params, fparams, file_spec=''):
     Km_ds[...] = output.Km_save
 
     z_ds[...] = fparams.z
-    dt_ds[...] = params.Save_dt
-    SimStart_ds[...] = 1
-    SimEnd_ds[...] = params.Save_tot
-    dts_ds[...] = params.SimSav
+    t_ds[...] = np.linspace(0, params.T_end_h, params.save_num_steps)
 
     saveFile.close()
     print('simulation is done')

@@ -6,7 +6,7 @@ import numpy as np
 import h5py
 
 # project related imports
-from single_column_model.model import utility_functions as ut
+from single_column_model.model import solve_PDE_model as ut
 
 
 # -----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 # project related imports
-from single_column_model.model.Turb_solver import solve_turb_model
+from single_column_model.model.combine_solver_functions import solve_turb_model
 from single_column_model.model import parameters as pc
 from single_column_model.utils import save_solution, plot_solution
 
@@ -28,14 +28,14 @@ def perform_scm(params, sim_index, u_G_param):
     solve_turb_model(fparams, params, output)
 
     # Plot solution
-    plot_solution.make_3d_plot(output, params, fparams, file_spec=str(u_G_param))
+    #plot_solution.make_3d_plot(output, params, fparams, file_spec=str(u_G_param))
 
 
 # Define list of parameters for which the model shall be run (atm only u_G)
-param_list = np.arange(1.0, 1.5, 0.5)
+param_list = np.arange(1.0, 20.5, 0.5)
 
 # Run model in parallel
-num_proc = multiprocessing.cpu_count() - 1
+num_proc = 50#multiprocessing.cpu_count() - 1
 with multiprocessing.Pool(processes=num_proc) as pool:
     pool.map(partial(perform_scm, params, 1), param_list)
 

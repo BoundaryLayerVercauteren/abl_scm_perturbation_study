@@ -21,7 +21,7 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 def make_3d_plot(output, params, fparams, file_spec=''):
     # Create grid for plotting
-    t = np.linspace(0, params.T_end_h, params.Save_tot)
+    t = np.linspace(0, params.T_end_h, params.save_num_steps)
     z = fparams.z
     X, Y = np.meshgrid(t, z)
 

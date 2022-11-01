@@ -3,8 +3,8 @@ import numpy as np
 from fenics import *
 
 # project related imports
-from single_column_model.model import solve_PDE_model as fut
-from single_column_model.model import utility_functions as ut
+from single_column_model.model import define_PDE_model as fut
+from single_column_model.model import solve_PDE_model as ut
 
 
 def def_initial_cnditions(Q, mesh, params):
@@ -56,7 +56,7 @@ def def_initial_cnditions(Q, mesh, params):
     return u_n, v_n, T_n, k_n
 
 
-def def_boundary_conditions(fparams, params):
+def def_boundary_conditions(fenics_params, params):
     z0 = params.z0  # roughness length in meter
     H = params.H  # domain height in meters
     u_G = params.u_G  # u geostrophic wind
@@ -64,7 +64,7 @@ def def_boundary_conditions(fparams, params):
 
     load_ini_cond = params.load_ini_cond  # bool type; load existing initial condition
 
-    V = fparams.W  # fenics variable; the vector function space
+    V = fenics_params.W  # fenics variable; the vector function space
 
     ground = 'near(x[0],' + str(z0) + ',1E-6)'
     top = 'near(x[0],' + str(H) + ',1E-6)'
@@ -133,21 +133,21 @@ def def_boundary_conditions(fparams, params):
         Tg_n = params.T_ref
 
     # writing out the fenics parameters
-    fparams.bc = bc  # list of boundary conditions. Will be used in the FEM formulation
-    fparams.theta_D_low = T_D_low  # Temperature. Fenics expression is used to control the value within the main loop solution
-    fparams.k_D_low = k_D_low  # TKE.         Fenics expression is used to control the value within the main loop solution
+    fenics_params.bc = bc  # list of boundary conditions. Will be used in the FEM formulation
+    fenics_params.theta_D_low = T_D_low  # Temperature. Fenics expression is used to control the value within the main loop solution
+    fenics_params.k_D_low = k_D_low  # TKE.         Fenics expression is used to control the value within the main loop solution
 
-    fparams.U_g = Expression('value', degree=0,
+    fenics_params.U_g = Expression('value', degree=0,
                              value=params.u_G)  # Geostrofic wind; added here to control in in the main loop
-    fparams.V_g = Constant(params.v_G)  # Geostrofic wind; added here to control in in the main loop
+    fenics_params.V_g = Constant(params.v_G)  # Geostrofic wind; added here to control in in the main loop
 
     # writing out normal parameters
     params.Tg_n = Tg_n  # The value of the Temperature at the ground.
 
     q1 = Constant(1.0)
-    fparams.f_ms = Expression("value", value=q1, degree=0)
+    fenics_params.f_ms = Expression("value", value=q1, degree=0)
 
-    return fparams, params
+    return fenics_params, params
 
 
 def initial_u0(z, U_g, z0, params):
