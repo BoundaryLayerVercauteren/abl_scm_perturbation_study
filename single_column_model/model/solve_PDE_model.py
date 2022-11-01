@@ -1,26 +1,14 @@
 # standard imports
-from fenics import *
-import numpy as np
-
-# project related imports
-from single_column_model.model import utility_functions as ut
+import fenics as fe
 
 
 def l_m(fparams, params):
-    x = fparams.x  # it is the height variable
-    U_g = fparams.U_g
-
-    f_c = params.f_c
-    kappa = params.kappa
-
-    phi = f_m(fparams, params)
-
-    return (kappa * x[0]) / (phi + (kappa * x[0]) / lambbda(U_g, f_c))
+    return (params.kappa * fparams.x[0]) / (f_m(fparams, params) + (params.kappa * fparams.x[0]) / lambbda(fparams.U_g, params.f_c))
 
 
 # Cuxart 2006 table 3
 def K_m(fparams, params):
-    return params.alpha * l_m(fparams, params) * sqrt(fparams.k + 1E-16)
+    return params.alpha * l_m(fparams, params) * fe.sqrt(fparams.k + 1E-16)
 
 
 # Cuxart 2006 table 3 
@@ -51,7 +39,7 @@ def eps(fparams, params):
 def Ri(fparams, params):
     calc_Ri = abs(N(fparams.theta, params) / (S(fparams.u, fparams.v) + 1E-16))
     # limit the Ri to max value of 10 (for solver stability)
-    return conditional(gt(calc_Ri, 10.0), 10.0, calc_Ri)
+    return fe.conditional(fe.gt(calc_Ri, 10.0), 10.0, calc_Ri)
 
 
 # Sorbjan 2012 Eq. 3b
@@ -86,73 +74,68 @@ def f_h(fparams, params):
 def weak_formulation(fparams, params, u_n, v_n, T_n, k_n):
     u, v, theta, k, w_u, w_v, w_T, w_k, x, U_g, V_g = unroll(fparams)
 
-    Dt = Constant(params.dt)
-    Fc = Constant(params.f_c)
-    tau = Constant(params.tau)
-    H = params.H
+    Dt = fe.Constant(params.dt)
+    Fc = fe.Constant(params.f_c)
+    tau = fe.Constant(params.tau)
 
-    # # Define variational problem
+    # Define variational problem
     # ---------- Velocity--u-comp------------------
-    F_u = - Fc * (v - V_g) * w_u * dx \
-          + K_m(fparams, params) * dot(u.dx(0), w_u.dx(0)) * dx \
-          + ((u - u_n) / Dt) * w_u * dx \
-          + (u - U_g) / tau * w_u * dx
+    F_u = - Fc * (v - V_g) * w_u * fe.dx \
+          + K_m(fparams, params) * fe.dot(u.dx(0), w_u.dx(0)) * fe.dx \
+          + ((u - u_n) / Dt) * w_u * fe.dx \
+          + (u - U_g) / tau * w_u * fe.dx
 
     # ---------- Velocity--v-comp------------------
-    F_v = + Fc * (u - U_g) * w_v * dx \
-          + K_m(fparams, params) * dot(v.dx(0), w_v.dx(0)) * dx \
-          + ((v - v_n) / Dt) * w_v * dx \
-          + (v - V_g) / tau * w_v * dx
+    F_v = + Fc * (u - U_g) * w_v * fe.dx \
+          + K_m(fparams, params) * fe.dot(v.dx(0), w_v.dx(0)) * fe.dx \
+          + ((v - v_n) / Dt) * w_v * fe.dx \
+          + (v - V_g) / tau * w_v * fe.dx
 
     # --------------Temperature--------------------
-    F_T = + K_h(fparams, params) * dot(theta.dx(0), w_T.dx(0)) * dx \
-          - K_h(fparams, params) * params.gamma * w_T * ds \
-          + ((theta - T_n) / Dt) * w_T * dx \
- \
-    # ------------------TKE------------------------
-    F_k = + K_m(fparams, params) * dot(k.dx(0), w_k.dx(0)) * dx \
-          - G_E(fparams, params) * w_k * dx \
-          + eps(fparams, params) * w_k * dx \
-          + ((k - k_n) / Dt) * w_k * dx
+    F_theta = + K_h(fparams, params) * fe.dot(theta.dx(0), w_T.dx(0)) * fe.dx \
+              - K_h(fparams, params) * params.gamma * w_T * fe.ds \
+              + ((theta - T_n) / Dt) * w_T * fe.dx
 
-    F = F_u + F_v + F_T + F_k
+    # ------------------TKE------------------------
+    F_k = + K_m(fparams, params) * fe.dot(k.dx(0), w_k.dx(0)) * fe.dx \
+          - G_E(fparams, params) * w_k * fe.dx \
+          + eps(fparams, params) * w_k * fe.dx \
+          + ((k - k_n) / Dt) * w_k * fe.dx
+
+    F = F_u + F_v + F_theta + F_k
 
     return F
 
 
 def setup_fenics_variables(fparams, mesh):
-    fparams.W = VectorFunctionSpace(mesh, 'CG', 1, dim=4)
+    fparams.W = fe.VectorFunctionSpace(mesh, 'CG', 1, dim=4)
 
     # Define test functions
-    fparams.w_u, fparams.w_v, fparams.w_T, fparams.w_k = TestFunctions(fparams.W)
+    fparams.w_u, fparams.w_v, fparams.w_T, fparams.w_k = fe.TestFunctions(fparams.W)
 
     # Split system functions to access components
-    fparams.uvTk = Function(fparams.W)
-    fparams.u, fparams.v, fparams.theta, fparams.k = split(fparams.uvTk)
+    fparams.uvTk = fe.Function(fparams.W)
+    fparams.u, fparams.v, fparams.theta, fparams.k = fe.split(fparams.uvTk)
 
     # height "z"
-    fparams.x = SpatialCoordinate(mesh)
+    fparams.x = fe.SpatialCoordinate(mesh)
     fparams.z = mesh.coordinates()  # Grid of the simulation domain.
 
     # Function space for projection. For writing out variables
-    fparams.Q = FunctionSpace(mesh, "CG", 1)
-
-    # Function for the mixing lengt
-    fparams.l0 = Function(fparams.Q)
-    fparams.l0 = Constant(0.01)
+    fparams.Q = fe.FunctionSpace(mesh, "CG", 1)
 
     return fparams
 
 
 def prepare_fenics_solver(fparams, F):
-    set_log_level(LogLevel.WARNING)  # supress fenics output
+    fe.set_log_level(fe.LogLevel.WARNING)  # supress fenics output
 
-    J = derivative(F, fparams.uvTk)
+    J = fe.derivative(F, fparams.uvTk)
 
-    problem = NonlinearVariationalProblem(F, fparams.uvTk, fparams.bc, J)
+    problem = fe.NonlinearVariationalProblem(F, fparams.uvTk, fparams.bc, J)
 
-    solver = NonlinearVariationalSolver(problem)
-    info(solver.parameters, True)
+    solver = fe.NonlinearVariationalSolver(problem)
+    # fe.info(solver.parameters, True)
     solver.parameters["newton_solver"]["error_on_nonconvergence"] = True
     solver.parameters["newton_solver"]['absolute_tolerance'] = 1E-6
     solver.parameters["newton_solver"]['relative_tolerance'] = 1E-6

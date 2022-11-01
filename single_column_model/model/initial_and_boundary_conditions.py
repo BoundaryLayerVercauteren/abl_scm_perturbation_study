@@ -3,7 +3,7 @@ import numpy as np
 from fenics import *
 
 # project related imports
-from single_column_model.model import fenics_utility_functions as fut
+from single_column_model.model import solve_PDE_model as fut
 from single_column_model.model import utility_functions as ut
 
 

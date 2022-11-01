@@ -11,7 +11,7 @@ import os
 
 # project related imports
 from single_column_model.model import initial_and_boundary_conditions as ic
-from single_column_model.model import fenics_utility_functions as fut
+from single_column_model.model import solve_PDE_model as fut
 from single_column_model.model import space_discretization as sd
 from single_column_model.utils import save_solution as ss
 from single_column_model.model import utility_functions as ut
