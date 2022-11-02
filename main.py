@@ -32,10 +32,10 @@ def perform_scm(params, sim_index, u_G_param):
 
 
 # Define list of parameters for which the model shall be run (atm only u_G)
-param_list = np.arange(5.0, 5.5, 0.5)
+param_list = np.arange(1.0, 6.5, 0.5)
 
 # Run model in parallel
-num_proc = multiprocessing.cpu_count() - 1
+num_proc = 20#multiprocessing.cpu_count() - 1
 with multiprocessing.Pool(processes=num_proc) as pool:
     pool.map(partial(perform_scm, params, 1), param_list)
 

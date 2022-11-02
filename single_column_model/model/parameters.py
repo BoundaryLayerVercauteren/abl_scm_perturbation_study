@@ -10,9 +10,9 @@ class Parameters:
     save_ini_cond: bool = True  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 15  # hour
+    T_end_h: float = 240  # hour
     T_end: float = T_end_h * 3600  # seconds
-    dt: float = 5  # seconds
+    dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
     perturbation_param: str = 'none'  # specify to which equation a perturbation is added
@@ -27,7 +27,7 @@ class Parameters:
     init_cond_path: str = 'T_end_' + str(T_end_h) + 'h_'
 
     # time steps to save
-    save_dt: float = 5  # in seconds, needs to be bigger or equal to dt
+    save_dt: float = 60  # in seconds, needs to be bigger or equal to dt
     save_dt_sim: int = int(save_dt / dt)
     save_num_steps: int = int(T_end / save_dt)
 
