@@ -15,7 +15,7 @@ output.solution_directory, output.init_directory = save_solution.create_solution
 
 def perform_scm(params, sim_index, u_G_param):
     # Define file name for initial conditions
-    params.init_path = output.init_directory + params.init_cond_path + 'U' + str(u_G_param) + '_'
+    params.init_path = output.init_directory + params.init_cond_path + 'U' + str(u_G_param)
 
     # Update parameter
     params.u_G = u_G_param
@@ -28,14 +28,14 @@ def perform_scm(params, sim_index, u_G_param):
     solve_turb_model(fparams, params, output)
 
     # Plot solution
-    #plot_solution.make_3d_plot(output, params, fparams, file_spec=str(u_G_param))
+    plot_solution.make_3d_plot(output, params, fparams, file_spec=str(u_G_param))
 
 
 # Define list of parameters for which the model shall be run (atm only u_G)
-param_list = np.arange(1.0, 20.5, 0.5)
+param_list = np.arange(5.0, 5.5, 0.5)
 
 # Run model in parallel
-num_proc = 50#multiprocessing.cpu_count() - 1
+num_proc = multiprocessing.cpu_count() - 1
 with multiprocessing.Pool(processes=num_proc) as pool:
     pool.map(partial(perform_scm, params, 1), param_list)
 

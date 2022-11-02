@@ -22,16 +22,16 @@ def solve_turb_model(fenics_params, params, output):
     u_n, v_n, T_n, k_n = ic.def_initial_cnditions(fenics_params.Q, mesh, params)
     
     # set up the weak formulation of the equations
-    F = fut.weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n)
+    fenics_params.F = fut.weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n)
     
     # create the variables to write output
     output = ss.initialize(output, params)
     
     # define the solver and its parameters
-    solver = fut.prepare_fenics_solver(fenics_params, F)
+    solver = fut.prepare_fenics_solver(fenics_params, fenics_params.F)
 
     # Create perturbation
-    #output = dp.create_perturbation(params, fenics_params, output)
+    output = dp.create_perturbation(params, fenics_params, output)
     
     # solve the system
     output = ut.solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n)

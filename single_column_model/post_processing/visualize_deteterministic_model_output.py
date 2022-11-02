@@ -78,8 +78,6 @@ def make_3D_plot(data_path, vis_path, file_name, curr_param, variable_name):
         z = file['z'][:]
         t = file['t'][:]
 
-    # variable_val[variable_val > 400] = np.nan
-    # variable_val[variable_val < 0] = np.nan
     # Create mesh
     X, Y = np.meshgrid(t, z)
 
@@ -96,18 +94,21 @@ def make_3D_plot(data_path, vis_path, file_name, curr_param, variable_name):
         colours = cram.davos
         v_min = 0.0
         v_max = 3.5
+    elif variable_name == 'TKE':
+        colours = cram.tokyo
 
     # Make plot
     plt.figure(figsize=(5, 5))
     plt.pcolor(X, Y, variable_val, cmap=colours)  # vmin=v_min, vmax=v_max)
     plt.title(r'$u_G = $' + str(curr_param))
+    #plt.ylim((0,100))
     plt.xlabel('time [h]')
     plt.ylabel('z [m]')
     cbar = plt.colorbar()
     if variable_name == 'theta':
-        cbar.set_label(r'$\theta$', rotation=0)
+        cbar.set_label(r'$\theta$', rotation=0, labelpad=2)
     else:
-        cbar.set_label(variable_name, rotation=0)
+        cbar.set_label(variable_name, rotation=0, labelpad=2)
 
     # Save plot
     plt.savefig(vis_path + '/3D_plots_' + variable_name + '_' + str(curr_param) + '.png', bbox_inches='tight', dpi=300)
@@ -156,7 +157,7 @@ def make_3D_plot_increments(data_path, vis_path, file_name, curr_param, variable
     plt.figure(figsize=(5, 5))
 
     plt.pcolor(X, Y, increments, cmap=cram.bilbao)  # , vmin=0.0, vmax=1.0)
-    plt.axhline(y=z[:, 29], color='black', linestyle='--')
+    plt.axhline(y=z[29,:], color='black', linestyle='--')
 
     if min_idx_increment_small:
         plt.axvline(x=t[:, min_idx_increment_small], color='red', linestyle='--')
@@ -227,6 +228,7 @@ def create_df_for_fixed_z(data_path, file_paths, height_z):
     df_v_temp = {}
     df_delta_theta_temp = {}
     df_files_temp = {}
+    df_tke_temp = {}
 
     # Open output file and load variables
     for file_idx, file_path in enumerate(file_paths):
@@ -256,39 +258,52 @@ def create_df_for_fixed_z(data_path, file_paths, height_z):
             df_delta_theta_temp[column_name] = theta[z_idx, :] - theta[0, :]
             df_delta_theta_temp[column_name] = df_delta_theta_temp[column_name]
 
+            tke = file['TKE'][:]
+            df_tke_temp[column_name] = tke[z_idx, :]
+            df_tke_temp[column_name] = df_tke_temp[column_name]
+
             df_files_temp[column_name] = file_path
 
     df_u = pd.DataFrame({k: list(v) for k, v in df_u_temp.items()})
     df_v = pd.DataFrame({k: list(v) for k, v in df_v_temp.items()})
     df_delta_theta = pd.DataFrame({k: list(v) for k, v in df_delta_theta_temp.items()})
+    df_tke = pd.DataFrame({k: list(v) for k, v in df_tke_temp.items()})
     df_files = pd.DataFrame([df_files_temp])
 
     # Sort columns
     df_u = df_u.reindex(sorted(df_u.columns), axis=1)
     df_v = df_v.reindex(sorted(df_v.columns), axis=1)
     df_delta_theta = df_delta_theta.reindex(sorted(df_delta_theta.columns), axis=1)
+    df_tke = df_tke.reindex(sorted(df_tke.columns), axis=1)
     df_files = df_files.reindex(sorted(df_files.columns), axis=1)
 
     # Add time column to dataframe
     df_u['time'] = t.flatten()
     df_v['time'] = t.flatten()
     df_delta_theta['time'] = t.flatten()
+    df_tke['time'] = t.flatten()
 
-    return df_u, df_v, df_delta_theta, df_files
+    return df_u, df_v, df_delta_theta, df_tke, df_files
 
 
 def plot_data_over_t(vis_path, data, suffix):
-    plt.figure(figsize=(5, 5))
+    plt.figure(figsize=(15, 5))
 
     plt.plot(data['time'], data['sim1'], color='black')
 
     plt.xlabel('time [h]')
     if 'delta_theta' in suffix:
         plt.ylabel(r'$\Delta \theta$ [K]')
-    elif 'u' in suffix:
+        plt.ylim((0,12))
+    elif 'u_z' in suffix:
         plt.ylabel(r'$u$ [m/s]')
-    else:
+        plt.ylim((0, 4.5))
+    elif 'v' in suffix:
         plt.ylabel(r'$v$ [m/s]')
+        plt.ylim((0, 1.7))
+    else:
+        plt.ylabel('TKE [$m^2/s^2$]')
+        plt.ylim((0, 0.2))
 
     plt.savefig(vis_path + '/var_over_t' + suffix + '.png', bbox_inches='tight')
 
@@ -301,7 +316,7 @@ def plot_data_over_t(vis_path, data, suffix):
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/20221101_112308/'
+    det_directory_path = 'single_column_model/solution/deterministic_steady_state_check/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -314,84 +329,86 @@ if __name__ == '__main__':
 
     bl_top_height_det_sim_dict, z = find_z_where_u_const(det_data_directory_path, files_det)
 
-    for var in np.arange(1.0, 2.0, 0.5):
+    # for var in np.arange(1.0, 6.5, 0.5):
+    #     try:
+    #         curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
+    #
+    #         # Make dataframe of simulation
+    #         bl_top_height_det_sim = z[bl_top_height_det_sim_dict[str(var)], :]
+    #
+    #         df_u, df_v, df_delta_theta, df_tke, _ = create_df_for_fixed_z(det_data_directory_path, curr_file_det_sim, bl_top_height_det_sim)
+    #
+    #         # Plot variables over time at BL height
+    #         plot_data_over_t(vis_directory_path, df_delta_theta, '_delta_theta_z_const_u_' + str(var))
+    #         plot_data_over_t(vis_directory_path, df_u, '_u_z_const_u_' + str(var))
+    #         plot_data_over_t(vis_directory_path, df_v, '_v_z_const_u_' + str(var))
+    #         plot_data_over_t(vis_directory_path, df_tke, '_tke_z_const_u_' + str(var))
+    #
+    #         # # Make 3D plot of increments
+    #         # make_3D_plot_increments(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'theta')
+    #         # make_3D_plot_increments(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'u')
+    #         # make_3D_plot_increments(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'v')
+    #
+    #         #Make 3D plot of time series
+    #         make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'theta')
+    #         make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'u')
+    #         make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'v')
+    #         make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'TKE')
+    #
+    #     except Exception:
+    #         print(traceback.format_exc())
+    #         pass
+
+    # -----------------------------
+    # Make bistability plot
+    fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+
+    # color = matplotlib.cm.get_cmap('cmc.batlow', len(np.arange(0.0, 15.5, 0.5) - 1)).colors
+
+    mean_u = []
+    mean_delta_theta = []
+
+    NUM_COLORS = len(np.arange(1.0, 6.0, 0.5)) + 1
+    color = matplotlib.cm.get_cmap('cmc.batlow', NUM_COLORS).colors
+
+    for idx, var in enumerate(np.arange(1.0, 6.0, 0.5)):
+
         try:
+            bl_top_height_det_sim = z[bl_top_height_det_sim_dict[str(var)],:]
+
             curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
 
-            # Make dataframe of simulation
-            bl_top_height_det_sim = z[bl_top_height_det_sim_dict[str(var)], :]
+            # Make dataframe of deterministic simulation
+            df_u_det_sim, _, df_delta_theta_det_sim, _, _ = create_df_for_fixed_z(det_data_directory_path,
+                                                                                          curr_file_det_sim,
+                                                                                          bl_top_height_det_sim)
 
-            df_u, df_v, df_delta_theta, _ = create_df_for_fixed_z(det_data_directory_path, curr_file_det_sim, bl_top_height_det_sim)
+            df_u_det_sim = df_u_det_sim.loc[1800:]
+            df_delta_theta_det_sim = df_delta_theta_det_sim.loc[1800:]
 
-            # Plot variables over time at BL height
-            plot_data_over_t(vis_directory_path, df_delta_theta, '_delta_theta_z_const_u_' + str(var))
-            plot_data_over_t(vis_directory_path, df_u, '_u_z_const_u_' + str(var))
-            plot_data_over_t(vis_directory_path, df_v, '_v_z_const_u_' + str(var))
+            mean_u.append(np.mean(df_u_det_sim['sim1']))
+            mean_delta_theta.append(np.mean(df_delta_theta_det_sim['sim1']))
 
-            # # Make 3D plot of increments
-            # make_3D_plot_increments(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'theta')
-            # make_3D_plot_increments(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'u')
-            # make_3D_plot_increments(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'v')
-            #
-            # Make 3D plot of time series
-            make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'theta')
-            # make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'u')
-            # make_3D_plot(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'v')
+            if not np.isnan(mean_u[idx]) and not np.isnan(mean_delta_theta[idx]):
+                ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var), s=20,
+                           color=color[idx])
+            # if var == 7.0:
+            #     ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var),
+            #                color='red', s=20)
 
         except Exception:
+            mean_u.append(np.nan)
+            mean_delta_theta.append(np.nan)
             print(traceback.format_exc())
             pass
 
-    # # -----------------------------
-    # # Make bistability plot
-    # fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-    #
-    # # color = matplotlib.cm.get_cmap('cmc.batlow', len(np.arange(0.0, 15.5, 0.5) - 1)).colors
-    #
-    # mean_u = []
-    # mean_delta_theta = []
-    #
-    # NUM_COLORS = len(np.arange(1.0, 11.5, 0.5)) + 1
-    # color = matplotlib.cm.get_cmap('cmc.batlow', NUM_COLORS).colors
-    #
-    # for idx, var in enumerate(np.arange(1.0, 11.5, 0.5)):
-    #
-    #     try:
-    #         bl_top_height_det_sim = z[:, bl_top_height_det_sim_dict[str(var)]]
-    #
-    #         curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
-    #
-    #         # Make dataframe of deterministic simulation
-    #         df_u_det_sim, df_v_det_sim, df_delta_theta_det_sim, _ = create_df_for_fixed_z(det_data_directory_path,
-    #                                                                                       curr_file_det_sim,
-    #                                                                                       bl_top_height_det_sim)
-    #
-    #         # df_u_det_sim = df_u_det_sim.loc[72000:]
-    #         # df_delta_theta_det_sim = df_delta_theta_det_sim.loc[72000:]
-    #
-    #         mean_u.append(np.mean(df_u_det_sim['sim1']))
-    #         mean_delta_theta.append(np.mean(df_delta_theta_det_sim['sim1']))
-    #
-    #         if not np.isnan(mean_u[idx]) and not np.isnan(mean_delta_theta[idx]):
-    #             ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var), s=20,
-    #                        color=color[idx])
-    #         # if var == 7.0:
-    #         #     ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var),
-    #         #                color='red', s=20)
-    #
-    #     except Exception:
-    #         mean_u.append(np.nan)
-    #         mean_delta_theta.append(np.nan)
-    #         print(traceback.format_exc())
-    #         pass
-    #
-    # # Add line for mean
-    # ax.scatter(mean_u, mean_delta_theta, color='grey', s=20)
-    # ax.plot(mean_u, mean_delta_theta, label='mean', color='grey', linewidth=2)
-    #
-    # # ax.set_xlim((2, 7))
-    # # ax.set_ylim((0, 12))
-    # ax.set_xlabel('u [m/s]')
-    # ax.set_ylabel(r'$\Delta \theta$ [K]')
-    # plt.legend(ncol=2)
-    # plt.savefig(vis_directory_path + '/delta_theta_over_u_all_sim_z_const_u.png', bbox_inches='tight', dpi=300)
+    # Add line for mean
+    ax.scatter(mean_u, mean_delta_theta, color='grey', s=20)
+    ax.plot(mean_u, mean_delta_theta, label='mean', color='grey', linewidth=2)
+
+    # ax.set_xlim((2, 7))
+    # ax.set_ylim((0, 12))
+    ax.set_xlabel('u [m/s]')
+    ax.set_ylabel(r'$\Delta \theta$ [K]')
+    plt.legend(ncol=2)
+    plt.savefig(vis_directory_path + '/delta_theta_over_u_all_sim_z_const_u.png', bbox_inches='tight', dpi=300)

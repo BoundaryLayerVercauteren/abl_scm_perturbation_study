@@ -72,7 +72,7 @@ def f_h(fenics_params, params):
 
 
 def weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n):
-    u, v, theta, k, w_u, w_v, w_T, w_k, x, U_g, V_g = unroll(fenics_params)
+    u, v, theta, k, u_test, v_test, theta_test, k_test, x, U_g, V_g = unroll(fenics_params)
 
     Dt = fe.Constant(params.dt)
     Fc = fe.Constant(params.f_c)
@@ -80,27 +80,27 @@ def weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n):
 
     # Define variational problem
     # ---------- Velocity--u-comp------------------
-    F_u = - Fc * (v - V_g) * w_u * fe.dx \
-          + K_m(fenics_params, params) * fe.dot(u.dx(0), w_u.dx(0)) * fe.dx \
-          + ((u - u_n) / Dt) * w_u * fe.dx \
-          + (u - U_g) / tau * w_u * fe.dx
+    F_u = - Fc * (v - V_g) * u_test * fe.dx \
+          + K_m(fenics_params, params) * fe.dot(u.dx(0), u_test.dx(0)) * fe.dx \
+          + ((u - u_n) / Dt) * u_test * fe.dx \
+          + (u - U_g) / tau * u_test * fe.dx
 
     # ---------- Velocity--v-comp------------------
-    F_v = + Fc * (u - U_g) * w_v * fe.dx \
-          + K_m(fenics_params, params) * fe.dot(v.dx(0), w_v.dx(0)) * fe.dx \
-          + ((v - v_n) / Dt) * w_v * fe.dx \
-          + (v - V_g) / tau * w_v * fe.dx
+    F_v = + Fc * (u - U_g) * v_test * fe.dx \
+          + K_m(fenics_params, params) * fe.dot(v.dx(0), v_test.dx(0)) * fe.dx \
+          + ((v - v_n) / Dt) * v_test * fe.dx \
+          + (v - V_g) / tau * v_test * fe.dx
 
     # --------------Temperature--------------------
-    F_theta = + K_h(fenics_params, params) * fe.dot(theta.dx(0), w_T.dx(0)) * fe.dx \
-              - K_h(fenics_params, params) * params.gamma * w_T * fe.ds \
-              + ((theta - T_n) / Dt) * w_T * fe.dx
+    F_theta = + K_h(fenics_params, params) * fe.dot(theta.dx(0), theta_test.dx(0)) * fe.dx \
+              - K_h(fenics_params, params) * params.gamma * theta_test * fe.ds \
+              + ((theta - T_n) / Dt) * theta_test * fe.dx
 
     # ------------------TKE------------------------
-    F_k = + K_m(fenics_params, params) * fe.dot(k.dx(0), w_k.dx(0)) * fe.dx \
-          - G_E(fenics_params, params) * w_k * fe.dx \
-          + eps(fenics_params, params) * w_k * fe.dx \
-          + ((k - k_n) / Dt) * w_k * fe.dx
+    F_k = + K_m(fenics_params, params) * fe.dot(k.dx(0), k_test.dx(0)) * fe.dx \
+          - G_E(fenics_params, params) * k_test * fe.dx \
+          + eps(fenics_params, params) * k_test * fe.dx \
+          + ((k - k_n) / Dt) * k_test * fe.dx
 
     F = F_u + F_v + F_theta + F_k
 
@@ -111,7 +111,7 @@ def setup_fenics_variables(fenics_params, mesh):
     fenics_params.W = fe.VectorFunctionSpace(mesh, 'CG', 1, dim=4)
 
     # Define test functions
-    fenics_params.w_u, fenics_params.w_v, fenics_params.w_T, fenics_params.w_k = fe.TestFunctions(fenics_params.W)
+    fenics_params.u_test, fenics_params.v_test, fenics_params.theta_test, fenics_params.k_test = fe.TestFunctions(fenics_params.W)
 
     # Split system functions to access components
     fenics_params.uvTk = fe.Function(fenics_params.W)
@@ -149,14 +149,14 @@ def unroll(fenics_params):
     theta = fenics_params.theta
     k = fenics_params.k
 
-    w_u = fenics_params.w_u
-    w_v = fenics_params.w_v
-    w_T = fenics_params.w_T
-    w_k = fenics_params.w_k
+    u_test = fenics_params.u_test
+    v_test = fenics_params.v_test
+    theta_test = fenics_params.theta_test
+    k_test = fenics_params.k_test
 
     x = fenics_params.x
 
     U_g = fenics_params.U_g
     V_g = fenics_params.V_g
 
-    return u, v, theta, k, w_u, w_v, w_T, w_k, x, U_g, V_g
+    return u, v, theta, k, u_test, v_test, theta_test, k_test, x, U_g, V_g

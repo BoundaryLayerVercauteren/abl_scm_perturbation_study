@@ -5,19 +5,31 @@ import numpy as np
 
 # project related imports
 from single_column_model.model import surface_energy_balance as seb
+from single_column_model.model import define_PDE_model as dPm
 from single_column_model.utils import save_solution as ss
+from single_column_model.utils import transform_values as tv
+
 
 
 def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
     Tg_n = params.Tg_n
-
     T_D_low = fenics_params.theta_D_low
     # --------------------------------------------------------------------------
     print('Solving ... ')
     t = 0  # used for control
-
     i_w = 0  # index for writing
+
     for i in tqdm(range(params.num_steps)):
+
+        # Add perturbation value for current time step to PDE
+        if 'pde' in params.perturbation_param:
+            cur_perturbation = tv.convert_numpy_array_to_fenics_function(output.perturbation[:, i], fenics_params.Q)
+            if params.perturbation_param == 'pde_u':
+                perturbed_F = fenics_params.F - cur_perturbation * fenics_params.u_test * fe.dx
+            elif params.perturbation_param == 'pde_theta':
+                perturbed_F = fenics_params.F - cur_perturbation * fenics_params.theta_test * fe.dx
+            solver = dPm.prepare_fenics_solver(fenics_params, perturbed_F)
+
         try:
             solver.solve()
         except:
