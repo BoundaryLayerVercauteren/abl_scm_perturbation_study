@@ -7,21 +7,21 @@ import numpy as np
 @dataclass_json
 @dataclass
 class Parameters:
-    save_ini_cond: bool = True  # save simulations solution as initial condition
+    save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 240  # hour
+    T_end_h: float = 200  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    perturbation_param: str = 'none'  # specify to which equation a perturbation is added
+    perturbation_param: str = 'pde_u'  # specify to which equation a perturbation is added
     perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
     perturbation_strength: float = 0.05  # strength of perturbation
-    perturbation_start: int = int(1.0 * 3600 / dt)  # start time of perturbation
+    perturbation_start: int = int(150.0 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
-    num_simulation: int = 1
+    num_simulation: int = 100
 
     # file name for initial conditions
     init_cond_path: str = 'T_end_' + str(T_end_h) + 'h_'

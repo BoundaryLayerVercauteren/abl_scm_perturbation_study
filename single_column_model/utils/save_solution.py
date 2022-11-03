@@ -128,6 +128,8 @@ def save_solution(output, params, fparams, file_spec=''):
     Ri_ds = saveFile.create_dataset('/Ri', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     Kh_ds = saveFile.create_dataset('/Kh', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     Km_ds = saveFile.create_dataset('/Km', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    perturbation_ds = saveFile.create_dataset('/perturbation', (np.shape(output.perturbation)[0], np.shape(output.perturbation)[1]), h5py.h5t.IEEE_F64BE)
+    r_ds = saveFile.create_dataset('/r', (1, 1))
 
     z_ds = saveFile.create_dataset('/z', (np.size(fparams.z), 1), h5py.h5t.IEEE_F64BE)
     t_ds = saveFile.create_dataset('/t', (1, params.save_num_steps))
@@ -142,6 +144,9 @@ def save_solution(output, params, fparams, file_spec=''):
 
     z_ds[...] = fparams.z
     t_ds[...] = np.linspace(0, params.T_end_h, params.save_num_steps)
+
+    r_ds[...] = output.r
+    perturbation_ds[...] = output.perturbation
 
     saveFile.close()
     print('simulation is done')

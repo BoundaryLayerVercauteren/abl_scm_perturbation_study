@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def define_abraham_function(num_steps, dt, z, t_k, r):
+def define_abraham_function(num_steps, T_end, z, t_k, r):
     """
     Create 2D space and time function which is a modified version of the one defined in
 
@@ -19,7 +19,7 @@ def define_abraham_function(num_steps, dt, z, t_k, r):
     Returns:
         (numpy array): Values of modified Abraham function.
     """
-    t = np.linspace(0, num_steps, num_steps * dt)
+    t = np.linspace(0, num_steps, num_steps)
 
     s_k = np.zeros_like(t)
     h_k = np.zeros_like(t)
@@ -68,7 +68,9 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_length, dt, z
     Returns:
         (numpy array): Values of modified Abraham function.
     """
+
     t_k = num_steps - perturbation_length + 1
+
     pulse_min = 0.001
     r = pulse_min + (pulse_max - pulse_min) / num_sim * (simulation_idx - 1)
 
@@ -89,14 +91,14 @@ def create_space_time_perturbation(params, fenics_params):
     if "mod_abraham" == params.perturbation_type:
         pulse_strength_val, perturbation_val = create_space_time_abraham_perturbation(params.num_steps,
                                                                                       params.perturbation_length,
-                                                                                      params.dt, fenics_params.z,
+                                                                                      params.T_end, fenics_params.z,
                                                                                       params.perturbation_strength,
                                                                                       params.sim_index,
                                                                                       params.num_simulation)
     elif "neg_mod_abraham" == params.perturbation_type:
         pulse_strength_val, perturbation_val = create_space_time_abraham_perturbation(params.num_steps,
                                                                                       params.perturbation_length,
-                                                                                      params.dt, fenics_params.z,
+                                                                                      params.T_end, fenics_params.z,
                                                                                       params.perturbation_strength,
                                                                                       params.sim_index,
                                                                                       params.num_simulation)

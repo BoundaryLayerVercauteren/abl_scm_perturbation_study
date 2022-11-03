@@ -316,7 +316,7 @@ def plot_data_over_t(vis_path, data, suffix):
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_steady_state_check/'
+    det_directory_path = 'single_column_model/solution/deterministic_steady_state_check_240h/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -383,8 +383,8 @@ if __name__ == '__main__':
                                                                                           curr_file_det_sim,
                                                                                           bl_top_height_det_sim)
 
-            df_u_det_sim = df_u_det_sim.loc[1800:]
-            df_delta_theta_det_sim = df_delta_theta_det_sim.loc[1800:]
+            df_u_det_sim = df_u_det_sim.loc[120:]
+            df_delta_theta_det_sim = df_delta_theta_det_sim.loc[120:]
 
             mean_u.append(np.mean(df_u_det_sim['sim1']))
             mean_delta_theta.append(np.mean(df_delta_theta_det_sim['sim1']))
