@@ -8,9 +8,9 @@ import numpy as np
 @dataclass
 class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
-    load_ini_cond: bool = False  # load existing initial condition
+    load_ini_cond: bool = True  # load existing initial condition
 
-    T_end_h: float = 200  # hour
+    T_end_h: float = 24  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
@@ -18,13 +18,14 @@ class Parameters:
     perturbation_param: str = 'pde_u'  # specify to which equation a perturbation is added
     perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
     perturbation_strength: float = 0.05  # strength of perturbation
-    perturbation_start: int = int(150.0 * 3600 / dt)  # start time of perturbation
+    perturbation_start: int = int(0.0 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     num_simulation: int = 100
+    num_proc: int = 50
 
     # file name for initial conditions
-    init_cond_path: str = 'T_end_' + str(T_end_h) + 'h_'
+    init_cond_path: str = 'steady_state_'#'T_end_' + str(T_end_h) + 'h_'
 
     # time steps to save
     save_dt: float = 60  # in seconds, needs to be bigger or equal to dt

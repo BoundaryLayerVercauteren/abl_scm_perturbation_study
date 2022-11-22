@@ -108,6 +108,14 @@ def initialize(output, params):
     output.Kh_save = np.zeros((params.Nz, params.save_num_steps))
     output.Km_save = np.zeros((params.Nz, params.save_num_steps))
 
+    output.U_save[:] = np.nan
+    output.V_save[:] = np.nan
+    output.T_save[:] = np.nan
+    output.k_save[:] = np.nan
+    output.Ri_save[:] = np.nan
+    output.Kh_save[:] = np.nan
+    output.Km_save[:] = np.nan
+
     return output
 
 
@@ -115,8 +123,8 @@ def save_solution(output, params, fparams, file_spec=''):
     if params.save_ini_cond:
         np.save(params.init_path + '_u', output.U_save[:, -2])
         np.save(params.init_path + '_v', output.V_save[:, -2])
-        np.save(params.init_path + '_T', output.T_save[:, -2])
-        np.save(params.init_path + '_k', output.k_save[:, -2])
+        np.save(params.init_path + '_theta', output.T_save[:, -2])
+        np.save(params.init_path + '_TKE', output.k_save[:, -2])
         print('\n Current solution saved as initial condition')
 
     saveFile = h5py.File(str(output.solution_directory) + 'solution_' + file_spec + '.h5', 'w')
@@ -128,7 +136,9 @@ def save_solution(output, params, fparams, file_spec=''):
     Ri_ds = saveFile.create_dataset('/Ri', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     Kh_ds = saveFile.create_dataset('/Kh', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     Km_ds = saveFile.create_dataset('/Km', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    perturbation_ds = saveFile.create_dataset('/perturbation', (np.shape(output.perturbation)[0], np.shape(output.perturbation)[1]), h5py.h5t.IEEE_F64BE)
+    perturbation_ds = saveFile.create_dataset('/perturbation',
+                                              (params.Nz, params.save_num_steps),
+                                              h5py.h5t.IEEE_F64BE)
     r_ds = saveFile.create_dataset('/r', (1, 1))
 
     z_ds = saveFile.create_dataset('/z', (np.size(fparams.z), 1), h5py.h5t.IEEE_F64BE)
@@ -146,7 +156,7 @@ def save_solution(output, params, fparams, file_spec=''):
     t_ds[...] = np.linspace(0, params.T_end_h, params.save_num_steps)
 
     r_ds[...] = output.r
-    perturbation_ds[...] = output.perturbation
+    perturbation_ds[...] = output.perturbation[:,::params.save_dt_sim]
 
     saveFile.close()
     print('simulation is done')

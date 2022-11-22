@@ -2,6 +2,7 @@
 from tqdm import tqdm
 import fenics as fe
 import numpy as np
+import traceback
 
 # project related imports
 from single_column_model.model import surface_energy_balance as seb
@@ -34,6 +35,7 @@ def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
             solver.solve()
         except:
             print("\n Solver crashed...")
+            print(traceback.format_exc())
             break
 
         # get variables to export

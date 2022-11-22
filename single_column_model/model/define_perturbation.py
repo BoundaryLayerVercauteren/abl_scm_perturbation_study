@@ -71,7 +71,7 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_length, dt, z
 
     t_k = num_steps - perturbation_length + 1
 
-    pulse_min = 0.001
+    pulse_min = 0.01
     r = pulse_min + (pulse_max - pulse_min) / num_sim * (simulation_idx - 1)
 
     return r, define_abraham_function(num_steps, dt, z, t_k, r)
@@ -103,6 +103,7 @@ def create_space_time_perturbation(params, fenics_params):
                                                                                       params.sim_index,
                                                                                       params.num_simulation)
         perturbation_val = -1.0 * perturbation_val
+        pulse_strength_val = -1.0 * pulse_strength_val
 
     return pulse_strength_val, perturbation_val
 

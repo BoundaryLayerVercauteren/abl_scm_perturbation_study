@@ -31,10 +31,10 @@ def def_initial_cnditions(Q, mesh, params):
         t1.vector().set_local(np.flipud(np.load(initCondStr + '_v.npy')))
         v_n = project(t1, Q)
 
-        t1.vector().set_local(np.flipud(np.load(initCondStr + '_T.npy')))
+        t1.vector().set_local(np.flipud(np.load(initCondStr + '_theta.npy')))
         T_n = project(t1, Q)
 
-        t1.vector().set_local(np.flipud(np.load(initCondStr + '_k.npy')))
+        t1.vector().set_local(np.flipud(np.load(initCondStr + '_TKE.npy')))
         k_n = project(t1, Q)
 
     else:
@@ -72,13 +72,13 @@ def def_boundary_conditions(fenics_params, params):
     if load_ini_cond:
         u_ini = np.load(initCondStr + '_u.npy')
         v_ini = np.load(initCondStr + '_v.npy')
-        T_ini = np.load(initCondStr + '_T.npy')
-        k_ini = np.load(initCondStr + '_k.npy')
+        T_ini = np.load(initCondStr + '_theta.npy')
+        k_ini = np.load(initCondStr + '_TKE.npy')
 
         u_D_low = Expression('value', degree=0, value=u_ini[0])
         u_D_top = Expression('value', degree=0, value=u_ini[-1])
 
-        v_D_low = Expression('value', degree=0, value=u_ini[0])
+        v_D_low = Expression('value', degree=0, value=v_ini[0])
         T_D_low = Expression('value', degree=0, value=T_ini[0])
 
         k_D_low = Expression('value', degree=0, value=k_ini[0])
@@ -135,11 +135,11 @@ def def_boundary_conditions(fenics_params, params):
     # writing out the fenics parameters
     fenics_params.bc = bc  # list of boundary conditions. Will be used in the FEM formulation
     fenics_params.theta_D_low = T_D_low  # Temperature. Fenics expression is used to control the value within the main loop solution
-    fenics_params.k_D_low = k_D_low  # TKE.         Fenics expression is used to control the value within the main loop solution
+    fenics_params.k_D_low = k_D_low  # TKE. Fenics expression is used to control the value within the main loop solution
 
     fenics_params.U_g = Expression('value', degree=0,
-                             value=params.u_G)  # Geostrofic wind; added here to control in in the main loop
-    fenics_params.V_g = Constant(params.v_G)  # Geostrofic wind; added here to control in in the main loop
+                             value=params.u_G)  # Geostrophic wind; added here to control in in the main loop
+    fenics_params.V_g = Constant(params.v_G)  # Geostrophic wind; added here to control in in the main loop
 
     # writing out normal parameters
     params.Tg_n = Tg_n  # The value of the Temperature at the ground.

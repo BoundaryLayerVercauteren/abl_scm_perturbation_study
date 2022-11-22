@@ -169,12 +169,13 @@ def find_z_where_u_const(data_path, file_paths):
     return z_idx_dict, z
 
 
-def create_df_for_fixed_z(data_path, file_paths, height_z):
+def create_df_for_fixed_z(data_path, file_paths, height_z_idx):
     # Create empty pandas dataframes
     df_u_temp = {}
     df_v_temp = {}
     df_delta_theta_temp = {}
     df_files_temp = {}
+    df_tke_temp = {}
 
     # Open output file and load variables
     for file_idx, file_path in enumerate(file_paths):
@@ -185,12 +186,14 @@ def create_df_for_fixed_z(data_path, file_paths, height_z):
             t = file['t'][:]
             r = file['r'][:][0][0]
             # Find z which is closest to given value
+            height_z = z[height_z_idx,:]
             z_idx = (np.abs(z - height_z)).argmin()
 
             # Set name of column
             # index_sim = file_path.find('sim')
             # index_h5 = file_path.find('.h5')
             column_name = str(r)
+
             u = file['u'][:]
             df_u_temp[column_name] = u[z_idx, :]
             df_u_temp[column_name] = df_u_temp[column_name]
@@ -203,25 +206,32 @@ def create_df_for_fixed_z(data_path, file_paths, height_z):
             df_delta_theta_temp[column_name] = theta[z_idx, :] - theta[0, :]
             df_delta_theta_temp[column_name] = df_delta_theta_temp[column_name]
 
+            tke = file['TKE'][:]
+            df_tke_temp[column_name] = tke[z_idx, :]
+            df_tke_temp[column_name] = df_tke_temp[column_name]
+
             df_files_temp[column_name] = file_path
 
     df_u = pd.DataFrame({k: list(v) for k, v in df_u_temp.items()})
     df_v = pd.DataFrame({k: list(v) for k, v in df_v_temp.items()})
     df_delta_theta = pd.DataFrame({k: list(v) for k, v in df_delta_theta_temp.items()})
+    df_tke = pd.DataFrame({k: list(v) for k, v in df_tke_temp.items()})
     df_files = pd.DataFrame([df_files_temp])
 
     # Sort columns
     df_u = df_u.reindex(sorted(df_u.columns), axis=1)
     df_v = df_v.reindex(sorted(df_v.columns), axis=1)
     df_delta_theta = df_delta_theta.reindex(sorted(df_delta_theta.columns), axis=1)
+    df_tke = df_tke.reindex(sorted(df_tke.columns), axis=1)
     df_files = df_files.reindex(sorted(df_files.columns), axis=1)
 
     # Add time column to dataframe
     df_u['time'] = t.flatten()
     df_v['time'] = t.flatten()
     df_delta_theta['time'] = t.flatten()
+    df_tke['time'] = t.flatten()
 
-    return df_u, df_v, df_delta_theta, df_files
+    return df_u, df_v, df_delta_theta, df_tke, df_files
 
 
 def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
@@ -344,7 +354,7 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
     T, Z = np.meshgrid(t, z)
 
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
-    cp = ax.contourf(T, Z, stoch_pro, cmap=cram.lapaz)
+    cp = ax.contourf(T, Z, stoch_pro[:,::6], cmap=cram.lapaz)
     ax.set_xlabel('t [m/s]')
     ax.set_ylabel('z [m]')
     fig.colorbar(cp)
@@ -390,15 +400,12 @@ def plot_transitioned_solutions(data_path, vis_path, list_files, var, data_delta
         make_3D_plot(data_path, vis_path, file_name, var, 'theta', suffix=column, z_max=z_top)
 
 
+
 if __name__ == '__main__':
 
-    # Define path to deterministic data
-    det_data_directory_path = 'scm_model/solution/deterministic/slavas_seb_10_hours/simulations/'
-
     # Define path to stochastic data
-    data_directory_path = 'scm_model/solution/Abraham_stoch_process/pde_u_neg_abraham_4h_sim_as_init/'
-    data_directory_path_averaged = data_directory_path + 'averaged_simulations/'
-    data_directory_path_single = data_directory_path + 'single_simulations/'
+    data_directory_path = 'single_column_model/solution/perturbed/u_neg_perturbation/'
+    data_directory_path_single = data_directory_path + 'simulations/'
 
     # Create directory to store visualization
     vis_directory_path = os.path.join(data_directory_path, 'visualization')
@@ -406,37 +413,33 @@ if __name__ == '__main__':
         os.makedirs(vis_directory_path)
 
     # Get a list of all file names in given directory for u and theta
-    _, _, files_det = find_files_in_directory(det_data_directory_path)
-    # u_files_av, theta_files_av, _ = find_files_in_directory(data_directory_path_averaged)
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    bl_top_height_det_sim_dict, z = find_z_where_u_const(det_data_directory_path, files_det)
-
-    for var in np.arange(3.0, 3.5, 0.5):
+    for var in np.arange(4.0, 4.5, 0.5):
 
         try:
 
             # Define height of boundary layer top (here in the deterministic simulation u is constant for the last 3
             # hours)
             idx_bl_top_height = 29
-            bl_top_height_det_sim = z[idx_bl_top_height, :]
 
             # Get all files which correspond to current loop
             curr_files_single_sim = [s for s in files_sin if '_' + str(var) + '_' in s]
 
             # Make dataframe of all single simulations
-            df_u_sing_sim, df_v_sing_sim, df_delta_theta_sing_sim, df_files_names = create_df_for_fixed_z(
+            df_u_sing_sim, df_v_sing_sim, df_delta_theta_sing_sim, df_tke, df_files_names = create_df_for_fixed_z(
                 data_directory_path_single,
                 curr_files_single_sim,
-                bl_top_height_det_sim)
+                idx_bl_top_height)
 
-            # Make 3D plot of time series with transitions
-            plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
-                                        df_delta_theta_sing_sim, idx_bl_top_height)
 
-            # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
-            plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
-
+            # # Make 3D plot of time series with transitions
+            # plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
+            #                             df_delta_theta_sing_sim, idx_bl_top_height)
+            #
+            # # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
+            # plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
+            #
             # Plot delta theta over u (single simulations)
             plot_delta_theta_over_u(vis_directory_path, df_u_sing_sim, df_delta_theta_sing_sim, '_' + str(var))
 
@@ -446,8 +449,8 @@ if __name__ == '__main__':
             # Plot u over t (single simulations)
             plot_data_over_t(vis_directory_path, df_u_sing_sim, '_u_' + str(var))
 
-            # Plot v over t (single simulations)
-            plot_data_over_t(vis_directory_path, df_v_sing_sim, '_v_' + str(var))
+            # # Plot v over t (single simulations)
+            # plot_data_over_t(vis_directory_path, df_v_sing_sim, '_v_' + str(var))
 
             # Plot one random stochastic process
             random_file = random.choice(curr_files_single_sim)
