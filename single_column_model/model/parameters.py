@@ -15,13 +15,13 @@ class Parameters:
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    perturbation_param: str = 'pde_u'  # specify to which equation a perturbation is added
-    perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
+    perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added
+    perturbation_type: str = 'mod_abraham'  # type of perturbation to be added
     perturbation_strength: float = 0.05  # strength of perturbation
     perturbation_start: int = int(0.0 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
-    num_simulation: int = 100
+    num_simulation: int = 200
     num_proc: int = 50
 
     # file name for initial conditions
