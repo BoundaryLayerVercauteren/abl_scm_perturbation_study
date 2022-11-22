@@ -25,6 +25,7 @@ def find_files_in_directory(data_path):
 
     return u_files, theta_files, files
 
+
 def find_z_where_u_const(data_path, file_paths):
     z_idx_dict = {}
     # Open output file and load variables
@@ -64,7 +65,7 @@ def find_z_where_u_const(data_path, file_paths):
     return z_idx_dict, z
 
 
-def create_df_for_fixed_z(data_path, file_paths, height_z):
+def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='deterministic'):
     # Create empty pandas dataframes
     df_u_temp = {}
     df_v_temp = {}
@@ -84,9 +85,13 @@ def create_df_for_fixed_z(data_path, file_paths, height_z):
             z_idx = (np.abs(z - height_z)).argmin()
 
             # Set name of column
-            index_sim = file_path.find('sim')
-            index_h5 = file_path.find('.h5')
-            column_name = file_path[index_sim:index_h5]
+            if file_type == 'deterministic':
+                index_sim = file_path.find('sim')
+                index_h5 = file_path.find('.h5')
+                column_name = file_path[index_sim:index_h5]
+            else:
+                r = file['r'][:][0][0]
+                column_name = str(r)
 
             u = file['u'][:]
             df_u_temp[column_name] = u[z_idx, :]

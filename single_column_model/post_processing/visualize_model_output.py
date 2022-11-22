@@ -13,6 +13,8 @@ import traceback
 
 import warnings
 
+from single_column_model.post_processing import prepare_data
+
 # warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 matplotlib.use('webagg')
@@ -83,7 +85,7 @@ def make_3D_plot(data_path, vis_path, file_name, curr_param, variable_name, suff
 
     # Create mesh
     if z_max:
-        X, Y = np.meshgrid(t, z[0,:z_max])
+        X, Y = np.meshgrid(t, z[0, :z_max])
     else:
         X, Y = np.meshgrid(t, z)
 
@@ -104,9 +106,9 @@ def make_3D_plot(data_path, vis_path, file_name, curr_param, variable_name, suff
     # Make plot
     plt.figure(figsize=(5, 5))
     if z_max:
-        plt.pcolor(X, Y, variable_val[:z_max,:], cmap=colours) #vmin=v_min, vmax=v_max)
+        plt.pcolor(X, Y, variable_val[:z_max, :], cmap=colours)  # vmin=v_min, vmax=v_max)
     else:
-        plt.pcolor(X, Y, variable_val, cmap=colours) #vmin=v_min, vmax=v_max)
+        plt.pcolor(X, Y, variable_val, cmap=colours)  # vmin=v_min, vmax=v_max)
 
     if suffix:
         plt.title(r'$u_G = $' + str(curr_param) + ', $r = $' + suffix)
@@ -121,8 +123,9 @@ def make_3D_plot(data_path, vis_path, file_name, curr_param, variable_name, suff
         cbar.set_label(variable_name, rotation=0)
 
     # Save plot
-    plt.savefig(vis_path + '/3D_plots_' + variable_name + '_' + str(curr_param) + '_' + suffix + '_' + str(z_max) + '.png',
-                bbox_inches='tight', dpi=300)
+    plt.savefig(
+        vis_path + '/3D_plots_' + variable_name + '_' + str(curr_param) + '_' + suffix + '_' + str(z_max) + '.png',
+        bbox_inches='tight', dpi=300)
 
     # Clear memory
     plt.cla()  # Clear the current axes.
@@ -168,70 +171,70 @@ def find_z_where_u_const(data_path, file_paths):
 
     return z_idx_dict, z
 
-
-def create_df_for_fixed_z(data_path, file_paths, height_z_idx):
-    # Create empty pandas dataframes
-    df_u_temp = {}
-    df_v_temp = {}
-    df_delta_theta_temp = {}
-    df_files_temp = {}
-    df_tke_temp = {}
-
-    # Open output file and load variables
-    for file_idx, file_path in enumerate(file_paths):
-        full_file_path = data_path + file_path
-
-        with h5py.File(full_file_path, 'r+') as file:
-            z = file['z'][:]
-            t = file['t'][:]
-            r = file['r'][:][0][0]
-            # Find z which is closest to given value
-            height_z = z[height_z_idx,:]
-            z_idx = (np.abs(z - height_z)).argmin()
-
-            # Set name of column
-            # index_sim = file_path.find('sim')
-            # index_h5 = file_path.find('.h5')
-            column_name = str(r)
-
-            u = file['u'][:]
-            df_u_temp[column_name] = u[z_idx, :]
-            df_u_temp[column_name] = df_u_temp[column_name]
-
-            v = file['v'][:]
-            df_v_temp[column_name] = v[z_idx, :]
-            df_v_temp[column_name] = df_v_temp[column_name]
-
-            theta = file['theta'][:]
-            df_delta_theta_temp[column_name] = theta[z_idx, :] - theta[0, :]
-            df_delta_theta_temp[column_name] = df_delta_theta_temp[column_name]
-
-            tke = file['TKE'][:]
-            df_tke_temp[column_name] = tke[z_idx, :]
-            df_tke_temp[column_name] = df_tke_temp[column_name]
-
-            df_files_temp[column_name] = file_path
-
-    df_u = pd.DataFrame({k: list(v) for k, v in df_u_temp.items()})
-    df_v = pd.DataFrame({k: list(v) for k, v in df_v_temp.items()})
-    df_delta_theta = pd.DataFrame({k: list(v) for k, v in df_delta_theta_temp.items()})
-    df_tke = pd.DataFrame({k: list(v) for k, v in df_tke_temp.items()})
-    df_files = pd.DataFrame([df_files_temp])
-
-    # Sort columns
-    df_u = df_u.reindex(sorted(df_u.columns), axis=1)
-    df_v = df_v.reindex(sorted(df_v.columns), axis=1)
-    df_delta_theta = df_delta_theta.reindex(sorted(df_delta_theta.columns), axis=1)
-    df_tke = df_tke.reindex(sorted(df_tke.columns), axis=1)
-    df_files = df_files.reindex(sorted(df_files.columns), axis=1)
-
-    # Add time column to dataframe
-    df_u['time'] = t.flatten()
-    df_v['time'] = t.flatten()
-    df_delta_theta['time'] = t.flatten()
-    df_tke['time'] = t.flatten()
-
-    return df_u, df_v, df_delta_theta, df_tke, df_files
+#
+# def create_df_for_fixed_z(data_path, file_paths, height_z_idx):
+#     # Create empty pandas dataframes
+#     df_u_temp = {}
+#     df_v_temp = {}
+#     df_delta_theta_temp = {}
+#     df_files_temp = {}
+#     df_tke_temp = {}
+#
+#     # Open output file and load variables
+#     for file_idx, file_path in enumerate(file_paths):
+#         full_file_path = data_path + file_path
+#
+#         with h5py.File(full_file_path, 'r+') as file:
+#             z = file['z'][:]
+#             t = file['t'][:]
+#             r = file['r'][:][0][0]
+#             # Find z which is closest to given value
+#             height_z = z[height_z_idx, :]
+#             z_idx = (np.abs(z - height_z)).argmin()
+#
+#             # Set name of column
+#             # index_sim = file_path.find('sim')
+#             # index_h5 = file_path.find('.h5')
+#             column_name = str(r)
+#
+#             u = file['u'][:]
+#             df_u_temp[column_name] = u[z_idx, :]
+#             df_u_temp[column_name] = df_u_temp[column_name]
+#
+#             v = file['v'][:]
+#             df_v_temp[column_name] = v[z_idx, :]
+#             df_v_temp[column_name] = df_v_temp[column_name]
+#
+#             theta = file['theta'][:]
+#             df_delta_theta_temp[column_name] = theta[z_idx, :] - theta[0, :]
+#             df_delta_theta_temp[column_name] = df_delta_theta_temp[column_name]
+#
+#             tke = file['TKE'][:]
+#             df_tke_temp[column_name] = tke[z_idx, :]
+#             df_tke_temp[column_name] = df_tke_temp[column_name]
+#
+#             df_files_temp[column_name] = file_path
+#
+#     df_u = pd.DataFrame({k: list(v) for k, v in df_u_temp.items()})
+#     df_v = pd.DataFrame({k: list(v) for k, v in df_v_temp.items()})
+#     df_delta_theta = pd.DataFrame({k: list(v) for k, v in df_delta_theta_temp.items()})
+#     df_tke = pd.DataFrame({k: list(v) for k, v in df_tke_temp.items()})
+#     df_files = pd.DataFrame([df_files_temp])
+#
+#     # Sort columns
+#     df_u = df_u.reindex(sorted(df_u.columns), axis=1)
+#     df_v = df_v.reindex(sorted(df_v.columns), axis=1)
+#     df_delta_theta = df_delta_theta.reindex(sorted(df_delta_theta.columns), axis=1)
+#     df_tke = df_tke.reindex(sorted(df_tke.columns), axis=1)
+#     df_files = df_files.reindex(sorted(df_files.columns), axis=1)
+#
+#     # Add time column to dataframe
+#     df_u['time'] = t.flatten()
+#     df_v['time'] = t.flatten()
+#     df_delta_theta['time'] = t.flatten()
+#     df_tke['time'] = t.flatten()
+#
+#     return df_u, df_v, df_delta_theta, df_tke, df_files
 
 
 def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
@@ -242,9 +245,9 @@ def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
 
     plt.scatter(data_u.iloc[:, 0], data_delta_theta.iloc[:, 0], color='black', s=1)
 
-    #data_delta_theta = data_delta_theta.drop(data_delta_theta.index[0:14400])
-    #data_u = data_u.drop(data_u.index[0:14400])
-    #data_u = data_u.drop(data_u.index[0:14400])
+    # data_delta_theta = data_delta_theta.drop(data_delta_theta.index[0:14400])
+    # data_u = data_u.drop(data_u.index[0:14400])
+    # data_u = data_u.drop(data_u.index[0:14400])
 
     columns = [float(col) for col in data_delta_theta.columns]
 
@@ -278,15 +281,21 @@ def plot_data_over_t(vis_path, data, suffix):
         if column != 'time':
             plt.plot(data['time'], data[column], color=cmap[idx], label=column)
 
-    #plt.plot(data.iloc[:14400, -1], data.iloc[:14400, 0], color='black')
+    # plt.plot(data.iloc[:14400, -1], data.iloc[:14400, 0], color='black')
 
     plt.xlabel('time [h]')
     if 'delta_theta' in suffix:
         plt.ylabel(r'$\Delta \theta$ [K]')
-    elif 'u' in suffix:
-        plt.ylabel(r'$u_{top}$ [m/s]')
+        # plt.ylim((0, 12))
+    elif 'u_z' in suffix:
+        plt.ylabel(r'$u$ [m/s]')
+        # plt.ylim((0, 4.5))
+    elif 'v' in suffix:
+        plt.ylabel(r'$v$ [m/s]')
+        # plt.ylim((0, 1.7))
     else:
-        plt.ylabel(r'$v_{top}$ [m/s]')
+        plt.ylabel('TKE [$m^2/s^2$]')
+        # plt.ylim((0, 0.2))
 
     columns = [col for col in data.columns[:-1]]
 
@@ -309,7 +318,7 @@ def plot_histogram(vis_path, data, variable_name, suffix):
     plt.figure(figsize=(5, 5))
     # data = data.drop(data.index[0:10800])
     # data.stack().plot.hist(grid=False, bins=10, color='blue')
-    #data = data.drop(data.index[0:14400])
+    # data = data.drop(data.index[0:14400])
     data.stack().plot.hist(grid=False, bins=10, color='black')
     plt.xlim((0, 10))
     plt.xlabel(r'$\Delta \theta$ [K]')
@@ -354,7 +363,7 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
     T, Z = np.meshgrid(t, z)
 
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
-    cp = ax.contourf(T, Z, stoch_pro[:,::6], cmap=cram.lapaz)
+    cp = ax.contourf(T, Z, stoch_pro, cmap=cram.lapaz)
     ax.set_xlabel('t [m/s]')
     ax.set_ylabel('z [m]')
     fig.colorbar(cp)
@@ -388,7 +397,6 @@ def plot_transitioned_solutions(data_path, vis_path, list_files, var, data_delta
 
     # Find corresponding file
     for column in data_delta_theta_subset.columns:
-
         file_name = list_files.iloc[0, data_delta_theta.columns.get_loc(column)]
 
         make_3D_plot(data_path, vis_path, file_name, var, 'u', suffix=column)
@@ -398,7 +406,6 @@ def plot_transitioned_solutions(data_path, vis_path, list_files, var, data_delta
         make_3D_plot(data_path, vis_path, file_name, var, 'u', suffix=column, z_max=z_top)
         make_3D_plot(data_path, vis_path, file_name, var, 'v', suffix=column, z_max=z_top)
         make_3D_plot(data_path, vis_path, file_name, var, 'theta', suffix=column, z_max=z_top)
-
 
 
 if __name__ == '__main__':
@@ -415,7 +422,7 @@ if __name__ == '__main__':
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.arange(4.0, 4.5, 0.5):
+    for var in np.arange(4.5, 5.0, 0.5):
 
         try:
 
@@ -427,11 +434,10 @@ if __name__ == '__main__':
             curr_files_single_sim = [s for s in files_sin if '_' + str(var) + '_' in s]
 
             # Make dataframe of all single simulations
-            df_u_sing_sim, df_v_sing_sim, df_delta_theta_sing_sim, df_tke, df_files_names = create_df_for_fixed_z(
+            df_u_sing_sim, df_v_sing_sim, df_delta_theta_sing_sim, df_tke, _ = prepare_data.create_df_for_fixed_z(
                 data_directory_path_single,
                 curr_files_single_sim,
-                idx_bl_top_height)
-
+                idx_bl_top_height, 'stochastic')
 
             # # Make 3D plot of time series with transitions
             # plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
@@ -449,8 +455,11 @@ if __name__ == '__main__':
             # Plot u over t (single simulations)
             plot_data_over_t(vis_directory_path, df_u_sing_sim, '_u_' + str(var))
 
-            # # Plot v over t (single simulations)
-            # plot_data_over_t(vis_directory_path, df_v_sing_sim, '_v_' + str(var))
+            # Plot v over t (single simulations)
+            plot_data_over_t(vis_directory_path, df_v_sing_sim, '_v_' + str(var))
+
+            # Plot TKE over t (single simulations)
+            plot_data_over_t(vis_directory_path, df_tke, '_tke_' + str(var))
 
             # Plot one random stochastic process
             random_file = random.choice(curr_files_single_sim)
