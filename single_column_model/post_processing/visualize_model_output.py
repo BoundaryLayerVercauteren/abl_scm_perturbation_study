@@ -171,6 +171,7 @@ def find_z_where_u_const(data_path, file_paths):
 
     return z_idx_dict, z
 
+
 #
 # def create_df_for_fixed_z(data_path, file_paths, height_z_idx):
 #     # Create empty pandas dataframes
@@ -422,7 +423,7 @@ if __name__ == '__main__':
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.arange(4.5, 5.0, 0.5):
+    for var in np.arange(4.5, 6.5, 0.5):
 
         try:
 

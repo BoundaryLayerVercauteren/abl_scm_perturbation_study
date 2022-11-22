@@ -19,7 +19,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
     Returns:
         (numpy array): Values of modified Abraham function.
     """
-    t = np.linspace(0, num_steps, num_steps)
+    t = np.linspace(0, T_end, num_steps)
 
     s_k = np.zeros_like(t)
     h_k = np.zeros_like(t)
@@ -29,7 +29,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
 
     # Set parameters for random process
     tau_e = 1200  # eddey overturning timescale
-    tau_w = 600  # growth time
+    tau_w = 60  # growth time
     t_wk = t_k + tau_w
     h_b = 75  # centre of turbulent pulse at t0
     h_e = 20  # centre of turbulent pulse at the end
@@ -46,6 +46,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
                                                                                                               1) / 2
             s_k[t_idx] = 0.505 * r * np.tanh(
                 (t_curr - 0.5 * tau_w - t_wk) / (0.5 * tau_w) * np.arctanh(99 / 101)) + 0.505 * r
+
         elif t_curr >= t_wk:
             s_k[t_idx] = r * np.exp(-(t_curr - t_wk) / tau_e)
             h_k[t_idx] = - (h_b - h_e) * np.exp(-(t_curr - t_wk) / tau_h) + h_e
@@ -53,10 +54,11 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
 
         if t_curr > t_k:
             SF_k[:, t_idx] = (s_k[t_idx] * np.exp(-(-z - h_k[t_idx]) ** 2 / (2 * sigma_k[t_idx] ** 2))).flatten()
+
     return SF_k
 
 
-def create_space_time_abraham_perturbation(num_steps, perturbation_length, dt, z, pulse_max, simulation_idx, num_sim):
+def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end, z, pulse_max, simulation_idx, num_sim):
     """
     Create 2D (space and time) modified Abraham perturbation.
 
@@ -69,12 +71,12 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_length, dt, z
         (numpy array): Values of modified Abraham function.
     """
 
-    t_k = num_steps - perturbation_length + 1
+    t_k = perturbation_start
 
     pulse_min = 0.001
     r = pulse_min + (pulse_max - pulse_min) / num_sim * (simulation_idx - 1)
 
-    return r, define_abraham_function(num_steps, dt, z, t_k, r)
+    return r, define_abraham_function(num_steps, T_end, z, t_k, r)
 
 
 def create_space_time_perturbation(params, fenics_params):
@@ -90,14 +92,14 @@ def create_space_time_perturbation(params, fenics_params):
     """
     if "mod_abraham" == params.perturbation_type:
         pulse_strength_val, perturbation_val = create_space_time_abraham_perturbation(params.num_steps,
-                                                                                      params.perturbation_length,
+                                                                                      params.perturbation_start,
                                                                                       params.T_end, fenics_params.z,
                                                                                       params.perturbation_strength,
                                                                                       params.sim_index,
                                                                                       params.num_simulation)
     elif "neg_mod_abraham" == params.perturbation_type:
         pulse_strength_val, perturbation_val = create_space_time_abraham_perturbation(params.num_steps,
-                                                                                      params.perturbation_length,
+                                                                                      params.perturbation_start,
                                                                                       params.T_end, fenics_params.z,
                                                                                       params.perturbation_strength,
                                                                                       params.sim_index,
