@@ -412,7 +412,7 @@ def plot_transitioned_solutions(data_path, vis_path, list_files, var, data_delta
 if __name__ == '__main__':
 
     # Define path to stochastic data
-    data_directory_path = 'single_column_model/solution/perturbed/u_neg_perturbation/'
+    data_directory_path = 'single_column_model/solution/perturbed/theta_pos_perturbation/'
     data_directory_path_single = data_directory_path + 'simulations/'
 
     # Create directory to store visualization

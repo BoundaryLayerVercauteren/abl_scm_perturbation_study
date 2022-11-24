@@ -15,14 +15,14 @@ class Parameters:
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added
-    perturbation_type: str = 'mod_abraham'  # type of perturbation to be added
+    perturbation_param: str = 'pde_u'  # specify to which equation a perturbation is added
+    perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
     perturbation_strength: float = 0.05  # strength of perturbation
     perturbation_start: int = int(0.0 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     num_simulation: int = 200
-    num_proc: int = 50
+    num_proc: int = 25
 
     # file name for initial conditions
     init_cond_path: str = 'steady_state_'#'T_end_' + str(T_end_h) + 'h_'
@@ -39,7 +39,7 @@ class Parameters:
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
     theta_m: float = 290  # restoring temperature of peat soil
-    T_ref: float = 300  # reference potetial temperature [K]
+    T_ref: float = 300  # reference potential temperature [K]
     rho: float = 1.225  # air density kg/m**3 at 15 C
     C_p: float = 1005  # specific heat capacity at constant pressure of air
     C_g: float = 0.95 * (1.45 * 3.58 * 1e+6 / 2 / omega) ** 0.5  # heat capacity of ground per unit area

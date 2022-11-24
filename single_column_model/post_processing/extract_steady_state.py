@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
 
-    for var in np.arange(1.0, 7.0, 0.5):
+    for var in np.arange(5.5, 6.0, 0.5):
         try:
             curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
 

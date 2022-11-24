@@ -2,8 +2,36 @@
 import fenics as fe
 
 
+def lambda_param(u_G, f_c):
+    """Parameter to restrain (in neutral stratification) the largest turbulent eddies. See Rodrigo, J. S., and P. S.
+    Anderson, 2013: Investigation of the Stable Atmospheric Boundary Layer at Halley Antarctica. Boundary-Layer
+    Meteorol, 148, 517–539, https://doi.org/10.1007/s10546-013-9831-0.
+
+    Args:
+        u_G (float): Zonal geostrophic wind speed.
+        f_c (float): Coriolis parameter.
+
+    Returns:
+        (float): lambda parameter
+    """
+    return 2.7 * 1e-4 * u_G / f_c
+
+
 def l_m(fenics_params, params):
-    return (params.kappa * fenics_params.x[0]) / (f_m(fenics_params, params) + (params.kappa * fenics_params.x[0]) / lambbda(fenics_params.U_g, params.f_c))
+    """ Turbulent mixing length. See Rodrigo, J. S., and P. S. Anderson, 2013: Investigation of the Stable Atmospheric
+    Boundary Layer at Halley Antarctica. Boundary-Layer Meteorol, 148, 517–539,
+    https://doi.org/10.1007/s10546-013-9831-0.
+
+    Args:
+        params (class): Parameters from dataclass. For more details see parameters.py
+        fenics_params (class): Parameter class for fenics parameters (i.e. mesh, function space)
+
+    Returns:
+        (float): turbulent mixing length
+    """
+    return (params.kappa * fenics_params.x[0]) / (
+                f_m(fenics_params, params) + (params.kappa * fenics_params.x[0]) / lambda_param(fenics_params.U_g,
+                                                                                                params.f_c))
 
 
 # Cuxart 2006 table 3
@@ -54,10 +82,6 @@ def S(u, v):
 # sqrt(N) to allow for negativ values.
 def N(theta, params):
     return params.beta * theta.dx(0)
-
-
-def lambbda(U_g, f_c):
-    return 3.7 * 1e-4 * U_g / f_c
 
 
 # Sorbjan 2012 Eq. 5a and 5b. Empirical stability functions. They correct the
@@ -111,7 +135,8 @@ def setup_fenics_variables(fenics_params, mesh):
     fenics_params.W = fe.VectorFunctionSpace(mesh, 'CG', 1, dim=4)
 
     # Define test functions
-    fenics_params.u_test, fenics_params.v_test, fenics_params.theta_test, fenics_params.k_test = fe.TestFunctions(fenics_params.W)
+    fenics_params.u_test, fenics_params.v_test, fenics_params.theta_test, fenics_params.k_test = fe.TestFunctions(
+        fenics_params.W)
 
     # Split system functions to access components
     fenics_params.uvTk = fe.Function(fenics_params.W)
