@@ -76,7 +76,7 @@ def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='determinis
     # Open output file and load variables
     for file_idx, file_path in enumerate(file_paths):
         full_file_path = data_path + file_path
-
+        #print(full_file_path)
         with h5py.File(full_file_path, 'r+') as file:
             z = file['z'][:]
             t = file['t'][:]
