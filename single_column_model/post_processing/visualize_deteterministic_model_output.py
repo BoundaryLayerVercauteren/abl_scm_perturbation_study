@@ -174,7 +174,7 @@ def plot_data_over_t(vis_path, data, suffix, steady_stat):
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_94h/'
+    det_directory_path = 'single_column_model/solution/deterministic_94h_new/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -230,10 +230,10 @@ if __name__ == '__main__':
     mean_u = []
     mean_delta_theta = []
 
-    NUM_COLORS = len(np.arange(4.5, 8.0, 0.1)) + 1
+    NUM_COLORS = len(np.arange(1.0, 10.2, 0.2)) + 1
     color = matplotlib.cm.get_cmap('cmc.batlow', NUM_COLORS).colors
 
-    for idx, var in enumerate(np.arange(4.5, 7.4, 0.1)):
+    for idx, var in enumerate(np.arange(1.0, 10.2, 0.2)):
 
         try:
             var = np.around(var,1)
