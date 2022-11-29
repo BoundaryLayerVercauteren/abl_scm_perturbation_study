@@ -20,7 +20,7 @@ def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
     t = 0  # used for control
     i_w = 0  # index for writing
 
-    for i in tqdm(range(params.num_steps)):
+    for i in range(params.num_steps): #tqdm(range(params.num_steps)):
 
         # Add perturbation value for current time step to PDE
         if 'pde' in params.perturbation_param:
@@ -47,14 +47,11 @@ def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
 
         # control the minimum tke level to prevent sqrt(tke)
         k_n = set_minimum_tke_level(params, ks, k_n)
-
-        phi1_fine_pr = fe.project(fenics_params.f_ms, fenics_params.Q)
-
         # ----------------------------------------------------------------------
 
         if (i) % params.save_dt_sim == 0:
             # We first write out the variables, since the eddiy diffusivities gona be used anyway to update the boundary conditions.
-            output = ss.save_current_result(output, params, fenics_params, i_w, us, vs, Ts, ks, phi1_fine_pr)
+            output = ss.save_current_result(output, params, fenics_params, i_w, us, vs, Ts, ks)
             i_w += 1
 
         # calc some variables
@@ -94,7 +91,7 @@ def set_minimum_tke_level(params, ks, k_n):
     # limiting the value by converting to numpy. Hmm.. there is must be a better way.
     ks_array = ks.vector().get_local()
 
-    # set back a to low value
+    # set back to low value
     ks_array[ks_array < params.min_tke] = params.min_tke
 
     # cast numpy to fenics variable

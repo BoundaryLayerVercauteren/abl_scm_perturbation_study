@@ -15,6 +15,9 @@ output.solution_directory, output.init_directory = save_solution.create_solution
 
 
 def perform_scm(params, u_G_param, sim_index=1):
+    # Round parameter
+    u_G_param = np.around(u_G_param, 1)
+
     # Define file name for initial conditions
     params.init_path = output.init_directory + params.init_cond_path + 'Ug' + str(u_G_param)
 
@@ -30,11 +33,11 @@ def perform_scm(params, u_G_param, sim_index=1):
     solve_turb_model(fparams, params, output)
 
     # Plot solution
-    plot_solution.make_3d_plot(output, params, fparams, file_spec=str(u_G_param) + '_' + str(sim_index))
+    #plot_solution.make_3d_plot(output, params, fparams, file_spec=str(u_G_param) + '_' + str(sim_index))
 
 
 # Define list of parameters for which the model shall be run (atm only u_G)
-param_list = np.arange(5.5, 6.0, 0.1)
+param_list = np.arange(1.0, 10.2, 0.2)
 
 # Run model in parallel
 if params.num_simulation == 1:

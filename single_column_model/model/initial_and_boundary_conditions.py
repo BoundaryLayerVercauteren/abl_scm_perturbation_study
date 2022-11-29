@@ -6,7 +6,7 @@ import fenics as fe
 from single_column_model.utils import transform_values as tv
 
 
-def def_initial_cnditions(Q, mesh, params):
+def def_initial_conditions(Q, mesh, params):
     z0 = params.z0  # roughness length in meter
     Nz = params.Nz  # number of point/ domain resolution
     H = params.H  # domain height in meters
@@ -78,48 +78,38 @@ def def_boundary_conditions(fenics_params, params):
         Tg_n = T_ini[0]
 
     else:
+        # Define velocity u component
+        bc_u_ground = fe.DirichletBC(V.sub(0), 0.0, ground)
 
-        u_D_low = fe.Expression('value', degree=0, value=0.0)
-        v_D_low = fe.Expression('value', degree=0, value=0.0)
-        T_D_low = fe.Expression('value', degree=0, value=params.T_ref)
+        # Define velocity v component
+        bc_v_ground = fe.DirichletBC(V.sub(1), 0.0, ground)
+        bc_v_top = fe.DirichletBC(V.sub(1), 0.0, top)
+
+        # Define potential temperature
+        theta_low = fe.Expression('value', degree=0, value=params.T_ref)
+        bc_theta_ground = fe.DirichletBC(V.sub(2), theta_low, ground)
+
+        # Define TKE
         k_D_low = fe.Expression('value', degree=0, value=initial_k_0(z0, u_G, z0, 200))
+        bc_k_ground = fe.DirichletBC(V.sub(3), k_D_low, ground)
 
-        # TODO: Find upper boundary condition for TKE. Placeholder TKE(H)=0
-        k_D_high = fe.Expression('value', degree=0, value=0.0001)
+        # Combine boundary conditions
+        bc = [bc_u_ground, bc_v_ground, bc_theta_ground, bc_k_ground, bc_v_top]
 
-        # velocity u component
-        bcu_ground = fe.DirichletBC(V.sub(0), u_D_low, ground)
-        bcu_top = fe.DirichletBC(V.sub(0), u_G, top)
-
-        # velocity v component
-        bcv_ground = fe.DirichletBC(V.sub(1), v_D_low, ground)
-        bcv_top = fe.DirichletBC(V.sub(1), 0.0, top)
-
-        # Temperature
-        bcT_ground = fe.DirichletBC(V.sub(2), T_D_low, ground)
-
-        # TKE
-        bck_ground = fe.DirichletBC(V.sub(3), k_D_low, ground)
-        bck_top = fe.DirichletBC(V.sub(3), k_D_high, top)
-
-        bc = [bcu_ground, bcv_ground, bcT_ground, bck_ground, bcv_top]
-
+        #
         Tg_n = params.T_ref
 
     # writing out the fenics parameters
     fenics_params.bc = bc  # list of boundary conditions. Will be used in the FEM formulation
-    fenics_params.theta_D_low = T_D_low  # Temperature. Fenics expression is used to control the value within the main loop solution
+    fenics_params.theta_D_low = theta_low  # Temperature. Fenics expression is used to control the value within the main loop solution
     fenics_params.k_D_low = k_D_low  # TKE. Fenics expression is used to control the value within the main loop solution
 
     fenics_params.U_g = fe.Expression('value', degree=0,
-                             value=params.u_G)  # Geostrophic wind; added here to control in in the main loop
-    fenics_params.V_g = fe.Constant(params.v_G)  # Geostrophic wind; added here to control in in the main loop
+                             value=params.u_G)  # Geostrophic wind; added here to control in the main loop
+    fenics_params.V_g = fe.Constant(params.v_G)  # Geostrophic wind; added here to control in the main loop
 
     # writing out normal parameters
     params.Tg_n = Tg_n  # The value of the Temperature at the ground.
-
-    q1 = fe.Constant(1.0)
-    fenics_params.f_ms = fe.Expression("value", value=q1, degree=0)
 
     return fenics_params, params
 

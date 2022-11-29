@@ -65,7 +65,7 @@ def save_parameters_in_file(params, output, file_spec=''):
         json.dump(json.loads(params_json), file)
 
 
-def save_current_result(output, params, fparams, i, us, vs, Ts, ks, phi_s):
+def save_current_result(output, params, fparams, i, us, vs, Ts, ks):
     # convert 2 numpy array and save
     output.U_save[:, i] = np.flipud(interpolate(us, fparams.Q).vector().get_local())
     output.V_save[:, i] = np.flipud(interpolate(vs, fparams.Q).vector().get_local())

@@ -19,7 +19,7 @@ def solve_turb_model(fenics_params, params, output):
     fenics_params, params = ic.def_boundary_conditions(fenics_params, params)
     
     # define initial profiles
-    u_n, v_n, T_n, k_n = ic.def_initial_cnditions(fenics_params.Q, mesh, params)
+    u_n, v_n, T_n, k_n = ic.def_initial_conditions(fenics_params.Q, mesh, params)
     
     # set up the weak formulation of the equations
     fenics_params.F = fut.weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n)

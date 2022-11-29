@@ -174,7 +174,7 @@ def plot_data_over_t(vis_path, data, suffix, steady_stat):
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_84h/'
+    det_directory_path = 'single_column_model/solution/deterministic_94h/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -230,13 +230,15 @@ if __name__ == '__main__':
     mean_u = []
     mean_delta_theta = []
 
-    NUM_COLORS = len(np.arange(1.0, 7.0, 0.5)) + 1
+    NUM_COLORS = len(np.arange(4.5, 8.0, 0.1)) + 1
     color = matplotlib.cm.get_cmap('cmc.batlow', NUM_COLORS).colors
 
-    for idx, var in enumerate(np.arange(1.0, 7.0, 0.5)):
+    for idx, var in enumerate(np.arange(4.5, 7.4, 0.1)):
 
         try:
-            bl_top_height_det_sim = z[bl_top_height_det_sim_dict[str(var)], :]
+            var = np.around(var,1)
+
+            bl_top_height_det_sim = z[bl_top_height_det_sim_dict[str(np.around(var,1))], :]
 
             curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
 
@@ -255,7 +257,7 @@ if __name__ == '__main__':
             mean_delta_theta.append(np.mean(df_delta_theta_det_sim['sim1']))
 
             if not np.isnan(mean_u[idx]) and not np.isnan(mean_delta_theta[idx]):
-                ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var), s=20,
+                ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(np.around(var,1)), s=20,
                            color=color[idx])
             # if var == 7.0:
             #     ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var),
@@ -276,4 +278,4 @@ if __name__ == '__main__':
     ax.set_xlabel('u [m/s]')
     ax.set_ylabel(r'$\Delta \theta$ [K]')
     plt.legend(ncol=2)
-    plt.savefig(vis_directory_path + '/delta_theta_over_u_all_sim_z_const_u.png', bbox_inches='tight', dpi=300)
+    plt.savefig(vis_directory_path + '/delta_theta_over_u_all_sim_z_const_u_zoom.png', bbox_inches='tight', dpi=300)

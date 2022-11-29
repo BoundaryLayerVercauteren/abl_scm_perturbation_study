@@ -70,7 +70,7 @@ def extract_initial_cond(curr_steady_state, data_file_path, init_file_path, vari
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_84h/'
+    det_directory_path = 'single_column_model/solution/deterministic_94h/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -83,8 +83,10 @@ if __name__ == '__main__':
 
     bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
 
-    for var in np.arange(5.5, 6.0, 0.5):
+    for var in np.arange(4.5,8.0, 0.1):
         try:
+            var = np.around(var, 1)
+
             curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
 
             # Make dataframe of simulation
