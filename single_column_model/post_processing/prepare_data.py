@@ -65,6 +65,45 @@ def find_z_where_u_const(data_path, file_paths):
     return z_idx_dict, z
 
 
+def find_z_of_Ekman_layer(data_path, file_paths):
+    z_idx_dict = {}
+    # Open output file and load variables
+    for file_idx, file_path in enumerate(file_paths):
+        full_file_path = data_path + file_path
+
+        with h5py.File(full_file_path, 'r+') as file:
+            z = file['z'][:]
+            u = file['u'][:]
+
+            # Find max and min for every row
+            row_max = np.nanmax(u, axis=1)
+            row_min = np.nanmin(u, axis=1)
+            # Find value range for every row
+            row_range = row_max - row_min
+
+            # Find index where z is bigger than 10m and u is near constant
+            ten_m_idx = (np.abs(z - 10)).argmin() + 1
+            const_u_idx = np.nanargmax(row_range[ten_m_idx:] < 0.3)
+            z_idx = const_u_idx + ten_m_idx
+
+            # Set key name
+            index_1 = file_path.find('_') + 1
+            index_2 = file_path.find('_sim1')
+            key_name = file_path[index_1:index_2]
+            if z[z_idx, :] > 100:
+                z_idx_dict[key_name] = np.nan
+            else:
+                z_idx_dict[key_name] = z_idx
+
+    # Replace NaN values with mean
+    keyList = sorted(z_idx_dict.keys())
+    for idx, key in enumerate(z_idx_dict.keys()):
+        if np.isnan(z_idx_dict[key]):
+            z_idx_dict[key] = z_idx_dict[keyList[idx - 1]]
+
+    return z_idx_dict, z
+
+
 def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='deterministic'):
     # Create empty pandas dataframes
     df_u_temp = {}
@@ -76,7 +115,7 @@ def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='determinis
     # Open output file and load variables
     for file_idx, file_path in enumerate(file_paths):
         full_file_path = data_path + file_path
-        #print(full_file_path)
+
         with h5py.File(full_file_path, 'r+') as file:
             z = file['z'][:]
             t = file['t'][:]
