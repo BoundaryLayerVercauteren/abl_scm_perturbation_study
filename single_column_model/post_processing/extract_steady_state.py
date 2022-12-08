@@ -166,7 +166,7 @@ def plot_inversion_strength(data_path, vis_path, file_name, curr_param, steady_s
     plt.close('all')  # Closes all the figure windows.
 
 
-def find_Ekman_layer_height(data_path, vis_path, file_name, u_G, steady_state_coord=None):
+def find_Ekman_layer_height(data_path, vis_path, file_name, u_G, steady_state_coord=None, make_plot=True):
     full_file_path = data_path + file_name
     # Open output file and load variables
     with h5py.File(full_file_path, 'r+') as file:
@@ -176,40 +176,46 @@ def find_Ekman_layer_height(data_path, vis_path, file_name, u_G, steady_state_co
         t = file['t'][:]  # .byteswap().newbyteorder()
 
     data = pd.DataFrame(data=u.T, columns=z.flatten())
-    # ata['time'] = t.flatten()
+
 
     ekman_height_idx = np.zeros((1, len(t.flatten())))
     ekman_height_idx[...] = np.nan
     for row_idx in data.index:
         ekman_height_idx[0, row_idx] = np.argmax(np.around(data.iloc[row_idx, :], 1) == u_G)
 
-    # Create mesh
-    X, Y = np.meshgrid(t, z)
+    if make_plot:
+        # Create mesh
+        X, Y = np.meshgrid(t, z)
 
-    # Make plot
-    plt.figure(figsize=(5, 5))
-    plt.pcolor(X, Y, u, cmap=cram.davos)
-    plt.plot(t.flatten(), z[list(map(int, ekman_height_idx.flatten())), :], color='red', linestyle='--', label='Ekman layer')
+        # Make plot
+        plt.figure(figsize=(5, 5))
+        plt.pcolor(X, Y, u, cmap=cram.davos)
+        plt.plot(t.flatten(), z[list(map(int, ekman_height_idx.flatten())), :], color='red', linestyle='--', label='Ekman layer')
 
-    cbar = plt.colorbar()
-    cbar.set_label('u', rotation=0, labelpad=2)
+        cbar = plt.colorbar()
+        cbar.set_label('u', rotation=0, labelpad=2)
 
-    if steady_state_coord:
-        plt.scatter(t.flatten()[int(steady_state_coord[0])], steady_state_coord[1], c='black', s=8, label='steady state', marker='x')
+        if steady_state_coord:
+            plt.scatter(t.flatten()[int(steady_state_coord[0])], steady_state_coord[1], c='black', s=8, label='steady state', marker='x')
 
-    plt.title(r'$u_G = $' + str(u_G))
-    plt.xlabel('time [h]')
-    plt.ylabel('z [m]')
-    plt.legend()
+        plt.title(r'$u_G = $' + str(u_G))
+        plt.xlabel('time [h]')
+        plt.ylabel('z [m]')
+        plt.legend()
 
-    # Save plot
-    plt.savefig(vis_path + '/Ekman_layer_' + str(u_G) + '_h' + str(int(np.around(steady_state_coord[1]))) + '.png', bbox_inches='tight', dpi=300)
+        # Save plot
+        if steady_state_coord:
+            plt.savefig(vis_path + '/Ekman_layer_' + str(u_G) + '_h' + str(int(np.around(steady_state_coord[1]))) + '.png', bbox_inches='tight', dpi=300)
+        else:
+            plt.savefig(
+                vis_path + '/Ekman_layer_' + str(u_G) + '.png', bbox_inches='tight', dpi=300)
 
-    # Clear memory
-    plt.cla()  # Clear the current axes.
-    plt.clf()  # Clear the current figure.
-    plt.close('all')  # Closes all the figure windows.
+        # Clear memory
+        plt.cla()  # Clear the current axes.
+        plt.clf()  # Clear the current figure.
+        plt.close('all')  # Closes all the figure windows.
 
+    return z[list(map(int, ekman_height_idx.flatten())), :].flatten()
 
 def extract_initial_cond(curr_steady_state, data_file_path, init_file_path, variable_name):
     with h5py.File(data_file_path, 'r+') as file:
@@ -282,7 +288,7 @@ if __name__ == '__main__':
             plot_inversion_strength(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim[0]])
 
             # Plot Ekman layer height
-            find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim[0]])
+            _ = find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim[0]])
 
 
         except Exception:

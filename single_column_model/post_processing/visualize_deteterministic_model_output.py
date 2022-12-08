@@ -171,10 +171,51 @@ def plot_data_over_t(vis_path, data, suffix, steady_stat):
     plt.close('all')  # Closes all the figure windows.
 
 
+def make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directory_path, param_range):
+    # Define colors for plot
+    NUM_COLORS = len(param_range) + 1
+    cmap = matplotlib.cm.get_cmap('cmc.batlow', NUM_COLORS)
+    color = cmap.colors
+    norm = matplotlib.colors.BoundaryNorm(param_range, cmap.N)
+
+    # Define figure for plot
+    fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+
+    for idx, var in enumerate(param_range):
+
+        try:
+            var = np.around(var, 1)
+
+            # Find simulation file which belongs to current variable (u_G)
+            curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
+
+            # Find Ekman height
+            ekman_height = extract_steady_state.find_Ekman_layer_height(det_data_directory_path, vis_directory_path,
+                                                                        curr_file_det_sim[0], var, make_plot=False)
+
+            # Remove first 10 hours
+            ten_hours_num_points = 60 * 10
+            ekman_height = ekman_height[ten_hours_num_points:]
+
+            # Plot Ekman height over geostrophic wind
+            ax.scatter(np.repeat(var, len(ekman_height)), ekman_height, label=r'$u_G = $' + str(np.around(var, 1)), s=20, color=color[idx])
+
+        except Exception:
+            print(traceback.format_exc())
+            pass
+
+    ax.set_xlabel('$u_G$ [m/s]')
+    ax.set_ylabel(r'$z_E$ [m]')
+
+    # fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', label=r'$u_G$ [m/s]')
+
+    plt.savefig(vis_directory_path + '/ekman_height_over_uG_all_sim.png', bbox_inches='tight', dpi=300)
+
+
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_94h_zoom_transition/'
+    det_directory_path = 'single_column_model/solution/deterministic_94h/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -184,6 +225,12 @@ if __name__ == '__main__':
 
     # Get a list of all file names in given directory for u and theta
     _, _, files_det = prepare_data.find_files_in_directory(det_data_directory_path)
+
+    param_range = np.arange(1.0, 10.2, 0.2)
+
+    make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directory_path, param_range)
+
+    exit()
 
     bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
     #
@@ -244,8 +291,9 @@ if __name__ == '__main__':
 
         try:
             var = np.around(var, 1)
-            #print(var)
-            bl_top_height_det_sim = z[height_idx, :]  # z[bl_top_height_det_sim_dict[str(np.around(var,1))], :]
+
+            # Define height at which theta_top is calculated
+            top_height = 20
 
             curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
 
@@ -253,7 +301,7 @@ if __name__ == '__main__':
             df_u_det_sim, df_v_det_sim, df_delta_theta_det_sim, _, _ = prepare_data.create_df_for_fixed_z(
                 det_data_directory_path,
                 curr_file_det_sim,
-                bl_top_height_det_sim)
+                top_height)
 
             steady_state = extract_steady_state.find_steady_state_fixed_height(df_u_det_sim, df_v_det_sim,
                                                                                df_delta_theta_det_sim)

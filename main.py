@@ -37,7 +37,7 @@ def perform_scm(params, u_G_param, sim_index=1):
 
 
 # Define list of parameters for which the model shall be run (atm only u_G)
-param_list = np.arange(1.0, 10.2, 0.2)
+param_list = np.array([2.0, 3.0])#np.arange(1.0, 10.2, 0.2)
 
 # Run model in parallel
 if params.num_simulation == 1:

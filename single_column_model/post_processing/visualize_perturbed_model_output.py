@@ -274,21 +274,22 @@ def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
 
 
 def plot_data_over_t(vis_path, data, suffix):
-    plt.figure(figsize=(5, 5))
 
-    cmap = matplotlib.cm.get_cmap('cmc.batlow', len(data.columns[:-1])).colors
+    data = data.set_index('time')
 
-    for idx, column in enumerate(data.columns):
-        if column != 'time':
-            plt.plot(data['time'], data[column], color=cmap[idx], label=column)
+    sm = plt.cm.ScalarMappable(cmap='cmc.batlow', norm=plt.Normalize(vmin=data.columns.min(), vmax=data.columns.max()))
+    sm._A = []
 
-    # plt.plot(data.iloc[:14400, -1], data.iloc[:14400, 0], color='black')
+    data.plot(kind='line', colormap='cmc.batlow', legend=False, figsize=(5, 5))
+
+    cbar = plt.colorbar(sm)
+    cbar.set_label('r', rotation=0)
 
     plt.xlabel('time [h]')
     if 'delta_theta' in suffix:
         plt.ylabel(r'$\Delta \theta$ [K]')
         # plt.ylim((0, 12))
-    elif 'u_z' in suffix:
+    elif 'u' in suffix:
         plt.ylabel(r'$u$ [m/s]')
         # plt.ylim((0, 4.5))
     elif 'v' in suffix:
@@ -297,13 +298,6 @@ def plot_data_over_t(vis_path, data, suffix):
     else:
         plt.ylabel('TKE [$m^2/s^2$]')
         # plt.ylim((0, 0.2))
-
-    columns = [col for col in data.columns[:-1]]
-
-    cbar = plt.colorbar(
-        matplotlib.cm.ScalarMappable(norm=matplotlib.colors.Normalize(vmin=min(columns), vmax=max(columns)),
-                                     cmap='cmc.batlow'))
-    cbar.set_label('r', rotation=0)
 
     plt.savefig(vis_path + '/var_over_t' + suffix + '.png', bbox_inches='tight', dpi=300)
 
@@ -365,6 +359,9 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
 
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
     cp = ax.contourf(T, Z, stoch_pro, cmap=cram.lapaz)
+
+    ax.set_xlim((0,5))
+
     ax.set_xlabel('t [m/s]')
     ax.set_ylabel('z [m]')
     fig.colorbar(cp)
@@ -412,7 +409,7 @@ def plot_transitioned_solutions(data_path, vis_path, list_files, var, data_delta
 if __name__ == '__main__':
 
     # Define path to stochastic data
-    data_directory_path = 'single_column_model/solution/perturbed/theta_pos_perturbation/'
+    data_directory_path = 'single_column_model/solution/perturbed/very_to_weakly_stable/theta_neg_perturbation/'
     data_directory_path_single = data_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -423,13 +420,13 @@ if __name__ == '__main__':
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.arange(4.5, 6.5, 0.5):
+    for var in np.arange(2.2, 2.3, 0.1):
 
         try:
+            var = np.around(var, 1)
 
-            # Define height of boundary layer top (here in the deterministic simulation u is constant for the last 3
-            # hours)
-            idx_bl_top_height = 29
+            # Define height at which theta_top is calculated
+            top_height = 20
 
             # Get all files which correspond to current loop
             curr_files_single_sim = [s for s in files_sin if '_' + str(var) + '_' in s]
@@ -438,7 +435,7 @@ if __name__ == '__main__':
             df_u_sing_sim, df_v_sing_sim, df_delta_theta_sing_sim, df_tke, _ = prepare_data.create_df_for_fixed_z(
                 data_directory_path_single,
                 curr_files_single_sim,
-                idx_bl_top_height, 'stochastic')
+                top_height, 'stochastic')
 
             # # Make 3D plot of time series with transitions
             # plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
@@ -469,49 +466,3 @@ if __name__ == '__main__':
         except Exception:
             print(traceback.format_exc())
             pass
-
-    # -----------------------------
-    # fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-    #
-    # color = matplotlib.cm.get_cmap('cmc.batlow', len(np.arange(0.5, 15.0, 0.5) - 1)).colors
-    #
-    # mean_u = []
-    # mean_delta_theta = []
-    #
-    # for idx, var in enumerate(np.arange(0.5, 15.0, 0.5)):
-    #
-    #     try:
-    #         bl_top_height_det_sim = z[:, bl_top_height_det_sim_dict[str(var)]]
-    #
-    #         curr_file_det_sim = [s for s in files_det if '_' + str(var) + '_' in s]
-    #
-    #         # Make dataframe of deterministic simulation
-    #         df_u_det_sim, df_v_det_sim, df_delta_theta_det_sim = create_df_for_fixed_z(det_data_directory_path,
-    #                                                                                    curr_file_det_sim,
-    #                                                                                    bl_top_height_det_sim)
-    #
-    #         df_u_det_sim = df_u_det_sim.drop(df_u_det_sim.index[0:14400])
-    #         df_delta_theta_det_sim = df_delta_theta_det_sim.drop(df_delta_theta_det_sim.index[0:14400])
-    #
-    #         mean_u.append(np.nanmean(df_u_det_sim['sim1']))
-    #         mean_delta_theta.append(np.nanmean(df_delta_theta_det_sim['sim1']))
-    #
-    #         if var != 0.5:
-    #             ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var), color=color[idx], s=20)
-    #         if var == 7.0:
-    #             ax.scatter(df_u_det_sim['sim1'], df_delta_theta_det_sim['sim1'], label=r'$u_G = $' + str(var), color='red', s=20)
-    #
-    #     except Exception:
-    #         # print(traceback.format_exc())
-    #         pass
-    #
-    # # Add line for mean
-    # ax.scatter(mean_u, mean_delta_theta, color='grey', s=20)
-    # ax.plot(mean_u, mean_delta_theta, label='mean', color='grey', linewidth=2)
-    #
-    # ax.set_xlim((2, 7))
-    # ax.set_ylim((0, 12))
-    # ax.set_xlabel('u [m/s]')
-    # ax.set_ylabel(r'$\Delta \theta$ [K]')
-    # plt.legend(ncol=2)
-    # plt.savefig(vis_directory_path + '/delta_theta_over_u_all_sim_z_const_u.png', bbox_inches='tight', dpi=300)

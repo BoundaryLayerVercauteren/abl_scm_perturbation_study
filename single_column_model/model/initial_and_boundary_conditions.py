@@ -16,6 +16,8 @@ def def_initial_conditions(Q, mesh, params):
     z = mesh.coordinates()
 
     if params.load_ini_cond:
+        print('init_cond')
+        print(initCondStr)
         u_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_u.npy'), Q)
         v_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_v.npy'), Q)
         T_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_theta.npy'), Q)
@@ -44,6 +46,8 @@ def def_boundary_conditions(fenics_params, params):
     top = 'near(x[0],' + str(H) + ',1E-6)'
 
     if load_ini_cond:
+        print('boundary_cond')
+        print(initCondStr)
         u_ini = np.load(initCondStr + '_u.npy')
         v_ini = np.load(initCondStr + '_v.npy')
         theta_ini = np.load(initCondStr + '_theta.npy')
