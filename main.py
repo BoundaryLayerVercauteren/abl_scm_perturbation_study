@@ -37,7 +37,14 @@ def perform_scm(params, u_G_param, sim_index=1):
 
 
 # Define list of parameters for which the model shall be run (atm only u_G)
-param_list = np.array([2.0, 3.0])#np.arange(1.0, 10.2, 0.2)
+if params.perturbation_param == 'pde_u' and params.perturbation_type == 'mod_abraham':
+    param_list = [2.1]
+elif params.perturbation_param == 'pde_u' and params.perturbation_type == 'neg_mod_abraham':
+    param_list = [2.4]
+elif params.perturbation_param == 'pde_theta' and params.perturbation_type == 'mod_abraham':
+    param_list = [2.4]
+elif params.perturbation_param == 'pde_theta' and params.perturbation_type == 'neg_mod_abraham':
+    param_list = [2.1]
 
 # Run model in parallel
 if params.num_simulation == 1:
@@ -45,5 +52,8 @@ if params.num_simulation == 1:
         pool.map(partial(perform_scm, params), param_list)
 else:
     with multiprocessing.Pool(processes=params.num_proc) as pool:
-        for param_val in param_list:
-            pool.map(partial(perform_scm, params, param_val), range(params.num_simulation))
+        if len(param_list) > 1:
+            for param_val in param_list:
+                pool.map(partial(perform_scm, params, param_val), range(params.num_simulation))
+        else:
+            pool.map(partial(perform_scm, params, param_list[0]), range(params.num_simulation))
