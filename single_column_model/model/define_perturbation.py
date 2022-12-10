@@ -73,7 +73,7 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end,
 
     t_k = perturbation_start
 
-    pulse_min = 0.005
+    pulse_min = 0.0
     r = pulse_min + (pulse_max - pulse_min) / num_sim * (simulation_idx - 1)
 
     return r, define_abraham_function(num_steps, T_end, z, t_k, r)
