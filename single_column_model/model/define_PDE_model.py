@@ -97,7 +97,7 @@ def define_short_tail_stability_function(fenics_params, params, alpha=5):
     conceptual model. Journal of the Atmospheric Sciences, 74, 1057–1073, https://doi.org/10.1175/JAS-D-16-0180.1.
     """
     Ri_val = Ri(fenics_params, params)
-    return np.exp(-2 * alpha * Ri_val - (alpha * Ri_val) ** 2)
+    return fe.exp(-2 * alpha * Ri_val - (alpha * Ri_val) ** 2)
 
 
 def f_m(fenics_params, params):
