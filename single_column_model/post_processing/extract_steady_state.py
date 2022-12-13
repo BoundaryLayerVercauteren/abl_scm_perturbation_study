@@ -229,7 +229,7 @@ def extract_initial_cond(curr_steady_state, data_file_path, init_file_path, vari
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_94h_zoom_transition/'
+    det_directory_path = 'single_column_model/solution/deterministic_long_tail_94h/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -240,9 +240,9 @@ if __name__ == '__main__':
     # Get a list of all file names in given directory for u and theta
     _, _, files_det = prepare_data.find_files_in_directory(det_data_directory_path)
 
-    bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
+    #bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
 
-    for var in np.arange(2.0, 3.5, 0.1):
+    for var in np.arange(1.0, 7.0, 0.2):
         try:
             var = np.around(var, 1)
 
@@ -255,8 +255,8 @@ if __name__ == '__main__':
             # plot_time_differences(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, 'TKE')
 
             # Make dataframe of simulation
-            height_idx = 37 #37
-            bl_top_height_det_sim = z[height_idx,:] #bl_top_height_det_sim_dict[str(var)], :]
+            bl_top_height_det_sim = 20 # idx = 37#z[height_idx,:] #bl_top_height_det_sim_dict[str(var)], :]
+            bl_top_height_det_sim_idx = 37
 
             df_u, df_v, df_delta_theta, df_tke, _ = prepare_data.create_df_for_fixed_z(det_data_directory_path,
                                                                                        curr_file_det_sim,
@@ -266,29 +266,29 @@ if __name__ == '__main__':
             print(var)
             print(steady_state)
             # Plot variables over time at BL height
-            visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_delta_theta,
-                                                                    '_delta_theta_z_const_u_steady_' + str(var),
-                                                                    steady_state)
-            visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_u,
-                                                                    '_u_z_const_u_steady_' + str(var), steady_state)
-            visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_v,
-                                                                    '_v_z_const_u_steady_' + str(var), steady_state)
-            visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_tke,
-                                                                    '_tke_z_const_u_steady_' + str(var), steady_state)
+            # visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_delta_theta,
+            #                                                         '_delta_theta_z_const_u_steady_' + str(var),
+            #                                                         steady_state)
+            # visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_u,
+            #                                                         '_u_z_const_u_steady_' + str(var), steady_state)
+            # visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_v,
+            #                                                         '_v_z_const_u_steady_' + str(var), steady_state)
+            # visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_tke,
+            #                                                         '_tke_z_const_u_steady_' + str(var), steady_state)
 
             # Extract initial condition
             init_dir_path = 'single_column_model/init_condition/'
-            init_file_path = init_dir_path + 'steady_state_Ug' + str(var) + '_'
+            init_file_path = init_dir_path + 'long_tail_steady_state_Ug' + str(var) + '_'
             extract_initial_cond(steady_state, det_data_directory_path + curr_file_det_sim[0], init_file_path, 'theta')
             extract_initial_cond(steady_state, det_data_directory_path + curr_file_det_sim[0], init_file_path, 'u')
             extract_initial_cond(steady_state, det_data_directory_path + curr_file_det_sim[0], init_file_path, 'v')
             extract_initial_cond(steady_state, det_data_directory_path + curr_file_det_sim[0], init_file_path, 'TKE')
 
-            # Plot inversion strength
-            plot_inversion_strength(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim[0]])
-
-            # Plot Ekman layer height
-            _ = find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim[0]])
+            # # Plot inversion strength
+            # plot_inversion_strength(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim])
+            #
+            # # Plot Ekman layer height
+            # _ = find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var, [steady_state, bl_top_height_det_sim])
 
 
         except Exception:

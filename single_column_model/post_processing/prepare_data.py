@@ -36,6 +36,7 @@ def load_data_from_file_for_specific_height(file_paths, height_z):
         v = file['v'][:]
         theta = file['theta'][:]
         tke = file['TKE'][:]
+        perturbation = file['perturbation'][:]
 
     # Find z which is closest to given value
     z_idx = (np.abs(z - height_z)).argmin()
@@ -47,7 +48,13 @@ def load_data_from_file_for_specific_height(file_paths, height_z):
     delta_theta = theta[z_idx, :] - theta[0, :].flatten()
     tke_height_z = tke[z_idx, :].flatten()
 
-    return t.flatten(), z.flatten(), r[0], u_height_z, v_height_z, theta_height_z, delta_theta, tke_height_z
+    # maximal perturbation is defined as the absolut maximal perturbation
+    if r[0] >= 0:
+        max_perturbation = np.nanmax(perturbation)
+    else:
+        max_perturbation = np.nanmin(perturbation)
+
+    return t.flatten(), z.flatten(), r[0], u_height_z, v_height_z, theta_height_z, delta_theta, tke_height_z, max_perturbation
 
 
 def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='deterministic'):
@@ -76,7 +83,7 @@ def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='determinis
                 column_name = file_path[index_sim:index_h5]
             else:
                 r = file['r'][:][0][0]
-                column_name = r#str(r)
+                column_name = r  # str(r)
 
             u = file['u'][:]
             df_u_temp[column_name] = u[z_idx, :]

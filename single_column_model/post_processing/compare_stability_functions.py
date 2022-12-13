@@ -27,15 +27,19 @@ def define_vandewiel_short_tail_stab_function(Ri, alpha=5):
     return (1 - alpha * Ri) ** 2
 
 
-def define_slavas_long_tail_stab_function(Ri):
+def define_slavas_short_tail_stab_function(Ri):
     return 1 / (1 + 12 * Ri)
+
+def define_slavas_long_tail_stab_function(Ri):
+    return 1 / (1 + 4 * Ri)
 
 
 def make_comparison():
-    richardson_num = np.linspace(0.001, 2, 100)
+    richardson_num = np.linspace(0.001, 10, 200)
 
     vec_vandewiel_short_tail_exp_stab_func = np.vectorize(define_vandewiel_short_tail_exp_stab_function)
     # vec_vandewiel_short_tail_stab_func = np.vectorize(define_vandewiel_short_tail_stab_function)
+    vec_slavas_short_tail_stab_func = np.vectorize(define_slavas_short_tail_stab_function)
     vec_slavas_long_tail_stab_func = np.vectorize(define_slavas_long_tail_stab_function)
 
     # Create plot
@@ -47,10 +51,12 @@ def make_comparison():
 
     # ax1.plot(richardson_num, vec_vandewiel_short_tail_stab_func(richardson_num), label='short tail',
     #          color=color[0], marker=markers[0], markevery=10)
-    ax1.plot(richardson_num, vec_slavas_long_tail_stab_func(richardson_num), label=r'$(1 + 12  Ri)^{-1}$',
+    ax1.plot(richardson_num, vec_slavas_long_tail_stab_func(richardson_num), label=r'$(1 + 12  Ri)^{-1}$ (short)',
              color=color[1], marker=markers[1], markevery=10)
-    ax1.plot(richardson_num, vec_vandewiel_short_tail_exp_stab_func(richardson_num), label=r'$\exp(-2  \alpha  Ri - (\alpha  Ri) ^ 2)$',
+    ax1.plot(richardson_num, vec_slavas_short_tail_stab_func(richardson_num), label=r'$(1 + 4  Ri)^{-1}$ (long)',
              color=color[2], marker=markers[2], markevery=10)
+    ax1.plot(richardson_num, vec_vandewiel_short_tail_exp_stab_func(richardson_num), label=r'$\exp(-2  \alpha  Ri - (\alpha  Ri) ^ 2)$ (short)',
+             color=color[3], marker=markers[3], markevery=10)
 
     ax1.set_xlabel('Ri')
     ax1.set_ylabel(r'$f$')

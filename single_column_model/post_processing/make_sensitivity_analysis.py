@@ -1,15 +1,13 @@
 import os
-import h5py
-import matplotlib.pyplot as plt
-import matplotlib
-import matplotlib.transforms as mtransforms
-import cmcrameri.cm as cram
-from itertools import groupby, count
-import seaborn as sns
-import numpy as np
 import traceback
 
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
+import cmcrameri.cm as cram  # Package for plot colors
+import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from single_column_model.post_processing import prepare_data
 
@@ -44,7 +42,11 @@ def plot_line_transition_plots(vis_path, file_paths, height_z, file_spec):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, r, u, v, _, delta_theta, tke = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
+        t, _, r, u, v, _, delta_theta, tke, _ = prepare_data.load_data_from_file_for_specific_height(file_path,
+                                                                                                     height_z)
+        # Skip file if perturbation should be positive bur r is negative
+        if 'neg' not in file_path and r < 0:
+            continue
         # Save r
         r_range.append(r)
         # Extract simulation index
@@ -101,12 +103,7 @@ def plot_line_transition_plots(vis_path, file_paths, height_z, file_spec):
 
 
 def calculate_time_spend_in_regime(t_values, delta_theta_values, regime_threshold, threshold_type):
-    # print(delta_theta_values)
-    # # Remove first hour
-    # index_1_hour = np.where(np.round(t_values,3) == 1.0)[0][0]
-    # delta_theta_values = delta_theta_values[index_1_hour:]
-    # print(delta_theta_values)
-    # Find delta theta values which are above threshold
+    # Find delta theta values which are above/below threshold
     if threshold_type == 'above':
         index_values_threshold = np.where(delta_theta_values > regime_threshold)[0]
     elif threshold_type == 'below':
@@ -116,7 +113,7 @@ def calculate_time_spend_in_regime(t_values, delta_theta_values, regime_threshol
     entered_regime = False
     index_values_in_regime = []
     for idx in range(len(index_values_threshold))[:-1]:
-        if index_values_threshold[idx+1] - index_values_threshold[idx] == 1:
+        if index_values_threshold[idx + 1] - index_values_threshold[idx] == 1:
             index_values_in_regime.append(index_values_threshold[idx])
             if not entered_regime:
                 entered_regime = True
@@ -129,20 +126,70 @@ def calculate_time_spend_in_regime(t_values, delta_theta_values, regime_threshol
     return t_values[len(index_values_in_regime)]
 
 
-def make_sensitivity_heat_map(file_paths, height_z):
+def make_heat_map(data, save_directory, plot_name, plot_label, categorical=False):
+    # Replace nan with 0
+    data_cleaned_up = data.fillna(0)
+
+    # Sort and round index (r values) to allow for better readability of plot
+    data_cleaned_up = data_cleaned_up.sort_index()
+    data_cleaned_up.index = np.round(data_cleaned_up.index, 4)
+
+    # Change column names to make plot prettier
+    data_cleaned_up = data_cleaned_up.rename(
+        columns={'u_neg_perturbation': r'$\frac{\partial u}{\partial z} (-)$',
+                 'theta_pos_perturbation': r'$\frac{\partial \theta}{\partial z} (+)$',
+                 'u_pos_perturbation': r'$\frac{\partial u}{\partial z} (+)$',
+                 'theta_neg_perturbation': r'$\frac{\partial \theta}{\partial z} (-)$', })
+
+    # Plot heatmap
+    fig, ax = plt.subplots(1, figsize=(5, 5))
+    if categorical:
+        cmap_heatmap = matplotlib.colors.ListedColormap(['red', 'blue'])
+    else:
+        cmap_heatmap = plt.get_cmap('rocket_r').copy()
+    cmap_heatmap.set_under('white')  # Color for values less than vmin
+    heatmap = sns.heatmap(data_cleaned_up.transpose(), ax=ax, cbar_kws={'label': plot_label}, cmap=cmap_heatmap,
+                          vmin=0.001)
+
+    # Add border to plot
+    ax.patch.set_edgecolor('black')
+    ax.patch.set_linewidth('1')
+
+    # Change colorbar tick labels
+    if categorical:
+        colorbar = ax.collections[0].colorbar
+        colorbar.set_ticks([0, 1])
+        colorbar.set_ticklabels(['True', 'False'])
+
+    # Reduce number x axes labels
+    df_index = data_cleaned_up.index.to_numpy()
+    index_first_tick = np.where(np.round(df_index, 3) == 0.01)[0][0]
+    heatmap.set_xticks([index_first_tick * 0.0, index_first_tick, index_first_tick * 2, index_first_tick * 3],
+                       [0.0, 0.01, 0.02, 0.03])
+
+    heatmap.set_xlabel(r'max(A(t,z))')
+    # Rotate y axes labels
+    heatmap.set_yticklabels(heatmap.get_yticklabels(), rotation=0)
+
+    plt.savefig('/'.join(save_directory.rsplit('/')[:-4]) + plot_name, bbox_inches='tight', dpi=300)
+
+
+def make_plot_time_in_new_regime(file_paths, height_z):
     # Find perturbation cases
     perturb_cases = list(set([file_str.rsplit('/')[-3] for file_str in file_paths]))
 
     # Create dataframe
-    r_range = np.linspace(0, 0.05, int(len(file_paths) / len(perturb_cases)))
-    transition_duration_df = pd.DataFrame(columns=perturb_cases)  # , index=r_range)
+    transition_duration_df = pd.DataFrame(columns=perturb_cases)
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, r, _, _, _, delta_theta, _ = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
-        r = float(r)
+        t, _, _, _, _, _, delta_theta, _, max_perturbation = prepare_data.load_data_from_file_for_specific_height(
+            file_path, height_z)
+        max_perturbation = float(max_perturbation)
         # Calculate time spend in new regime
-        if 'very_to_weakly' in file_path:
+        if any(np.isnan(delta_theta)):
+            continue
+        elif 'very_to_weakly' in file_path:
             curr_transition_duration = calculate_time_spend_in_regime(t, delta_theta, 3.0, 'below')
         elif 'weakly_to_very' in file_path:
             curr_transition_duration = calculate_time_spend_in_regime(t, delta_theta, 8.0, 'above')
@@ -151,30 +198,153 @@ def make_sensitivity_heat_map(file_paths, height_z):
         try:
             for case_idx in range(len(perturb_cases)):
                 if perturb_cases[case_idx] in file_path:
-                    transition_duration_df.at[np.abs(r), perturb_cases[case_idx]] = curr_transition_duration
+                    transition_duration_df.at[
+                        np.abs(max_perturbation), perturb_cases[case_idx]] = curr_transition_duration
         except Exception:
             print(traceback.format_exc())
             break
 
-    # Replace nan with 0
-    transition_duration_df_no_nan = transition_duration_df.fillna(0)
+    make_heat_map(transition_duration_df, file_paths[0], '/time_in_new_regime_heatmap.png', 'time in regime [h]')
 
-    # Sort and round index (r values) to allow for better readability of plot
-    transition_duration_df_no_nan = transition_duration_df_no_nan.sort_index()
-    transition_duration_df_no_nan.index = np.round(transition_duration_df_no_nan.index, 4)
 
-    # Plot heatmap
-    fig, ax = plt.subplots(1, figsize=(5, 5))
-    heatmap = sns.heatmap(transition_duration_df_no_nan.transpose(), ax=ax, cbar_kws={'label': 'time in regime [h]'}, cmap='rocket_r')
+def calculate_time_entered_regime(t_values, delta_theta_values, regime_threshold, threshold_type):
+    # Find when regime was entered
+    if threshold_type == 'above':
+        index_values_threshold = np.where(delta_theta_values > regime_threshold)[0]
+    elif threshold_type == 'below':
+        index_values_threshold = np.where(delta_theta_values < regime_threshold)[0]
 
-    # Reduce number x axes labels
-    df_index = transition_duration_df_no_nan.index.to_numpy()
-    index_first_tick = np.where(np.round(df_index, 3) == 0.01)[0][0]
-    heatmap.set_xticks([index_first_tick, index_first_tick * 2, index_first_tick * 3, index_first_tick * 4],
-                       [0.01, 0.02, 0.03, 0.04])
+    if len(index_values_threshold) > 0:
+        time_in_regime = t_values[index_values_threshold[0]]
+    else:
+        time_in_regime = 0.0
 
-    heatmap.set_xlabel('r')
-    plt.savefig('/'.join(file_paths[0].rsplit('/')[:-4]) + '/transitions_heatmap.png', bbox_inches='tight', dpi=300)
+    # Return time point when regime was entered
+    return time_in_regime
+
+
+def make_plot_transition_time(file_paths, height_z):
+    # Find perturbation cases
+    perturb_cases = list(set([file_str.rsplit('/')[-3] for file_str in file_paths]))
+
+    # Create dataframe
+    transition_duration_df = pd.DataFrame(columns=perturb_cases)
+
+    for idx, file_path in enumerate(file_paths):
+        # Load data
+        t, _, _, _, _, _, delta_theta, _, max_perturbation = prepare_data.load_data_from_file_for_specific_height(
+            file_path, height_z)
+        max_perturbation = float(max_perturbation)
+        # Calculate time spend in new regime
+        if any(np.isnan(delta_theta)):
+            continue
+        elif 'very_to_weakly' in file_path:
+            curr_transition_duration = calculate_time_entered_regime(t, delta_theta, 3.0, 'below')
+        elif 'weakly_to_very' in file_path:
+            curr_transition_duration = calculate_time_entered_regime(t, delta_theta, 8.0, 'above')
+
+        # Fill dataframe
+        try:
+            for case_idx in range(len(perturb_cases)):
+                if perturb_cases[case_idx] in file_path:
+                    transition_duration_df.at[
+                        np.abs(max_perturbation), perturb_cases[case_idx]] = curr_transition_duration
+        except Exception:
+            print(traceback.format_exc())
+            break
+
+    make_heat_map(transition_duration_df, file_paths[0], '/transition_time_heatmap.png', 'transition time [h]')
+
+
+def is_transition_permanent(delta_theta_values, regime_threshold, threshold_type):
+    # Find delta theta values which are above/below threshold
+    if threshold_type == 'above':
+        index_values_in_regime = np.where(delta_theta_values > regime_threshold)[0]
+        index_values_outside_regime = np.where(delta_theta_values <= regime_threshold)[0]
+    elif threshold_type == 'below':
+        index_values_in_regime = np.where(delta_theta_values < regime_threshold)[0]
+        index_values_outside_regime = np.where(delta_theta_values >= regime_threshold)[0]
+
+    # Find if the regime is exited again
+    exited_regime = 1  # means permanently transitioned (i.e. True)
+
+    if len(index_values_in_regime) > 0:
+        if len(index_values_outside_regime) > 0:
+            for idx_outside_regime in index_values_outside_regime:
+                if idx_outside_regime > np.nanmax(index_values_in_regime):
+                    exited_regime = 2  # means not permanently transitioned (i.e. False)
+                    break
+    else:
+        exited_regime = 0  # means regime was never entered
+
+        # Return how much time was spend in regime
+    return exited_regime
+
+
+def make_plot_permanently_transitioned(file_paths, height_z):
+    # Find perturbation cases
+    perturb_cases = list(set([file_str.rsplit('/')[-3] for file_str in file_paths]))
+
+    # Create dataframe
+    transition_duration_df = pd.DataFrame(columns=perturb_cases)
+
+    for idx, file_path in enumerate(file_paths):
+        # Load data
+        _, _, _, _, _, _, delta_theta, _, max_perturbation = prepare_data.load_data_from_file_for_specific_height(
+            file_path, height_z)
+        max_perturbation = float(max_perturbation)
+        # Classify if the transition was permanent or not
+        if any(np.isnan(delta_theta)):
+            continue
+        elif 'very_to_weakly' in file_path:
+            transitioned = is_transition_permanent(delta_theta, 3.0, 'below')
+        elif 'weakly_to_very' in file_path:
+            transitioned = is_transition_permanent(delta_theta, 8.0, 'above')
+
+        # Fill dataframe
+        try:
+            for case_idx in range(len(perturb_cases)):
+                if perturb_cases[case_idx] in file_path:
+                    transition_duration_df.at[
+                        np.abs(max_perturbation), perturb_cases[case_idx]] = transitioned
+        except Exception:
+            print(traceback.format_exc())
+            break
+
+    make_heat_map(transition_duration_df, file_paths[0], '/permanently_transitioned_heatmap.png',
+                  'permanently transitioned', categorical=True)
+
+
+def make_plot_crashes(file_paths, height_z):
+    # Find perturbation cases
+    perturb_cases = list(set([file_str.rsplit('/')[-3] for file_str in file_paths]))
+
+    # Create dataframe
+    transition_duration_df = pd.DataFrame(columns=perturb_cases)
+
+    for idx, file_path in enumerate(file_paths):
+        # Load data
+        _, _, _, _, _, _, delta_theta, _, max_perturbation = prepare_data.load_data_from_file_for_specific_height(
+            file_path, height_z)
+        max_perturbation = float(max_perturbation)
+        # Classify if the transition was permanent or not
+        if any(np.isnan(delta_theta)):
+            crashed = 1
+        else:
+            crashed = 2
+
+        # Fill dataframe
+        try:
+            for case_idx in range(len(perturb_cases)):
+                if perturb_cases[case_idx] in file_path:
+                    transition_duration_df.at[
+                        np.abs(max_perturbation), perturb_cases[case_idx]] = crashed
+        except Exception:
+            print(traceback.format_exc())
+            break
+
+    make_heat_map(transition_duration_df, file_paths[0], '/crashes_heatmap.png',
+                  'simulation crashed', categorical=True)
 
 
 if __name__ == '__main__':
@@ -219,5 +389,8 @@ if __name__ == '__main__':
         # Plot transitions over time
         # plot_line_transition_plots(vis_directory_path, full_path_current_sim, height_z_in_m, file_spec=str(uG))
 
-    # Make heatmap to study transition sensitivity
-    make_sensitivity_heat_map(np.array(all_full_paths).flatten(), height_z_in_m)
+    # Make heatmaps to study transition sensitivity
+    # make_plot_time_in_new_regime(np.array(all_full_paths).flatten(), height_z_in_m)
+    # make_plot_transition_time(np.array(all_full_paths).flatten(), height_z_in_m)
+    # make_plot_permanently_transitioned(np.array(all_full_paths).flatten(), height_z_in_m)
+    make_plot_crashes(np.array(all_full_paths).flatten(), height_z_in_m)

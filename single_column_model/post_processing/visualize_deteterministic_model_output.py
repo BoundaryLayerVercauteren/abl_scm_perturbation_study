@@ -215,7 +215,7 @@ def make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directo
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_94h/'
+    det_directory_path = 'single_column_model/solution/deterministic_short_tail_94h/'
     det_data_directory_path = det_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -228,11 +228,10 @@ if __name__ == '__main__':
 
     param_range = np.arange(1.0, 10.2, 0.2)
 
-    make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directory_path, param_range)
+    #make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directory_path, param_range)
 
-    exit()
 
-    bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
+    #bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
     #
     # for var in np.arange(1.0, 6.5, 0.5):
     #     try:
@@ -277,7 +276,7 @@ if __name__ == '__main__':
     mean_u = []
     mean_delta_theta = []
 
-    param_range = np.arange(2.0, 3.5, 0.1)
+    param_range = np.arange(1.0, 7.0, 0.2)
 
     height_idx = 37  # 37, z=20m
 
@@ -371,5 +370,5 @@ if __name__ == '__main__':
         pass
 
     plt.savefig(
-        vis_directory_path + '/delta_theta_over_u_all_sim_h' + str(int(np.around(z[height_idx, :], 0))) + '.png',
+        vis_directory_path + '/delta_theta_over_u_all_sim_hidx' + str(height_idx) + '.png',
         bbox_inches='tight', dpi=300)
