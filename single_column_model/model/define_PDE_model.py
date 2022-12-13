@@ -1,5 +1,6 @@
 # standard imports
 import fenics as fe
+import numpy as np
 
 
 def lambda_param(u_G, f_c):
@@ -18,9 +19,10 @@ def lambda_param(u_G, f_c):
 
 
 def l_m(fenics_params, params):
-    """ Turbulent mixing length. See Rodrigo, J. S., and P. S. Anderson, 2013: Investigation of the Stable Atmospheric
-    Boundary Layer at Halley Antarctica. Boundary-Layer Meteorol, 148, 517–539,
-    https://doi.org/10.1007/s10546-013-9831-0.
+    """ Turbulent mixing length. See Cuxart, J., and Coauthors, 2006: Single-Column Model Intercomparison for a Stably
+    Stratified Atmospheric Boundary Layer. Boundary-Layer Meteorol, 118, 273–303,
+    https://doi.org/10.1007/s10546-005-3780-1.
+
 
     Args:
         params (class): Parameters from dataclass. For more details see parameters.py
@@ -29,14 +31,13 @@ def l_m(fenics_params, params):
     Returns:
         (float): turbulent mixing length
     """
-    return (params.kappa * fenics_params.x[0]) / (
-                f_m(fenics_params, params) + (params.kappa * fenics_params.x[0]) / lambda_param(fenics_params.U_g,
-                                                                                                params.f_c))
+    lambda_val = lambda_param(fenics_params.U_g, params.f_c)
+    return (params.kappa * fenics_params.x[0] * lambda_val) / (params.kappa * fenics_params.x[0] + lambda_val)
 
 
 # Cuxart 2006 table 3
 def K_m(fenics_params, params):
-    return params.alpha * l_m(fenics_params, params) * fe.sqrt(fenics_params.k + 1E-16)
+    return params.alpha * l_m(fenics_params, params) * fe.sqrt(fenics_params.k + 1E-16) * f_m(fenics_params, params)
 
 
 # Cuxart 2006 table 3 
@@ -84,15 +85,33 @@ def N(theta, params):
     return params.beta * theta.dx(0)
 
 
-# Sorbjan 2012 Eq. 5a and 5b. Empirical stability functions. They correct the
-# turbulent mixing depending on the local stability.
+def define_long_tail_stability_function(fenics_params, params):
+    """Cuxart, J., and Coauthors, 2006: Single-Column Model Intercomparison for a Stably Stratified Atmospheric Boundary
+    Layer. Boundary-Layer Meteorol, 118, 273–303, https://doi.org/10.1007/s10546-005-3780-1.
+    """
+    return 1.0 + 12.0 * Ri(fenics_params, params)
+
+
+def define_short_tail_stability_function(fenics_params, params, alpha=5):
+    """Van de Wiel, B. J. H., and Coauthors, 2017: Regime transitions in near-surface temperature inversions: A
+    conceptual model. Journal of the Atmospheric Sciences, 74, 1057–1073, https://doi.org/10.1175/JAS-D-16-0180.1.
+    """
+    Ri_val = Ri(fenics_params, params)
+    return np.exp(-2 * alpha * Ri_val - (alpha * Ri_val) ** 2)
+
+
 def f_m(fenics_params, params):
-    return 1.0 + 12.0 * Ri(fenics_params, params)
+    """Stability function for momentum."""
+    if params.stab_func_type == 'long_tail':
+        fm = define_long_tail_stability_function(fenics_params, params)
+    elif params.stab_func_type == 'short_tail':
+        fm = define_short_tail_stability_function(fenics_params, params)
+    return fm
 
 
-# as above. The heat is different from momentum
 def f_h(fenics_params, params):
-    return 1.0 + 12.0 * Ri(fenics_params, params)
+    """Stability function for heat."""
+    return f_m(fenics_params, params)
 
 
 def weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n):
