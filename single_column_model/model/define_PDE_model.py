@@ -89,7 +89,7 @@ def define_long_tail_stability_function(fenics_params, params):
     """Cuxart, J., and Coauthors, 2006: Single-Column Model Intercomparison for a Stably Stratified Atmospheric Boundary
     Layer. Boundary-Layer Meteorol, 118, 273–303, https://doi.org/10.1007/s10546-005-3780-1.
     """
-    return 1.0 + 12.0 * Ri(fenics_params, params)
+    return (1.0 + 12.0 * Ri(fenics_params, params))**(-1)
 
 
 def define_short_tail_stability_function(fenics_params, params, alpha=5):
