@@ -45,6 +45,8 @@ elif params.perturbation_param == 'pde_theta' and params.perturbation_type == 'm
     param_list = [2.4]
 elif params.perturbation_param == 'pde_theta' and params.perturbation_type == 'neg_mod_abraham':
     param_list = [2.1]
+elif params.perturbation_param == 'none':
+    param_list = np.arange(1.0, 7.0, 0.2)
 
 # Run model in parallel
 if params.num_simulation == 1:
@@ -57,3 +59,5 @@ else:
                 pool.map(partial(perform_scm, params, param_val), range(params.num_simulation))
         else:
             pool.map(partial(perform_scm, params, param_list[0]), range(params.num_simulation))
+
+print('All simulations are done.')
