@@ -360,9 +360,9 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
     cp = ax.contourf(T, Z, stoch_pro, cmap=cram.lapaz)
 
-    ax.set_xlim((0,5))
+    ax.set_xlim((0,2))
 
-    ax.set_xlabel('t [m/s]')
+    ax.set_xlabel('t [h]')
     ax.set_ylabel('z [m]')
     fig.colorbar(cp)
 
@@ -409,7 +409,7 @@ def plot_transitioned_solutions(data_path, vis_path, list_files, var, data_delta
 if __name__ == '__main__':
 
     # Define path to stochastic data
-    data_directory_path = 'single_column_model/solution/perturbed/very_to_weakly_stable/theta_neg_perturbation/'
+    data_directory_path = 'single_column_model/solution/old/perturbed/very_to_weakly_stable/u_pos_perturbation/'
     data_directory_path_single = data_directory_path + 'simulations/'
 
     # Create directory to store visualization
@@ -420,7 +420,7 @@ if __name__ == '__main__':
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.arange(2.2, 2.3, 0.1):
+    for var in np.arange(2.1, 2.2, 0.1):
 
         try:
             var = np.around(var, 1)
@@ -444,20 +444,20 @@ if __name__ == '__main__':
             # # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
             # plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
             #
-            # Plot delta theta over u (single simulations)
-            plot_delta_theta_over_u(vis_directory_path, df_u_sing_sim, df_delta_theta_sing_sim, '_' + str(var))
-
-            # Plot delta theta over t (single simulations)
-            plot_data_over_t(vis_directory_path, df_delta_theta_sing_sim, '_delta_theta_' + str(var))
-
-            # Plot u over t (single simulations)
-            plot_data_over_t(vis_directory_path, df_u_sing_sim, '_u_' + str(var))
-
-            # Plot v over t (single simulations)
-            plot_data_over_t(vis_directory_path, df_v_sing_sim, '_v_' + str(var))
-
-            # Plot TKE over t (single simulations)
-            plot_data_over_t(vis_directory_path, df_tke, '_tke_' + str(var))
+            # # Plot delta theta over u (single simulations)
+            # plot_delta_theta_over_u(vis_directory_path, df_u_sing_sim, df_delta_theta_sing_sim, '_' + str(var))
+            #
+            # # Plot delta theta over t (single simulations)
+            # plot_data_over_t(vis_directory_path, df_delta_theta_sing_sim, '_delta_theta_' + str(var))
+            #
+            # # Plot u over t (single simulations)
+            # plot_data_over_t(vis_directory_path, df_u_sing_sim, '_u_' + str(var))
+            #
+            # # Plot v over t (single simulations)
+            # plot_data_over_t(vis_directory_path, df_v_sing_sim, '_v_' + str(var))
+            #
+            # # Plot TKE over t (single simulations)
+            # plot_data_over_t(vis_directory_path, df_tke, '_tke_' + str(var))
 
             # Plot one random stochastic process
             random_file = random.choice(curr_files_single_sim)

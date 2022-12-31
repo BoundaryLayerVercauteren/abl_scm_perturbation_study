@@ -7,7 +7,7 @@ import h5py
 import matplotlib.pyplot as plt
 import cmcrameri.cm as cram
 
-from single_column_model.post_processing import prepare_data, visualize_deteterministic_model_output
+from single_column_model.post_processing import prepare_data, visualize_deterministic_model_output
 
 
 def find_steady_state_fixed_height(data_u, data_v, data_delta_theta):

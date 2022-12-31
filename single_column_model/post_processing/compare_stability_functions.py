@@ -51,9 +51,9 @@ def make_comparison():
 
     # ax1.plot(richardson_num, vec_vandewiel_short_tail_stab_func(richardson_num), label='short tail',
     #          color=color[0], marker=markers[0], markevery=10)
-    ax1.plot(richardson_num, vec_slavas_long_tail_stab_func(richardson_num), label=r'$(1 + 12  Ri)^{-1}$ (short)',
+    ax1.plot(richardson_num, vec_slavas_long_tail_stab_func(richardson_num), label=r'$(1 + 12  Ri)^{-1}$ (long)',
              color=color[1], marker=markers[1], markevery=10)
-    ax1.plot(richardson_num, vec_slavas_short_tail_stab_func(richardson_num), label=r'$(1 + 4  Ri)^{-1}$ (long)',
+    ax1.plot(richardson_num, vec_slavas_short_tail_stab_func(richardson_num), label=r'$(1 + 4  Ri)^{-1}$ (short)',
              color=color[2], marker=markers[2], markevery=10)
     ax1.plot(richardson_num, vec_vandewiel_short_tail_exp_stab_func(richardson_num), label=r'$\exp(-2  \alpha  Ri - (\alpha  Ri) ^ 2)$ (short)',
              color=color[3], marker=markers[3], markevery=10)
