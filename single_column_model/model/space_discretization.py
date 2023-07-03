@@ -1,3 +1,6 @@
+# coding=utf-8
+#!/usr/bin/env python
+
 # standard imports
 import matplotlib.pyplot as plt
 from tqdm import tqdm

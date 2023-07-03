@@ -1,5 +1,6 @@
 import numpy as np
-
+# coding=utf-8
+#!/usr/bin/env python
 
 def define_abraham_function(num_steps, T_end, z, t_k, r):
     """

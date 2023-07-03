@@ -1,3 +1,5 @@
+# coding=utf-8
+#!/usr/bin/env python
 # standard imports
 import fenics as fe
 import numpy as np

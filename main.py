@@ -1,3 +1,6 @@
+# coding=utf-8
+# !/usr/bin/env python
+
 # project related imports
 from single_column_model.model.combine_solver_functions import solve_turb_model
 from single_column_model.model import parameters as pc
@@ -52,7 +55,9 @@ elif params.perturbation_param == 'net_rad':
     param_list = np.arange(1.0, 1.2, 0.2)
 
 # Run model in parallel
-if params.num_simulation == 1:
+if params.num_simulation == 1 and len(param_list) == 1:
+    perform_scm(params, param_list)
+elif params.num_simulation == 1:
     with multiprocessing.Pool(processes=params.num_proc) as pool:
         pool.map(partial(perform_scm, params), param_list)
 else:

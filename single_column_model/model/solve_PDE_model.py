@@ -1,3 +1,6 @@
+# coding=utf-8
+#!/usr/bin/env python
+
 # standard imports
 from tqdm import tqdm
 import fenics as fe

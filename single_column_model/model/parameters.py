@@ -1,3 +1,6 @@
+# coding=utf-8
+#!/usr/bin/env python
+
 # standard imports
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
@@ -10,7 +13,7 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 10  # hour
+    T_end_h: float = 24  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
@@ -24,7 +27,7 @@ class Parameters:
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     num_simulation: int = 1
-    num_proc: int = 5
+    num_proc: int = 1
 
     # file name for initial conditions
     init_cond_path: str = 'steady_state_'#'T_end_' + str(T_end_h) + 'h_'

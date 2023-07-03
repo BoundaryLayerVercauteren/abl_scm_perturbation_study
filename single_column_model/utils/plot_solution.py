@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 from cmcrameri import cm
+import scienceplots
 
 plt.style.use('science')
 
@@ -26,7 +27,7 @@ def make_3d_plot(output, params, fparams, file_spec=''):
     X, Y = np.meshgrid(t, z)
 
     values = [output.U_save, output.V_save, output.T_save, output.k_save]
-    title = ['U [m/s]', 'V [m/s]', r"$\theta$ [K]", 'TKE [$m^2/s^2$]']
+    title = ['U [m/s]', 'V [m/s]', r"$\theta$ [K]", r'TKE [$m^2/s^2$]']
     file_names = ['u_over_time_z_' + file_spec + '.png',
                   'v_over_time_z_' + file_spec + '.png',
                   'theta_over_time_z_' + file_spec + '.png',

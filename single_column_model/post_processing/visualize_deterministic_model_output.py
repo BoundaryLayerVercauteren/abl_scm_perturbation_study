@@ -215,8 +215,8 @@ def make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directo
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_short_tail_94h/'
-    det_data_directory_path = det_directory_path + 'simulations/'
+    det_directory_path = 'single_column_model/solution/20230703_100554/'
+    det_data_directory_path = det_directory_path #+ 'simulations/'
 
     # Create directory to store visualization
     vis_directory_path = os.path.join(det_directory_path, 'visualization')

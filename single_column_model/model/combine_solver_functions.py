@@ -1,3 +1,5 @@
+# coding=utf-8
+#!/usr/bin/env python
 """Main file to combine all functions related to solve atmospheric boundary single-column model."""
 
 # project related imports
