@@ -1,3 +1,5 @@
+"""Main file to combine all functions related to solve atmospheric boundary single-column model."""
+
 # project related imports
 from single_column_model.model import initial_and_boundary_conditions as ic
 from single_column_model.model import define_PDE_model as fut
@@ -18,7 +20,7 @@ def solve_turb_model(fenics_params, params, output):
     # define boundary conditions
     fenics_params, params = ic.def_boundary_conditions(fenics_params, params)
     
-    # define initial profiles
+    # define initial profiles/ values
     u_n, v_n, T_n, k_n = ic.def_initial_conditions(fenics_params.Q, mesh, params)
     
     # set up the weak formulation of the equations
@@ -36,5 +38,5 @@ def solve_turb_model(fenics_params, params, output):
     # solve the system
     output = ut.solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n)
     
-    # write the solution to h5 file
+    # write the solution to a h5 file
     ss.save_solution(output, params, fenics_params, str(params.u_G) + '_sim' + str(params.sim_index))

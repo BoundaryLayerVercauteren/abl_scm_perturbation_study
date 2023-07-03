@@ -16,25 +16,35 @@ def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
     Tg_n = params.Tg_n
     T_D_low = fenics_params.theta_D_low
     # --------------------------------------------------------------------------
-    print('Solving ... ')
+    print('Solving PDE system ... ')
     t = 0  # used for control
     i_w = 0  # index for writing
 
     for i in range(params.num_steps): #tqdm(range(params.num_steps)):
 
-        # Add perturbation value for current time step to PDE
+        # Transform perturbation values for current time step to fenics function. This is necessary when the PDEs
+        # themselves are perturbed
         if 'pde' in params.perturbation_param:
             cur_perturbation = tv.convert_numpy_array_to_fenics_function(output.perturbation[:, i], fenics_params.Q)
+            # Add perturbation to one of the differential equations in the weak form.
             if params.perturbation_param == 'pde_u':
                 perturbed_F = fenics_params.F - cur_perturbation * fenics_params.u_test * fe.dx
             elif params.perturbation_param == 'pde_theta':
                 perturbed_F = fenics_params.F - cur_perturbation * fenics_params.theta_test * fe.dx
-            solver = dPm.prepare_fenics_solver(fenics_params, perturbed_F)
+
+        # The differential equations are not perturbed in this case. This holds e.g. for a perturbed net radiation.
+        elif params.perturbation_param == 'net_rad':
+            cur_perturbation = output.perturbation[:, i]
+            perturbed_F = fenics_params.F
+        else:
+            cur_perturbation = 0.0
+            perturbed_F = fenics_params.F
+        solver = dPm.prepare_fenics_solver(fenics_params, perturbed_F)
 
         try:
             solver.solve()
         except:
-            print("\n Solver crashed...")
+            print("\n Solver crashed due to ...")
             print(traceback.format_exc())
             break
 
@@ -58,15 +68,15 @@ def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
         u_now, v_now, Kh_now = ss.calc_variables_np(params, fenics_params, us, vs)
 
         # solve temperature at the ground
-        Tg = seb.RHS_surf_balance_euler(Tg_n, fenics_params, params, Ts, u_now, v_now, Kh_now)
+        Tg = seb.RHS_surf_balance_euler(Tg_n, fenics_params, params, Ts, u_now, v_now, Kh_now, cur_perturbation)
 
         # update temperature for the ODE
         Tg_n = np.copy(Tg)
 
-        # update temperature for the PDE
+        # Update temperature for the PDE
         T_D_low.value = np.copy(Tg)
 
-        # ugdate boundary conditions
+        # Update boundary conditions
         seb.update_tke_at_the_surface(fenics_params, params, u_now, v_now)
 
         i += 1
@@ -88,7 +98,7 @@ def set_minimum_tke_level(params, ks, k_n):
     # "ks" is the current solution
     # "k_n" the initial value for the next iteration
 
-    # limiting the value by converting to numpy. Hmm.. there is must be a better way.
+    # limiting the value by converting to numpy.
     ks_array = ks.vector().get_local()
 
     # set back to low value

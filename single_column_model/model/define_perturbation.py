@@ -13,7 +13,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
         num_steps (int): Number of steps in time.
         dt (int): Length of time steps.
         z (numpy array): Array with values for space axes.
-        t_k (int): Point in time where pulse starts.
+        t_k (int): Point in time when pulse starts.
         r (int): Maximal strength of pulse.
 
     Returns:
@@ -110,10 +110,46 @@ def create_space_time_perturbation(params, fenics_params):
     return pulse_strength_val, perturbation_val
 
 
+def create_time_gauss_process_perturbation(num_steps, perturbation_length, perturb_start, pulse_max, simulation_idx, num_sim):
+    """
+    Create 1D (time) perturbation which is a Gauss process.
+
+    Args:
+        num_steps (int): Number of steps in time.
+        dt (int): Length of time steps.
+        z (numpy array): Array with values for space axes.
+
+    Returns:
+        (numpy array): Values of perturbation.
+    """
+    pulse_min = 5.0#0.0
+    r = pulse_min + (pulse_max - pulse_min) / num_sim * simulation_idx
+
+    gauss_perturbation = np.abs(np.random.normal(0.0, r, perturbation_length))
+    perturbation = np.concatenate((np.zeros(perturb_start-1), gauss_perturbation)).reshape(1,num_steps)
+
+    return r, perturbation
+
+
+def create_time_perturbation(params):
+    if "gauss_process" == params.perturbation_type:
+        pulse_strength_val, perturbation_val = create_time_gauss_process_perturbation(params.num_steps,
+                                                                                      params.perturbation_length,
+                                                                                      params.perturbation_start,
+                                                                                      params.perturbation_strength,
+                                                                                      params.sim_index,
+                                                                                      params.num_simulation)
+
+    return pulse_strength_val, perturbation_val
+
+
 def create_perturbation(params, fenics_params, output):
     # Calculate perturbation
     if 'pde' in params.perturbation_param:
         pulse_strength, perturbation = create_space_time_perturbation(params, fenics_params)
+        output.r = pulse_strength
+    elif params.perturbation_param == 'net_rad':
+        pulse_strength, perturbation = create_time_perturbation(params)
         output.r = pulse_strength
     else:
         perturbation = np.empty([1, params.num_steps])

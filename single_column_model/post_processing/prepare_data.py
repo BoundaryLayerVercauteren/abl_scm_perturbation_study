@@ -58,7 +58,7 @@ def load_data_from_file_for_specific_height(file_paths, height_z):
     max_u = np.nanmax(np.abs(u[:z_idx_100m,0]))
     max_theta = np.nanmax(np.abs(theta[:z_idx_100m,0]))
 
-    return t.flatten(), z.flatten(), r[0], u_height_z, v_height_z, theta_height_z, delta_theta, tke_height_z, max_perturbation/max_u, max_perturbation/max_theta
+    return t.flatten(), z.flatten(), r[0][0], u_height_z, v_height_z, theta_height_z, delta_theta, tke_height_z, max_perturbation/max_u, max_perturbation/max_theta
 
 
 def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='deterministic'):

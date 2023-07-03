@@ -10,7 +10,7 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 94  # hour
+    T_end_h: float = 10  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
@@ -18,7 +18,7 @@ class Parameters:
     stab_func_type: str = 'long_tail'  # type of stability function
 
     perturbation_param: str = 'none'  # specify to which equation a perturbation is added
-    perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
+    perturbation_type: str = 'gauss_process'  # type of perturbation to be added
     perturbation_strength: float = 0.03  # strength of perturbation
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
@@ -40,17 +40,19 @@ class Parameters:
     H: float = 300.0  # domain height in meters  ! should be H > z_l * s_dom_ext
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
-    theta_m: float = 290  # restoring temperature of peat soil
+    theta_m: float = 290  # restoring temperature of peat soil [K]
     T_ref: float = 300  # reference potential temperature [K]
+    theta_A: float = 300  # potential temperature at the boundary layer top [K]
     rho: float = 1.225  # air density kg/m**3 at 15 C
     C_p: float = 1005  # specific heat capacity at constant pressure of air
     C_g: float = 0.95 * (1.45 * 3.58 * 1e+6 / 2 / omega) ** 0.5  # heat capacity of ground per unit area
     sig: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
-    Qc: float = 0.0  # the cloud fraction
-    Qa: float = 0.003  # specific humidity [g kg^-1]
-    Tg_n: float = 300  # temperature initial value at the ground [K]. Will be set later
-    R_n: float = -30
+    Q_c: float = 0.0  # the cloud fraction
+    Q_a: float = 0.003  # specific humidity [g kg^-1]
+    Tg_n: float = 300  # temperature initial value at the ground [K].
+    R_n: float = -30 # -30 net radiations for surface energy balance
     k_m: float = 1.18 * omega  # the soil heat transfer coefficient
+    sigma: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
 
     # Geostrophic wind forcing
     u_G: float = 1.5  # u geostrophic wind

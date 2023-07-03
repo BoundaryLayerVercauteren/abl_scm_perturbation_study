@@ -48,6 +48,8 @@ elif params.perturbation_param == 'pde_theta' and params.perturbation_type == 'n
     param_list = [2.0]
 elif params.perturbation_param == 'none':
     param_list = np.arange(1.0, 1.2, 0.2)
+elif params.perturbation_param == 'net_rad':
+    param_list = np.arange(1.0, 1.2, 0.2)
 
 # Run model in parallel
 if params.num_simulation == 1:

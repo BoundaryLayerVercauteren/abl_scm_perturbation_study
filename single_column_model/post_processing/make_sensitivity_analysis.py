@@ -109,7 +109,7 @@ def calculate_time_spend_in_regime(t_values, delta_theta_values, regime_threshol
     elif threshold_type == 'below':
         index_values_threshold = np.where(delta_theta_values < regime_threshold)[0]
 
-    # Find when the regime is exited again !! not correct yet
+    # Find when the regime is exited again
     entered_regime = False
     index_values_in_regime = []
     for idx in range(len(index_values_threshold))[:-1]:
@@ -126,86 +126,86 @@ def calculate_time_spend_in_regime(t_values, delta_theta_values, regime_threshol
     return t_values[len(index_values_in_regime)]
 
 
-def make_heat_map(data, save_directory, plot_name, plot_label, categorical=False):
-    # Replace nan with 0
-    data_cleaned_up = data.fillna(0)
-
-    # Sort and round index (r values) to allow for better readability of plot
-    data_cleaned_up = data_cleaned_up.sort_index()
-    data_cleaned_up.index = np.round(data_cleaned_up.index, 4)
-
-    # Change column names to make plot prettier
-    data_cleaned_up = data_cleaned_up[
-        ['u_neg_perturbation', 'theta_pos_perturbation', 'theta_neg_perturbation', 'u_pos_perturbation']]
-    data_cleaned_up = data_cleaned_up.rename(
-        columns={'u_neg_perturbation': r'$\frac{\partial u}{\partial z} (-)$',
-                 'theta_pos_perturbation': r'$\frac{\partial \theta}{\partial z} (+)$',
-                 'u_pos_perturbation': r'$\frac{\partial u}{\partial z} (+)$',
-                 'theta_neg_perturbation': r'$\frac{\partial \theta}{\partial z} (-)$'})
-
-    # Remove all rows with high perturbations but no transition or crashed simulations
-    idx_no_crash = data_cleaned_up[(data_cleaned_up != 999).all(axis=1)].index[-1]
-    idx_no_trans = data_cleaned_up[(data_cleaned_up != 1100).all(axis=1)].index[-1]
-    data_cleaned_up = data_cleaned_up[data_cleaned_up.index < np.min([idx_no_crash, idx_no_trans])]
-
-    # Plot heatmap
-    fig, ax = plt.subplots(1, figsize=(5, 5))
-    if categorical:
-        cmap_heatmap = matplotlib.colors.ListedColormap(['red', 'blue', 'grey'])
-    else:
-        cmap_heatmap = plt.get_cmap('rocket_r').copy()
-    cmap_heatmap.set_under('white')  # Color for values less than vmin
-
-    heatmap = sns.heatmap(data_cleaned_up.transpose(), ax=ax, cbar_kws={'label': plot_label}, cmap=cmap_heatmap,
-                          vmin=0.001, vmax=60, xticklabels=10)
-
-    # Add grey shading for crashed simulations (light grey)
-    data_crashed = data_cleaned_up.copy()
-    data_crashed[data_crashed < 999] = True
-    data_crashed[data_crashed > 999] = True
-    data_crashed[data_crashed == 999] = False
-    heatmap = sns.heatmap(data_cleaned_up.transpose(), cmap=plt.get_cmap('binary'), vmin=998, vmax=1003,
-                          mask=data_crashed.transpose(),
-                          cbar=False, ax=heatmap)
-
-    # Add grey shading for simulations without transition (dark grey)
-    data_no_trans = data_cleaned_up.copy()
-    data_no_trans[data_no_trans < 1100] = True
-    data_no_trans[data_no_trans > 1100] = True
-    data_no_trans[data_no_trans == 1100] = False
-    sns.heatmap(data_cleaned_up.transpose(), cmap=plt.get_cmap('binary'), vmin=1099, vmax=1101,
-                mask=data_no_trans.transpose(),
-                cbar=False, ax=heatmap)
-
-    # Add border to plot
-    ax.patch.set_edgecolor('black')
-    ax.patch.set_linewidth('1')
-
-    # Add horizontal grid
-    ax.axhline(1.0, color='gray', linewidth=0.5)
-    ax.axhline(2.0, color='gray', linewidth=0.5)
-    ax.axhline(3.0, color='gray', linewidth=0.5)
-
-    # Change colorbar tick labels
-    if categorical:
-        colorbar = ax.collections[0].colorbar
-        if data_cleaned_up.isin([2.0]).any().any():
-            colorbar.set_ticks([0, 1, 2])
-            colorbar.set_ticklabels(['True', 'False', 'crashed'])
-        else:
-            colorbar.set_ticks([0, 1])
-            colorbar.set_ticklabels(['True', 'False'])
-
-    # Reduce number x axes labels
-    # ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.01))
-
-    heatmap.set_xlabel(r'perturbation $\% \cdot 1000$')
-
-    # Rotate y axes labels
-    heatmap.set_yticklabels(heatmap.get_yticklabels(), rotation=0)
-
-    plt.savefig('/'.join(save_directory.rsplit('/')[:-4]) + plot_name, bbox_inches='tight', dpi=300)
-    exit()
+# def make_heat_map(data, save_directory, plot_name, plot_label, categorical=False):
+#     # Replace nan with 0
+#     data_cleaned_up = data.fillna(0)
+#
+#     # Sort and round index (r values) to allow for better readability of plot
+#     data_cleaned_up = data_cleaned_up.sort_index()
+#     data_cleaned_up.index = np.round(data_cleaned_up.index, 4)
+#
+#     # Change column names to make plot prettier
+#     data_cleaned_up = data_cleaned_up[
+#         ['u_neg_perturbation', 'theta_pos_perturbation', 'theta_neg_perturbation', 'u_pos_perturbation']]
+#     data_cleaned_up = data_cleaned_up.rename(
+#         columns={'u_neg_perturbation': r'$\frac{\partial u}{\partial z} (-)$',
+#                  'theta_pos_perturbation': r'$\frac{\partial \theta}{\partial z} (+)$',
+#                  'u_pos_perturbation': r'$\frac{\partial u}{\partial z} (+)$',
+#                  'theta_neg_perturbation': r'$\frac{\partial \theta}{\partial z} (-)$'})
+#
+#     # Remove all rows with high perturbations but no transition or crashed simulations
+#     idx_no_crash = data_cleaned_up[(data_cleaned_up != 999).all(axis=1)].index[-1]
+#     idx_no_trans = data_cleaned_up[(data_cleaned_up != 1100).all(axis=1)].index[-1]
+#     data_cleaned_up = data_cleaned_up[data_cleaned_up.index < np.min([idx_no_crash, idx_no_trans])]
+#
+#     # Plot heatmap
+#     fig, ax = plt.subplots(1, figsize=(5, 5))
+#     if categorical:
+#         cmap_heatmap = matplotlib.colors.ListedColormap(['red', 'blue', 'grey'])
+#     else:
+#         cmap_heatmap = plt.get_cmap('rocket_r').copy()
+#     cmap_heatmap.set_under('white')  # Color for values less than vmin
+#
+#     heatmap = sns.heatmap(data_cleaned_up.transpose(), ax=ax, cbar_kws={'label': plot_label}, cmap=cmap_heatmap,
+#                           vmin=0.001, vmax=60, xticklabels=10)
+#
+#     # Add grey shading for crashed simulations (light grey)
+#     data_crashed = data_cleaned_up.copy()
+#     data_crashed[data_crashed < 999] = True
+#     data_crashed[data_crashed > 999] = True
+#     data_crashed[data_crashed == 999] = False
+#     heatmap = sns.heatmap(data_cleaned_up.transpose(), cmap=plt.get_cmap('binary'), vmin=998, vmax=1003,
+#                           mask=data_crashed.transpose(),
+#                           cbar=False, ax=heatmap)
+#
+#     # Add grey shading for simulations without transition (dark grey)
+#     data_no_trans = data_cleaned_up.copy()
+#     data_no_trans[data_no_trans < 1100] = True
+#     data_no_trans[data_no_trans > 1100] = True
+#     data_no_trans[data_no_trans == 1100] = False
+#     sns.heatmap(data_cleaned_up.transpose(), cmap=plt.get_cmap('binary'), vmin=1099, vmax=1101,
+#                 mask=data_no_trans.transpose(),
+#                 cbar=False, ax=heatmap)
+#
+#     # Add border to plot
+#     ax.patch.set_edgecolor('black')
+#     ax.patch.set_linewidth('1')
+#
+#     # Add horizontal grid
+#     ax.axhline(1.0, color='gray', linewidth=0.5)
+#     ax.axhline(2.0, color='gray', linewidth=0.5)
+#     ax.axhline(3.0, color='gray', linewidth=0.5)
+#
+#     # Change colorbar tick labels
+#     if categorical:
+#         colorbar = ax.collections[0].colorbar
+#         if data_cleaned_up.isin([2.0]).any().any():
+#             colorbar.set_ticks([0, 1, 2])
+#             colorbar.set_ticklabels(['True', 'False', 'crashed'])
+#         else:
+#             colorbar.set_ticks([0, 1])
+#             colorbar.set_ticklabels(['True', 'False'])
+#
+#     # Reduce number x axes labels
+#     # ax.xaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.01))
+#
+#     heatmap.set_xlabel(r'perturbation $\% \cdot 1000$')
+#
+#     # Rotate y axes labels
+#     heatmap.set_yticklabels(heatmap.get_yticklabels(), rotation=0)
+#
+#     plt.savefig('/'.join(save_directory.rsplit('/')[:-4]) + plot_name, bbox_inches='tight', dpi=300)
+#     exit()
 
 
 def make_sensitivity_plot(data, save_directory, plot_name, plot_label, categorical=False):
@@ -214,68 +214,60 @@ def make_sensitivity_plot(data, save_directory, plot_name, plot_label, categoric
     # Sort and round index (r values) to allow for better readability of plot
     data = data.sort_index()
     # Order columns
-    data = data[['u_neg_perturbation', 'theta_pos_perturbation', 'theta_neg_perturbation', 'u_pos_perturbation']]
+    data = data[['u_pos_perturbation', 'theta_neg_perturbation', 'u_neg_perturbation', 'theta_pos_perturbation']]
 
-    columns = [r'$\frac{\partial u}{\partial z} (-)$', r'$\frac{\partial \theta}{\partial z} (+)$',
-               r'$\frac{\partial u}{\partial z} (+)$', r'$\frac{\partial \theta}{\partial z} (-)$']
+    columns = [r'$\frac{\partial u}{\partial z} (+)$', r'$\frac{\partial \theta}{\partial z} (-)$',
+               r'$\frac{\partial u}{\partial z} (-)$', r'$\frac{\partial \theta}{\partial z} (+)$']
 
     # Define figure for plot
     fig, ax = plt.subplots(figsize=(5, 5))
 
     # define colormap
-    N = 8  # number of desired color bins
-    #cmap = plt.cm.get_cmap('cmc.bamako_r', N)
-    colors = matplotlib.colormaps['viridis']._resample(N)
+    if categorical:
+        N = 5  # number of desired color bins
+    else:
+        N = 15  # number of desired color bins
+    colors = matplotlib.colormaps['cmc.batlow_r']._resample(N)
     cmap = colors(np.linspace(0, 1, N))
     cmap[0, :] = np.array([205/256, 201/256, 201/256, 1])
     cmap[1, :] = np.array([1, 1, 1, 1])
     cmap = matplotlib.colors.ListedColormap(cmap)
 
     # define the bins and normalize
-    bounds = np.linspace(0, 60, N-1)
+    if categorical:
+        bounds = np.linspace(0, 3, N - 1)
+    else:
+        bounds = np.linspace(0, 60, N - 2)
+        # bounds = np.insert(bounds, 0, 1, axis=0)
+        # bounds = np.insert(bounds, 0, 0, axis=0)  # zero
+
     bounds = np.insert(bounds, 0, -1, axis=0)  # simulation crashed
-    bounds = np.insert(bounds, 0, -2, axis=0)  # no simulation
+    bounds = np.insert(bounds, 0, -2, axis=0)  # no transition
     norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
 
     colormesh = ax.pcolormesh(data.index.values, columns, data.transpose(), cmap=cmap, norm=norm, linewidths=0.1)
-    # ax.invert_yaxis()
+
     ax.tick_params(axis='x', which='major', rotation=50)
-    #ax.set_xlim((0,2))
-    ax.set_xlabel(r'perturbation $\% \cdot 1000$')
-    #ax.set_xscale('log')
-    cbar = fig.colorbar(colormesh, ax=ax)
+    ax.set_xlim((0, 0.03))
+    ax.set_xlabel(r'max perturbation')
+
+    cbar = fig.colorbar(colormesh, ax=ax, ticks=bounds)
 
     # change label for colorbar
     bounds = [str(elem) for elem in bounds]
+    if categorical:
+        bounds[1] = 'no transition'
+        bounds[2] = 'True'
+        bounds[3] = 'False'
+
     bounds[1] = 'crashed'
-    bounds[0] = 'NaN'
+    bounds[0] = 'no transition'
+    #bounds[0] = 'no sim.'
 
     cbar.ax.set_yticklabels(bounds)
-
-    # color_u_neg = []
-    # for row in data.index:
-    #     if np.isnan(data.loc[row, 'u_neg_perturbation']):
-    #         color_u_neg.append('white')
-    #     elif data.loc[row, 'u_neg_perturbation'] == -1:
-    #         color_u_neg.append('lightgrey')
-    #     elif data.loc[row, 'u_neg_perturbation'] == -2:
-    #         color_u_neg.append('darkgrey')
-    #     else:
-    #         color_u_neg.append('red')#colors[int(data.loc[row, 'u_neg_perturbation'])])
-    #
-    # ax.scatter(data.index, np.repeat(1, len(data.index)), c=color_u_neg, label=r'$\frac{\partial u}{\partial z} (-)$')
-    # ax.plot(data.index, np.repeat(2, len(data.index)),
-    #         [color[data.loc[idx, 'u_pos_perturbation']] for idx in data.index],
-    #         label=r'$\frac{\partial u}{\partial z} (+)$')
-    # ax.plot(data.index, np.repeat(3, len(data.index)),
-    #         [color[data.loc[idx, 'theta_neg_perturbation']] for idx in data.index],
-    #         label=r'$\frac{\partial \theta}{\partial z} (-)$')
-    # ax.plot(data.index, np.repeat(4, len(data.index)),
-    #         [color[data.loc[idx, 'theta_pos_perturbation']] for idx in data.index],
-    #         label=r'$\frac{\partial \theta}{\partial z} (+)$')
+    cbar.set_label(plot_label)
 
     plt.savefig('/'.join(save_directory.rsplit('/')[:-4]) + plot_name, bbox_inches='tight', dpi=300)
-    exit()
 
 
 def make_plot_time_in_new_regime(file_paths, height_z):
@@ -283,24 +275,24 @@ def make_plot_time_in_new_regime(file_paths, height_z):
     perturb_cases = list(set([file_str.rsplit('/')[-3] for file_str in file_paths]))
 
     # Create dataframe
-    transition_duration_df = pd.DataFrame(columns=perturb_cases)  # , index=np.arange(0,3.6, 0.0001))
+    transition_duration_df = pd.DataFrame(columns=perturb_cases)
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, _, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
-            file_path, height_z)
+        t, _, r, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
+
         if '/u_' in file_path:
-            max_perturbation = max_perturbation_perc_u#np.around(float(max_perturbation_perc_u) * 1000, 4)
+            max_perturbation = r#max_perturbation_perc_u
         elif '/theta_' in file_path:
-            max_perturbation = max_perturbation_perc_theta#np.around(float(max_perturbation_perc_theta) * 1000, 4)
+            max_perturbation = r#max_perturbation_perc_theta
 
         # Calculate time spend in new regime
         if any(np.isnan(delta_theta)):
             curr_transition_duration = -1
         elif 'very_to_weakly' in file_path:
-            curr_transition_duration = calculate_time_spend_in_regime(t, delta_theta, 3.0, 'below')
+            curr_transition_duration = calculate_time_spend_in_regime(t, delta_theta, 4.0, 'below')
         elif 'weakly_to_very' in file_path:
-            curr_transition_duration = calculate_time_spend_in_regime(t, delta_theta, 8.0, 'above')
+            curr_transition_duration = calculate_time_spend_in_regime(t, delta_theta, 9.0, 'above')
 
         # Fill dataframe
         try:
@@ -326,10 +318,10 @@ def calculate_time_entered_regime(t_values, delta_theta_values, regime_threshold
     if len(index_values_threshold) > 0:
         time_in_regime = t_values[index_values_threshold[0]]
     else:
-        time_in_regime = 0.0
+        time_in_regime = -2.0
 
     # Return time point when regime was entered
-    return time_in_regime - 0.5
+    return time_in_regime #- 0.5
 
 
 def make_plot_transition_time(file_paths, height_z):
@@ -341,19 +333,19 @@ def make_plot_transition_time(file_paths, height_z):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, _, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
+        t, _, r, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
             file_path, height_z)
         if '/u_' in file_path:
-            max_perturbation = float(max_perturbation_perc_u) * 1000
+            max_perturbation = r#max_perturbation_perc_u
         elif '/theta_' in file_path:
-            max_perturbation = float(max_perturbation_perc_theta) * 1000
+            max_perturbation = r#max_perturbation_perc_theta
         # Calculate time spend in new regime
         if any(np.isnan(delta_theta)):
-            continue
+            curr_transition_duration = -1
         elif 'very_to_weakly' in file_path:
-            curr_transition_duration = calculate_time_entered_regime(t, delta_theta, 3.0, 'below')
+            curr_transition_duration = calculate_time_entered_regime(t, delta_theta, 4.0, 'below')
         elif 'weakly_to_very' in file_path:
-            curr_transition_duration = calculate_time_entered_regime(t, delta_theta, 8.0, 'above')
+            curr_transition_duration = calculate_time_entered_regime(t, delta_theta, 9.0, 'above')
 
         # Fill dataframe
         try:
@@ -365,7 +357,7 @@ def make_plot_transition_time(file_paths, height_z):
             print(traceback.format_exc())
             break
 
-    make_heat_map(transition_duration_df, file_paths[0], '/transition_time_heatmap.png', 'transition time [h]')
+    make_sensitivity_plot(transition_duration_df, file_paths[0], '/transition_time_heatmap.png', 'transition time [h]')
 
 
 def is_transition_permanent(delta_theta_values, regime_threshold, threshold_type):
@@ -402,19 +394,19 @@ def make_plot_permanently_transitioned(file_paths, height_z):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        _, _, _, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
+        _, _, r, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
             file_path, height_z)
         if '/u_' in file_path:
-            max_perturbation = float(max_perturbation_perc_u) * 1000
+            max_perturbation = r#max_perturbation_perc_u
         elif '/theta_' in file_path:
-            max_perturbation = float(max_perturbation_perc_theta) * 1000
+            max_perturbation = r#max_perturbation_perc_theta
         # Classify if the transition was permanent or not
         if any(np.isnan(delta_theta)):
-            transitioned = 2.0
+            transitioned = -1
         elif 'very_to_weakly' in file_path:
-            transitioned = is_transition_permanent(delta_theta, 3.0, 'below')
+            transitioned = is_transition_permanent(delta_theta, 4.0, 'below')
         elif 'weakly_to_very' in file_path:
-            transitioned = is_transition_permanent(delta_theta, 8.0, 'above')
+            transitioned = is_transition_permanent(delta_theta, 9.0, 'above')
 
         # Fill dataframe
         try:
@@ -426,8 +418,8 @@ def make_plot_permanently_transitioned(file_paths, height_z):
             print(traceback.format_exc())
             break
 
-    make_heat_map(transition_duration_df, file_paths[0], '/permanently_transitioned_heatmap.png',
-                  'permanently transitioned', categorical=True)
+    make_sensitivity_plot(transition_duration_df, file_paths[0], '/permanently_transitioned_heatmap.png',
+                          'permanently transitioned', categorical=True)
 
 
 def make_plot_crashes(file_paths, height_z):
@@ -461,8 +453,8 @@ def make_plot_crashes(file_paths, height_z):
             print(traceback.format_exc())
             break
 
-    make_heat_map(transition_duration_df, file_paths[0], '/crashes_heatmap.png',
-                  'simulation crashed', categorical=True)
+    make_sensitivity_plot(transition_duration_df, file_paths[0], '/crashes_heatmap.png', 'simulation crashed',
+                          categorical=True)
 
 
 if __name__ == '__main__':
@@ -508,7 +500,7 @@ if __name__ == '__main__':
         # plot_line_transition_plots(vis_directory_path, full_path_current_sim, height_z_in_m, file_spec=str(uG))
 
     # Make heatmaps to study transition sensitivity
-    make_plot_time_in_new_regime(np.array(all_full_paths).flatten(), height_z_in_m)
-    # make_plot_transition_time(np.array(all_full_paths).flatten(), height_z_in_m)
-    # make_plot_permanently_transitioned(np.array(all_full_paths).flatten(), height_z_in_m)
+    #make_plot_time_in_new_regime(np.array(all_full_paths).flatten(), height_z_in_m)
+    make_plot_transition_time(np.array(all_full_paths).flatten(), height_z_in_m)
+    #make_plot_permanently_transitioned(np.array(all_full_paths).flatten(), height_z_in_m)
     # make_plot_crashes(np.array(all_full_paths).flatten(), height_z_in_m)
