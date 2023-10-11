@@ -19,9 +19,9 @@ def find_files_in_directory(data_path):
             files.append(file)
 
     # Sort files
-    u_files = sorted(u_files, key=lambda x: float(x.split('_')[1].strip()))
-    theta_files = sorted(theta_files, key=lambda x: float(x.split('_')[1].strip()))
-    files = sorted(files, key=lambda x: float(x.split('_')[1].strip()))
+    u_files = sorted(u_files, key=lambda x: float(x.split('_')[2].strip()))
+    theta_files = sorted(theta_files, key=lambda x: float(x.split('_')[2].strip()))
+    files = sorted(files, key=lambda x: float(x.split('_')[2].strip()))
 
     return u_files, theta_files, files
 

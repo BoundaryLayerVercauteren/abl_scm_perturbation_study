@@ -11,17 +11,20 @@ import numpy as np
 @dataclass
 class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
-    load_ini_cond: bool = False  # load existing initial condition
+    load_ini_cond: bool = True  # load existing initial condition
 
-    T_end_h: float = 24  # hour
+    T_end_h: float = 12  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
+    sensitivity_study: bool = False  # perform sensitivity study
+    u_G_range: np.ndarray = None
+
     stab_func_type: str = 'long_tail'  # type of stability function
 
     perturbation_param: str = 'none'  # specify to which equation a perturbation is added
-    perturbation_type: str = 'gauss_process'  # type of perturbation to be added
+    perturbation_type: str = 'none'  # type of perturbation to be added
     perturbation_strength: float = 0.03  # strength of perturbation
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
@@ -30,7 +33,7 @@ class Parameters:
     num_proc: int = 1
 
     # file name for initial conditions
-    init_cond_path: str = 'steady_state_'#'T_end_' + str(T_end_h) + 'h_'
+    init_cond_path: str = f'{stab_func_type}_steady_state_'
 
     # time steps to save
     save_dt: float = 60  # in seconds, needs to be bigger or equal to dt
@@ -58,7 +61,7 @@ class Parameters:
     sigma: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
 
     # Geostrophic wind forcing
-    u_G: float = 1.5  # u geostrophic wind
+    u_G: float = 5.0  # u geostrophic wind
     v_G: float = 0.0  # v geostrophic wind
 
     latitude: float = 40  # latitude in grad

@@ -12,8 +12,8 @@ import pandas as pd
 
 from single_column_model.post_processing import prepare_data, extract_steady_state
 
-matplotlib.use('webagg')
-plt.style.use('science')
+#matplotlib.use('webagg')
+#plt.style.use('science')
 
 # set font sizes for plots
 SMALL_SIZE = 16

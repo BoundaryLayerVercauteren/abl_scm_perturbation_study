@@ -11,13 +11,12 @@ from single_column_model.post_processing import prepare_data, visualize_determin
 
 
 def find_steady_state_fixed_height(data_u, data_v, data_delta_theta):
-    """ A steady state is defined as a time point where the value minus a 3 hours average is smaller than 0.1. """
 
     # Calculate rolling mean
-    one_h_num_steps = data_u.index[np.round(data_u['time'], 3) == 1.0].tolist()[0]
-    data_u['rol_mean'] = data_u['sim1'].rolling(3 * one_h_num_steps, min_periods=1).mean()
-    data_v['rol_mean'] = data_v['sim1'].rolling(3 * one_h_num_steps, min_periods=1).mean()
-    data_delta_theta['rol_mean'] = data_delta_theta['sim1'].rolling(3 * one_h_num_steps, min_periods=1).mean()
+    one_h_num_steps = data_u.index[np.round(data_u['time'], 2) == 1.0].tolist()[0]
+    data_u['rol_mean'] = data_u['sim_0'].rolling(3 * one_h_num_steps, min_periods=1).mean()
+    data_v['rol_mean'] = data_v['sim_0'].rolling(3 * one_h_num_steps, min_periods=1).mean()
+    data_delta_theta['rol_mean'] = data_delta_theta['sim_0'].rolling(3 * one_h_num_steps, min_periods=1).mean()
 
     # Drop first 20 hours
     twenty_h_index = 8 * one_h_num_steps
@@ -26,14 +25,14 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta):
     data_delta_theta = data_delta_theta.iloc[twenty_h_index:, :].copy()
 
     # Calculate difference to mean
-    data_u['diff_mean'] = np.abs(data_u['rol_mean'] - data_u['sim1'])
-    data_v['diff_mean'] = np.abs(data_v['rol_mean'] - data_v['sim1'])
-    data_delta_theta['diff_mean'] = np.abs(data_delta_theta['rol_mean'] - data_delta_theta['sim1'])
+    data_u['diff_mean'] = np.abs(data_u['rol_mean'] - data_u['sim_0'])
+    data_v['diff_mean'] = np.abs(data_v['rol_mean'] - data_v['sim_0'])
+    data_delta_theta['diff_mean'] = np.abs(data_delta_theta['rol_mean'] - data_delta_theta['sim_0'])
 
     # Find all values where the difference to the average is below 0.1
-    data_u['bel_thresh'] = data_u['diff_mean'] <= data_u['sim1'].max() * 0.02
-    data_v['bel_thresh'] = data_v['diff_mean'] <= data_v['sim1'].max() * 0.02
-    data_delta_theta['bel_thresh'] = data_delta_theta['diff_mean'] <= data_delta_theta['sim1'].max() * 0.02
+    data_u['bel_thresh'] = data_u['diff_mean'] <= data_u['sim_0'].max() * 0.02
+    data_v['bel_thresh'] = data_v['diff_mean'] <= data_v['sim_0'].max() * 0.02
+    data_delta_theta['bel_thresh'] = data_delta_theta['diff_mean'] <= data_delta_theta['sim_0'].max() * 0.02
 
     # Find continuous time series where the deviance from the mean is below the threshold
     steady_state = np.nan
@@ -221,7 +220,7 @@ def extract_initial_cond(curr_steady_state, data_file_path, init_file_path, vari
     with h5py.File(data_file_path, 'r+') as file:
         variable_val = file[variable_name][:]
 
-    initial_cond = variable_val[:, int(curr_steady_state)]
+    initial_cond = variable_val[:, 1000]#int(curr_steady_state)]
 
     np.save(init_file_path + variable_name, initial_cond)
 
@@ -229,8 +228,8 @@ def extract_initial_cond(curr_steady_state, data_file_path, init_file_path, vari
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/deterministic_long_tail_94h/'
-    det_data_directory_path = det_directory_path + 'simulations/'
+    det_directory_path = 'single_column_model/solution/20231011_105636/'#'single_column_model/solution/deterministic_long_tail_94h/'
+    det_data_directory_path = det_directory_path #+ 'simulations/'
 
     # Create directory to store visualization
     vis_directory_path = os.path.join(det_directory_path, 'visualization')
@@ -242,7 +241,7 @@ if __name__ == '__main__':
 
     #bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
 
-    for var in np.arange(1.0, 7.0, 0.2):
+    for var in np.arange(5.0, 5.1, 0.1):
         try:
             var = np.around(var, 1)
 
@@ -263,8 +262,7 @@ if __name__ == '__main__':
                                                                                        bl_top_height_det_sim)
 
             steady_state = find_steady_state_fixed_height(df_u, df_v, df_delta_theta)
-            print(var)
-            print(steady_state)
+            print(var, steady_state)
             # Plot variables over time at BL height
             # visualize_deteterministic_model_output.plot_data_over_t(vis_directory_path, df_delta_theta,
             #                                                         '_delta_theta_z_const_u_steady_' + str(var),

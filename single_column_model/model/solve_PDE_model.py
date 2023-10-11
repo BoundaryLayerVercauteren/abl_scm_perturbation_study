@@ -15,7 +15,7 @@ from single_column_model.utils import transform_values as tv
 
 
 
-def solution_loop(solver, params, output, fenics_params, u_n, v_n, T_n, k_n):
+def solution_loop(params, output, fenics_params, u_n, v_n, T_n, k_n):
     Tg_n = params.Tg_n
     T_D_low = fenics_params.theta_D_low
     # --------------------------------------------------------------------------
