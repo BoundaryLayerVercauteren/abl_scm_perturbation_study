@@ -47,7 +47,7 @@ class Parameters:
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
     theta_m: float = 290  # restoring temperature of peat soil [K]
-    T_ref: float = 300  # reference potential temperature [K]
+    theta_ref: float = 300  # reference potential temperature [K]
     theta_A: float = 300  # potential temperature at the boundary layer top [K]
     rho: float = 1.225  # air density kg/m**3 at 15 C
     C_p: float = 1005  # specific heat capacity at constant pressure of air
@@ -76,7 +76,7 @@ class Parameters:
     Pr_t: float = 0.85  # turbulent Prandtl number
     alpha: float = 0.46  # eddy viscosity parametrization constant
     g: float = 9.81  # gravitational acceleration on Earth
-    beta: float = g / T_ref  # for computing the Brunt-Vaisala frequency
+    beta: float = g / theta_ref  # for computing the Brunt-Vaisala frequency
     alpha_e: float = 0.1  # dissipation parametrization constant
     kappa: float = 0.41  # von Karman's constant
 

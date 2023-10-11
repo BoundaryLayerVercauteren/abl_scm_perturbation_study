@@ -54,9 +54,9 @@ def G_E(fenics_params, params):
     v = fenics_params.v
 
     g = params.g
-    T_ref = params.T_ref
+    theta_ref = params.theta_ref
 
-    return K_m(fenics_params, params) * S(u, v) - g / (T_ref) * K_h(fenics_params, params) * theta.dx(0)
+    return K_m(fenics_params, params) * S(u, v) - g / (theta_ref) * K_h(fenics_params, params) * theta.dx(0)
 
 
 # Rodrigo 2013 Eq. 29, The turbulent dissipation rate eps

@@ -29,7 +29,7 @@ def def_initial_conditions(Q, mesh, params):
     else:
         u_n = tv.convert_numpy_array_to_fenics_function(initial_u_0(z, u_G, z0, params), Q)
         v_n = tv.convert_numpy_array_to_fenics_function(0 * np.ones(Nz), Q)
-        T_n = tv.convert_numpy_array_to_fenics_function(initial_theta_0(z, params.T_ref, 200), Q)
+        T_n = tv.convert_numpy_array_to_fenics_function(initial_theta_0(z, params.theta_ref, 200), Q)
         k_n = tv.convert_numpy_array_to_fenics_function(initial_k_0(z, u_G, z0, H) + 0.01, Q)
 
     return u_n, v_n, T_n, k_n
@@ -94,7 +94,7 @@ def def_boundary_conditions(fenics_params, params):
         bc_v_top = fe.DirichletBC(V.sub(1), 0.0, top)
 
         # Define potential temperature
-        theta_low = fe.Expression('value', degree=0, value=params.T_ref)
+        theta_low = fe.Expression('value', degree=0, value=params.theta_ref)
         bc_theta_ground = fe.DirichletBC(V.sub(2), theta_low, ground)
 
         # Define TKE
@@ -105,7 +105,7 @@ def def_boundary_conditions(fenics_params, params):
         bc = [bc_u_ground, bc_v_ground, bc_theta_ground, bc_k_ground, bc_v_top]
 
         #
-        Tg_n = params.T_ref
+        Tg_n = params.theta_ref
 
     # writing out the fenics parameters
     fenics_params.bc = bc  # list of boundary conditions. Will be used in the FEM formulation
