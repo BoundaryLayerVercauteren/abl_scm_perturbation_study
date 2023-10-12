@@ -1,116 +1,141 @@
 # coding=utf-8
-#!/usr/bin/env python
+# !/usr/bin/env python
 
-# standard imports
-from tqdm import tqdm
-import fenics as fe
-import numpy as np
 import traceback
 
-# project related imports
-from single_column_model.model import surface_energy_balance as seb
-from single_column_model.model import define_PDE_model as dPm
-from single_column_model.utils import save_solution as ss
-from single_column_model.utils import transform_values as tv
+import fenics as fe
+import numpy as np
+from scipy import interpolate
+
+from single_column_model.model import (control_tke,
+                                       initial_and_boundary_conditions as define_initial_and_boundary_conditions,
+                                       define_PDE_model,
+                                       define_stochastic_part,
+                                       surface_energy_balance)
+from single_column_model.utils import save_solution, transform_values
 
 
-
-def solution_loop(params, output, fenics_params, u_n, v_n, T_n, k_n):
-    theta_g_n = params.theta_g_n
-    T_D_low = fenics_params.theta_D_low
-    # --------------------------------------------------------------------------
-    print('Solving PDE system ... ')
-    t = 0  # used for control
-    i_w = 0  # index for writing
-
-    for i in range(params.num_steps): #tqdm(range(params.num_steps)):
-
+def add_perturbation_to_weak_form_of_model(
+        perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test, idx
+):
+    """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
+    if "pde" in perturbation_param:
         # Transform perturbation values for current time step to fenics function. This is necessary when the PDEs
         # themselves are perturbed
-        if 'pde' in params.perturbation_param:
-            cur_perturbation = tv.convert_numpy_array_to_fenics_function(output.perturbation[:, i], fenics_params.Q)
-            # Add perturbation to one of the differential equations in the weak form.
-            if params.perturbation_param == 'pde_u':
-                perturbed_F = fenics_params.F - cur_perturbation * fenics_params.u_test * fe.dx
-            elif params.perturbation_param == 'pde_theta':
-                perturbed_F = fenics_params.F - cur_perturbation * fenics_params.theta_test * fe.dx
-
-        # The differential equations are not perturbed in this case. This holds e.g. for a perturbed net radiation.
-        elif params.perturbation_param == 'net_rad':
-            cur_perturbation = output.perturbation[:, i]
-            perturbed_F = fenics_params.F
+        cur_perturbation = transform_values.convert_numpy_array_to_fenics_function(
+            perturbation[:, idx], Q
+        )
+        # Add perturbation to one of the differential equations in the weak form.
+        if perturbation_param == "pde_u":
+            perturbed_weak_form = det_weak_form - cur_perturbation * u_test * fe.dx
+        elif perturbation_param == "pde_theta":
+            perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
         else:
-            cur_perturbation = 0.0
-            perturbed_F = fenics_params.F
-        solver = dPm.prepare_fenics_solver(fenics_params, perturbed_F)
+            raise SystemExit(f"\n The given perturbation ({perturbation_param}) is not defined.")
+
+    # The differential equations are not perturbed in this case. This holds e.g. for a perturbed net radiation.
+    elif perturbation_param == "net_rad":
+        cur_perturbation = perturbation[:, idx]
+        perturbed_weak_form = det_weak_form
+
+    # No perturbation is added in this case
+    else:
+        cur_perturbation = 0.0
+        perturbed_weak_form = det_weak_form
+
+    return cur_perturbation, perturbed_weak_form
+
+
+def solve_stoch_stab_func_current_time_step(fenics_param, model_param):
+    # Calculate richardson number for current time step
+    richardson_num_det = define_PDE_model.Ri(fenics_param, model_param)
+    # Interpolate richardson number from deterministic to stochastic grid
+    interpolation_func = interpolate.interp1d(fenics_param.z[:, 0], richardson_num_det, fill_value='extrapolate')
+    richardson_num_stoch = interpolation_func(model_param.stoch_grid)[:, 0]
+    # Get parameter for stability function
+    Lambda, Upsilon, Sigma = define_stochastic_part.get_stoch_stab_function_parameter(richardson_num_stoch)
+
+
+def solution_loop(params, output, fenics_params, u_n, v_n, theta_n, k_n):
+    theta_g_n = params.theta_g_n
+
+    # --------------------------------------------------------------------------
+    print("Solving PDE system ... ")
+    saving_idx = 0  # index for writing
+
+    for time_idx in range(params.num_steps):
+        print(time_idx, params.num_steps)
+        if params.perturbation_param != 'stab_func':
+            # Add perturbation to weak formulation of PDE model
+            perturbation_at_time_idx, perturbed_F = add_perturbation_to_weak_form_of_model(
+                params.perturbation_param,
+                output.perturbation,
+                fenics_params.Q,
+                fenics_params.F,
+                fenics_params.u_test,
+                fenics_params.theta_test,
+                time_idx,
+            )
+            # Solve PDE model with Finite Element Method in space
+            solver = define_PDE_model.prepare_fenics_solver(fenics_params, perturbed_F)
 
         try:
             solver.solve()
-        except:
+        except Exception:
             print("\n Solver crashed due to ...")
             print(traceback.format_exc())
             break
 
-        # get variables to export
-        us, vs, Ts, ks = fenics_params.uvTk.split(deepcopy=True)
-        u_n.assign(us)
-        v_n.assign(vs)
-        T_n.assign(Ts)
-        k_n.assign(ks)
+        # Get variables to export
+        u_sol, v_sol, theta_sol, k_sol = fenics_params.uvTk.split(deepcopy=True)
+        u_n.assign(u_sol)
+        v_n.assign(v_sol)
+        theta_n.assign(theta_sol)
+        k_n.assign(k_sol)
 
-        # control the minimum tke level to prevent sqrt(tke)
-        k_n = set_minimum_tke_level(params, ks, k_n)
-        # ----------------------------------------------------------------------
+        # Control the minimum TKE level to prevent sqrt(TKE) crashing
+        k_n = control_tke.set_minimum_tke_level(params, k_sol, k_n)
 
-        if (i) % params.save_dt_sim == 0:
-            # We first write out the variables, since the eddiy diffusivities gona be used anyway to update the boundary conditions.
-            output = ss.save_current_result(output, params, fenics_params, i_w, us, vs, Ts, ks)
-            i_w += 1
+        if params.perturbation_param == 'stab_func':
+            pass  # fenics_params.f_ms.value = solve_stoch_stab_func_current_time_step()
 
-        # calc some variables
-        u_now, v_now, Kh_now = ss.calc_variables_np(params, fenics_params, us, vs)
+        # Save solution at current time step if it fits with the saving time interval
+        if time_idx % params.save_dt_sim == 0:
+            output = save_solution.save_current_result(output, params, fenics_params, saving_idx, u_sol, v_sol,
+                                                       theta_sol, k_sol)
+            saving_idx += 1
 
-        # solve temperature at the ground
-        Tg = seb.RHS_surf_balance_euler(theta_g_n, fenics_params, params, Ts, u_now, v_now, Kh_now, cur_perturbation)
+        # Transform values to numpy arrays
+        u_sol_np = transform_values.interpolate_fenics_function_to_numpy_array(u_sol, fenics_params.Q)
+        v_sol_np = transform_values.interpolate_fenics_function_to_numpy_array(v_sol, fenics_params.Q)
 
-        # update temperature for the ODE
-        theta_g_n = np.copy(Tg)
+        # Get corresponding heat flux
+        Kh_sol_np = transform_values.project_fenics_function_to_numpy_array(define_PDE_model.K_h(fenics_params, params),
+                                                                            fenics_params.Q)
 
-        # Update temperature for the PDE
-        T_D_low.value = np.copy(Tg)
+        # Calculate surface temperature for current time step
+        theta_g = surface_energy_balance.calculate_surface_temperature_euler_form(
+            theta_g_n,
+            fenics_params,
+            params,
+            theta_sol,
+            Kh_sol_np,
+            perturbation_at_time_idx,
+        )
 
-        # Update boundary conditions
-        seb.update_tke_at_the_surface(fenics_params, params, u_now, v_now)
+        # Update corresponding variable (ODE)
+        theta_g_n = np.copy(theta_g)
 
-        i += 1
-        t += params.dt
+        # Update lower boundary condition for potential temperature
+        fenics_params.theta_D_low.value = np.copy(theta_g)
+
+        # Update lower boundary condition for TKE
+        fenics_params.k_D_low.value = define_initial_and_boundary_conditions.update_tke_at_the_surface(params.kappa,
+                                                                                                       fenics_params.z,
+                                                                                                       u_sol_np,
+                                                                                                       v_sol_np,
+                                                                                                       params.min_tke)
+
+        time_idx += 1
 
     return output
-
-
-# =============================================================================
-
-
-# ============================ Common Functions================================
-def find_nearest(a, a0):
-    "Element in nd array `a` closest to the scalar value `a0`"
-    return np.abs(a - a0).argmin()
-
-
-def set_minimum_tke_level(params, ks, k_n):
-    # "ks" is the current solution
-    # "k_n" the initial value for the next iteration
-
-    # limiting the value by converting to numpy.
-    ks_array = ks.vector().get_local()
-
-    # set back to low value
-    ks_array[ks_array < params.min_tke] = params.min_tke
-
-    # cast numpy to fenics variable
-    ks.vector().set_local(ks_array)
-
-    # update the value for the next simulation run
-    k_n.assign(ks)
-
-    return k_n

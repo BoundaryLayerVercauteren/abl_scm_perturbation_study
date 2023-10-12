@@ -11,9 +11,9 @@ import numpy as np
 @dataclass
 class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
-    load_ini_cond: bool = True  # load existing initial condition
+    load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 12  # hour
+    T_end_h: float = 30  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps

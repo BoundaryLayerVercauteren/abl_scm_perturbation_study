@@ -142,3 +142,14 @@ def initial_k_0(z, u_G, z0, H, k_at_H=0.0):
     a = (k_at_H - k_at_z0) / (np.log(H) - np.log(z0))
     b = k_at_z0 - a * np.log(z0)
     return tke_profile(z, a, b)
+
+def update_tke_at_the_surface(kappa, z, u, v, min_tke):
+    return np.max([calculate_tke_at_the_ground(kappa, z, u[1], v[1]), min_tke])
+
+
+def calculate_tke_at_the_ground(kappa, z, u_z1, v_z1, c_f_m=0.087):
+    return calculate_u_star_at_the_ground(kappa, z, u_z1, v_z1) ** 2 / np.sqrt(c_f_m)
+
+
+def calculate_u_star_at_the_ground(kappa, z, u_z1, v_z1):
+    return kappa / np.log(z[1][0] / z[0][0]) * np.sqrt(u_z1 ** 2 + v_z1 ** 2)
