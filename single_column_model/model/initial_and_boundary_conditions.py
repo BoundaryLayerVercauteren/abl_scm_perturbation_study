@@ -9,7 +9,24 @@ import fenics as fe
 from single_column_model.utils import transform_values as tv
 
 
-def def_initial_conditions(Q, mesh, params):
+def load_initial_conditions_from_files(file_path):
+    u = np.load(file_path + "_u.npy")
+    v = np.load(file_path + "_v.npy")
+    theta = np.load(file_path + "_theta.npy")
+    k = np.load(file_path + "_TKE.npy")
+
+    return u, v, theta, k
+
+
+def transfer_all_variables_to_fenics_functions(var1, var2, var3, var4, function_space_projection):
+    var1 = tv.convert_numpy_array_to_fenics_function(var1, function_space_projection)
+    var2 = tv.convert_numpy_array_to_fenics_function(var2, function_space_projection)
+    var3 = tv.convert_numpy_array_to_fenics_function(var3, function_space_projection)
+    var4 = tv.convert_numpy_array_to_fenics_function(var4, function_space_projection)
+
+    return var1, var2, var3, var4
+
+def define_initial_conditions(Q, mesh, params):
     z0 = params.z0  # roughness length in meter
     Nz = params.Nz  # number of point/ domain resolution
     H = params.H  # domain height in meters
@@ -19,12 +36,12 @@ def def_initial_conditions(Q, mesh, params):
     z = mesh.coordinates()
 
     if params.load_ini_cond:
-        print('init_cond')
-        print(initCondStr)
-        u_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_u.npy'), Q)
-        v_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_v.npy'), Q)
-        T_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_theta.npy'), Q)
-        k_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_TKE.npy'), Q)
+        u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(params.init_path)
+        u_n, v_n, T_n, k_n = transfer_all_variables_to_fenics_functions(u_t0, v_t0, theta_t0, k_t0, Q)
+        # u_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_u.npy'), Q)
+        # v_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_v.npy'), Q)
+        # T_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_theta.npy'), Q)
+        # k_n = tv.convert_numpy_array_to_fenics_function(np.load(initCondStr + '_TKE.npy'), Q)
 
     else:
         u_n = tv.convert_numpy_array_to_fenics_function(initial_u_0(z, u_G, z0, params), Q)
@@ -35,7 +52,7 @@ def def_initial_conditions(Q, mesh, params):
     return u_n, v_n, T_n, k_n
 
 
-def def_boundary_conditions(fenics_params, params):
+def define_boundary_conditions(fenics_params, params):
     z0 = params.z0  # roughness length in meter
     H = params.H  # domain height in meters
     u_G = params.u_G  # u geostrophic wind
@@ -49,8 +66,6 @@ def def_boundary_conditions(fenics_params, params):
     top = 'near(x[0],' + str(H) + ',1E-6)'
 
     if load_ini_cond:
-        print('boundary_cond')
-        print(initCondStr)
         u_ini = np.load(initCondStr + '_u.npy')
         v_ini = np.load(initCondStr + '_v.npy')
         theta_ini = np.load(initCondStr + '_theta.npy')

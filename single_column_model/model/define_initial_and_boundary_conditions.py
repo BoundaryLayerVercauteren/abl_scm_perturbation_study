@@ -37,18 +37,11 @@ def transfer_all_variables_to_fenics_functions(var1, var2, var3, var4, function_
 def define_initial_conditions(Q, mesh, params):
     """Combine functions to either load initial conditions from files or calculate them ad hoc."""
     if params.load_ini_cond:
-        u_t01, v_t01, theta_t01, k_t01 = load_initial_conditions_from_files(params.init_path)
-    #else:
+        u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(params.init_path)
+    else:
         u_t0, v_t0, theta_t0, k_t0 = calculate_initial_conditions(mesh.coordinates(), params.z0, params.u_G,
                                                                   params.kappa, params.H, params.Nz, params.theta_ref,
                                                                   params.gamma)
-
-        # print('\nu', np.min(u_t0), np.min(u_t01), np.max(u_t0), np.max(u_t01),
-        #       '\nv', np.min(v_t0), np.min(v_t01), np.max(v_t0), np.max(v_t01),
-        #       '\ntheta', np.min(theta_t0), np.min(theta_t01), np.max(theta_t0), np.max(theta_t01),
-        #       '\nk', np.min(k_t0), np.min(k_t01), np.max(k_t0), np.max(k_t01))
-        #
-        # exit()
 
     u_t0, v_t0, theta_t0, k_t0 = transfer_all_variables_to_fenics_functions(u_t0, v_t0, theta_t0, k_t0, Q)
 
@@ -57,7 +50,7 @@ def define_initial_conditions(Q, mesh, params):
 
 def load_boundary_conditions_from_files(initial_cond_path):
     u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(initial_cond_path)
-    print('data', u_t0[0], v_t0[0], theta_t0[0], k_t0[0])
+
     u_z0 = fe.Expression("value", degree=0, value=u_t0[0])
     v_z0 = fe.Expression("value", degree=0, value=v_t0[0])
     theta_z0 = fe.Expression("value", degree=0, value=theta_t0[0])
@@ -79,20 +72,20 @@ def turn_into_fenics_boundary_conditions(u_z0, v_z0, theta_z0, k_z0, vector_spac
     return [bc_u_ground, bc_v_ground, bc_theta_ground, bc_k_ground, bc_v_top]
 
 
-def def_boundary_conditions(fenics_params, params):
+def define_boundary_conditions(fenics_params, params):
     ground = "near(x[0]," + str(params.z0) + ",1E-6)"
     top = "near(x[0]," + str(params.H) + ",1E-6)"
 
     if params.load_ini_cond:
         u_ground, v_ground, theta_ground, k_ground, theta_g_0 = load_boundary_conditions_from_files(params.init_path)
-    #
-    #     boundary_cond = turn_into_fenics_boundary_conditions(u_ground, v_ground, theta_ground, k_ground,
-    #                                                          fenics_params.W, ground, top)
-    #
-    # else:
-        #theta_ground = fe.Expression("value", degree=0, value=params.theta_ref)
+
+        boundary_cond = turn_into_fenics_boundary_conditions(u_ground, v_ground, theta_ground, k_ground,
+                                                             fenics_params.W, ground, top)
+
+    else:
+        theta_ground = fe.Expression("value", degree=0, value=params.theta_ref)
         k_ground = fe.Expression("value", degree=0, value=initial_k_0(params.z0, params.u_G, params.z0, 200))
-        print(params.theta_ref, initial_k_0(params.z0, params.u_G, params.z0, 200))
+
         boundary_cond = turn_into_fenics_boundary_conditions(0.0, 0.0, theta_ground, k_ground,
                                                              fenics_params.W, ground, top)
 
