@@ -8,7 +8,7 @@ import numpy as np
 from scipy import interpolate
 
 from single_column_model.model import (control_tke,
-                                       initial_and_boundary_conditions as define_initial_and_boundary_conditions,
+                                       define_initial_and_boundary_conditions,
                                        define_PDE_model,
                                        define_stochastic_part,
                                        surface_energy_balance)

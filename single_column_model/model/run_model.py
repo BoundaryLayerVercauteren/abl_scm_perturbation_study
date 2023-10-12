@@ -13,7 +13,7 @@ else:
 # Project related imports
 from single_column_model.model import \
     space_discretization  # define_stochastic_part,
-from single_column_model.model import (initial_and_boundary_conditions,
+from single_column_model.model import (define_initial_and_boundary_conditions,
                                        define_PDE_model, define_perturbation,
                                        define_stochastic_part, solve_PDE_model)
 from single_column_model.utils import plot_solution, save_solution
