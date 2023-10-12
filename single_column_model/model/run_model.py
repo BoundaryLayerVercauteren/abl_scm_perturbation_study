@@ -44,10 +44,10 @@ def combine_model_solver_functions(fenics_params, params, output):
     fenics_params = define_PDE_model.setup_fenics_variables(fenics_params, mesh)
 
     # Define boundary conditions
-    fenics_params, params = initial_and_boundary_conditions.define_boundary_conditions(fenics_params, params)
+    fenics_params, params = define_initial_and_boundary_conditions.define_boundary_conditions(fenics_params, params)
 
     # Define initial profiles/ values
-    u_n, v_n, T_n, k_n = initial_and_boundary_conditions.define_initial_conditions(fenics_params.Q, mesh, params)
+    u_n, v_n, T_n, k_n = define_initial_and_boundary_conditions.define_initial_conditions(fenics_params.Q, mesh, params)
 
     # Set up the weak formulation of the equations
     fenics_params.F = define_PDE_model.weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n)
