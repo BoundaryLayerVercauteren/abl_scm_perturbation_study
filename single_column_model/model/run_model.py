@@ -35,7 +35,7 @@ def make_setup_for_model_run():
 
 def combine_model_solver_functions(fenics_params, params, output):
     # Create deterministic mesh; options: 'power' , 'log', 'log_lin'
-    mesh, params = space_discretization.create_grid(params, "power")
+    mesh = space_discretization.create_grid(params, "power")
 
     # Create stochastic grid
     #params.stoch_grid, params.Hs_det_idx = define_stochastic_part.make_stochastic_grid(params, mesh.coordinates())
