@@ -49,103 +49,64 @@ def define_initial_conditions(Q, mesh, params):
     return transfer_all_variables_to_fenics_functions(u_t0, v_t0, theta_t0, k_t0, Q)
 
 
+def load_boundary_conditions_from_files(initial_cond_path):
+    u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(initial_cond_path)
+
+    u_z0 = fe.Expression("value", degree=0, value=u_t0[0])
+    v_z0 = fe.Expression("value", degree=0, value=v_t0[0])
+    theta_z0 = fe.Expression("value", degree=0, value=theta_t0[0])
+    k_z0 = fe.Expression("value", degree=0, value=k_t0[0])
+
+    theta_g_0 = theta_t0[0]
+
+    return u_z0, v_z0, theta_z0, k_z0, theta_g_0
+
+
+def turn_into_fenics_boundary_conditions(u_z0, v_z0, theta_z0, k_z0, vector_space, ground_def, top_def):
+    bc_u_ground = fe.DirichletBC(vector_space.sub(0), u_z0, ground_def)
+    bc_v_ground = fe.DirichletBC(vector_space.sub(1), v_z0, ground_def)
+    bc_theta_ground = fe.DirichletBC(vector_space.sub(2), theta_z0, ground_def)
+    bc_k_ground = fe.DirichletBC(vector_space.sub(3), k_z0, ground_def)
+
+    bc_v_top = fe.DirichletBC(vector_space.sub(1), 0.0, top_def)
+
+    return [bc_u_ground, bc_v_ground, bc_theta_ground, bc_k_ground, bc_v_top]
+
+
 def define_boundary_conditions(fenics_params, params):
-    z0 = params.z0  # roughness length in meter
-    H = params.H  # domain height in meters
-    u_G = params.u_G  # u geostrophic wind
-    initCondStr = params.init_path  # name of the file
+    """Combine functions to either load boundary conditions from files or calculate them ad hoc."""
+    ground = f"near(x[0],{params.z0},1E-6)"
+    top = f"near(x[0],{params.H},1E-6)"
 
-    load_ini_cond = params.load_ini_cond  # bool type; load existing initial condition
+    if params.load_ini_cond:
+        u_ground, v_ground, theta_ground, k_ground, theta_g_0 = load_boundary_conditions_from_files(params.init_path)
 
-    V = fenics_params.W  # fenics variable; the vector function space
-
-    ground = 'near(x[0],' + str(z0) + ',1E-6)'
-    top = 'near(x[0],' + str(H) + ',1E-6)'
-
-    if load_ini_cond:
-        u_ini = np.load(initCondStr + '_u.npy')
-        v_ini = np.load(initCondStr + '_v.npy')
-        theta_ini = np.load(initCondStr + '_theta.npy')
-        k_ini = np.load(initCondStr + '_TKE.npy')
-
-        u_low = fe.Expression('value', degree=0, value=u_ini[0])
-        u_top = fe.Expression('value', degree=0, value=u_ini[-1])
-
-        v_low = fe.Expression('value', degree=0, value=v_ini[0])
-
-        theta_low = fe.Expression('value', degree=0, value=theta_ini[0])
-
-        k_low = fe.Expression('value', degree=0, value=k_ini[0])
-        k_top = fe.Expression('value', degree=0, value=k_ini[-1])
-
-        # velocity u component
-        bc_u_ground = fe.DirichletBC(V.sub(0), u_low, ground)
-        bcu_top = fe.DirichletBC(V.sub(0), u_top, top)
-
-        # velocity v component
-        bc_v_ground = fe.DirichletBC(V.sub(1), v_low, ground)
-        bcv_top = fe.DirichletBC(V.sub(1), 0.0, top)
-
-        # Temperature
-        bc_theta_ground = fe.DirichletBC(V.sub(2), theta_low, ground)
-
-        # TKE
-        bck_ground = fe.DirichletBC(V.sub(3), k_low, ground)
-        bck_top = fe.DirichletBC(V.sub(3), k_top, top)
-
-        bc = [bc_u_ground, bc_v_ground, bc_theta_ground, bck_ground, bcv_top]
-
-        Tg_n = theta_ini[0]
+        boundary_cond = turn_into_fenics_boundary_conditions(u_ground, v_ground, theta_ground, k_ground,
+                                                             fenics_params.W, ground, top)
 
     else:
-        # Define velocity u component
-        bc_u_ground = fe.DirichletBC(V.sub(0), 0.0, ground)
+        theta_ground = fe.Expression("value", degree=0, value=params.theta_ref)
+        k_ground = fe.Expression("value", degree=0, value=initial_k_0(params.z0, params.u_G, params.z0, 200))
 
-        # Define velocity v component
-        bc_v_ground = fe.DirichletBC(V.sub(1), 0.0, ground)
-        bc_v_top = fe.DirichletBC(V.sub(1), 0.0, top)
+        boundary_cond = turn_into_fenics_boundary_conditions(0.0, 0.0, theta_ground, k_ground,
+                                                             fenics_params.W, ground, top)
 
-        # Define potential temperature
-        theta_low = fe.Expression('value', degree=0, value=params.theta_ref)
-        bc_theta_ground = fe.DirichletBC(V.sub(2), theta_low, ground)
+        theta_g_0 = params.theta_ref
 
-        # Define TKE
-        k_low = fe.Expression('value', degree=0, value=initial_k_0(z0, u_G, z0, 200))
-        bc_k_ground = fe.DirichletBC(V.sub(3), k_low, ground)
+    fenics_params.bc = boundary_cond
+    fenics_params.theta_D_low = theta_ground
+    fenics_params.k_D_low = k_ground
 
-        # Combine boundary conditions
-        bc = [bc_u_ground, bc_v_ground, bc_theta_ground, bc_k_ground, bc_v_top]
+    fenics_params.U_g = fe.Expression("value", degree=0, value=params.u_G)
+    fenics_params.V_g = fe.Constant(params.v_G)
 
-        #
-        Tg_n = params.theta_ref
-
-    # writing out the fenics parameters
-    fenics_params.bc = bc  # list of boundary conditions. Will be used in the FEM formulation
-    fenics_params.theta_D_low = theta_low  # Temperature. Fenics expression is used to control the value within the main loop solution
-    fenics_params.k_D_low = k_low  # TKE. Fenics expression is used to control the value within the main loop solution
-
-    fenics_params.U_g = fe.Expression('value', degree=0,
-                                      value=params.u_G)  # Geostrophic wind; added here to control in the main loop
-    fenics_params.V_g = fe.Constant(params.v_G)  # Geostrophic wind; added here to control in the main loop
-
-    # writing out normal parameters
-    params.Tg_n = Tg_n  # The value of the Temperature at the ground.
+    params.theta_g_n = theta_g_0
 
     return fenics_params, params
 
 
 def initial_u_0(z, u_G, z0, kappa):
-    """Calculate  initial profile for the wind velocity u.
-
-        Args:
-            z (fenics function): Mesh coordinates.
-            u_G (float): Zonal geostrophic wind speed.
-            z0 (float): Surface roughness length.
-            params (class): Parameters from dataclass. For more details see parameters.py
-
-        Returns:
-            (list?): initial profile for u
-    """
+    """Calculate  initial profile for the wind velocity u."""
     # Set tuning parameter
     c_f = 4 * 10 ** (-3)
     # Calculate initial friction velocity
@@ -153,19 +114,10 @@ def initial_u_0(z, u_G, z0, kappa):
     return u_star_ini / kappa * np.log(z / z0)
 
 
-def initial_theta_0(z, theta_initial, gamma, cut_height):
-    """Calculate  initial profile for the temperature theta.
-
-    Args:
-        z (fenics function): Mesh coordinates.
-        theta_initial (float): Initial potential temperature.
-        cut_height (float): Height at which the temperature depends on the laps rate and the height of the grid point.
-
-    Returns:
-        (list?): initial profile for theta
-    """
+def initial_theta_0(z, theta_initial, laps_rate, cut_height):
+    """Calculate  initial profile for the temperature theta."""
     # Set initial theta above reference height
-    theta_0 = (z - cut_height) * gamma + theta_initial
+    theta_0 = (z - cut_height) * laps_rate + theta_initial
     # Find index of value where z - cut_height = 0
     index_cut_height = int(np.abs(z - cut_height).argmin())
     # Set initial theta below reference height
@@ -176,27 +128,17 @@ def initial_theta_0(z, theta_initial, gamma, cut_height):
 def initial_k_0(z, u_G, z0, H, k_at_H=0.0):
     """Calculate  initial profile for TKE. See Parente, A., C. Gorlé, J. van Beeck, and C. Benocci, 2011: A
     Comprehensive Modelling Approach for the Neutral Atmospheric Boundary Layer: Consistent Inflow Conditions, Wall
-    Function and Turbulence Model. Boundary-Layer Meteorol, 140, 411–428, https://doi.org/10.1007/s10546-011-9621-5.
-
-    Args:
-        params (class): Parameters from dataclass. For more details see parameters.py.
-        z (fenics function): Mesh coordinates.
-        u_G (float): Zonal geostrophic wind speed.
-        z0 (float): Surface roughness length.
-        H (float): Domain height.
-        k_at_H (float): TKE for t=0 and z=H.
-
-    Returns:
-        (list?): initial profile for TKE
-    """
+    Function and Turbulence Model. Boundary-Layer Meteorol, 140, 411–428, https://doi.org/10.1007/s10546-011-9621-5."""
     # Set tuning parameter
     c_f = 4 * 10 ** (-3)
     # Calculate initial friction velocity
     u_star_ini = np.sqrt(0.5 * c_f * u_G ** 2)
     # TKE for t=0 and z=z0
     k_at_z0 = u_star_ini ** 2 / np.sqrt(0.087)
-    # Solve system of equations
-    func = lambda z, a, b: a * np.log(z + z0) + b
+
+    def tke_profile(z, a, b):
+        return a * np.log(z + z0) + b
+
     a = (k_at_H - k_at_z0) / (np.log(H) - np.log(z0))
     b = k_at_z0 - a * np.log(z0)
-    return func(z, a, b)
+    return tke_profile(z, a, b)

@@ -11,9 +11,9 @@ import numpy as np
 @dataclass
 class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
-    load_ini_cond: bool = False  # load existing initial condition
+    load_ini_cond: bool = True  # load existing initial condition
 
-    T_end_h: float = 30  # hour
+    T_end_h: float = 12  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
@@ -55,7 +55,7 @@ class Parameters:
     sig: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
     Q_c: float = 0.0  # the cloud fraction
     Q_a: float = 0.003  # specific humidity [g kg^-1]
-    Tg_n: float = 300  # temperature initial value at the ground [K].
+    theta_g_n: float = 300  # temperature initial value at the ground [K].
     R_n: float = -30 # -30 net radiations for surface energy balance
     k_m: float = 1.18 * omega  # the soil heat transfer coefficient
     sigma: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant

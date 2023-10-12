@@ -16,7 +16,7 @@ from single_column_model.utils import transform_values as tv
 
 
 def solution_loop(params, output, fenics_params, u_n, v_n, T_n, k_n):
-    Tg_n = params.Tg_n
+    theta_g_n = params.theta_g_n
     T_D_low = fenics_params.theta_D_low
     # --------------------------------------------------------------------------
     print('Solving PDE system ... ')
@@ -71,10 +71,10 @@ def solution_loop(params, output, fenics_params, u_n, v_n, T_n, k_n):
         u_now, v_now, Kh_now = ss.calc_variables_np(params, fenics_params, us, vs)
 
         # solve temperature at the ground
-        Tg = seb.RHS_surf_balance_euler(Tg_n, fenics_params, params, Ts, u_now, v_now, Kh_now, cur_perturbation)
+        Tg = seb.RHS_surf_balance_euler(theta_g_n, fenics_params, params, Ts, u_now, v_now, Kh_now, cur_perturbation)
 
         # update temperature for the ODE
-        Tg_n = np.copy(Tg)
+        theta_g_n = np.copy(Tg)
 
         # Update temperature for the PDE
         T_D_low.value = np.copy(Tg)
