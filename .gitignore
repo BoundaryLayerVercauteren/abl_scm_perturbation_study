@@ -7,6 +7,7 @@
 # extra code
 supplementary/
 solution/
+#FLOSS/
 
 # pip virtual environment
 venv_make_docs/
@@ -40,6 +41,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.devcontainer/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -157,3 +159,4 @@ main.synctex.gz
 
 
 supplementary/data/
+data_files/

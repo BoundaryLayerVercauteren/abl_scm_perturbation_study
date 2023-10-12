@@ -228,7 +228,7 @@ def extract_initial_cond(curr_steady_state, data_file_path, init_file_path, vari
 if __name__ == '__main__':
 
     # Define path to deterministic data
-    det_directory_path = 'single_column_model/solution/20231012_072130/'#'single_column_model/solution/deterministic_long_tail_94h/'
+    det_directory_path = 'single_column_model/solution/20231012_094242/'#'single_column_model/solution/deterministic_long_tail_94h/'
     det_data_directory_path = det_directory_path #+ 'simulations/'
 
     # Create directory to store visualization
