@@ -13,13 +13,13 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 30  # hour
+    T_end_h: float = 60  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
     sensitivity_study: bool = False  # perform sensitivity study
-    u_G_range: np.ndarray = None
+    u_G_range: np.ndarray = np.arange(1.0,5.6,0.1)
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
