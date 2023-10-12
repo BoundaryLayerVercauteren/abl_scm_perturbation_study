@@ -36,7 +36,7 @@ def transfer_all_variables_to_fenics_functions(var1, var2, var3, var4, function_
 
 def define_initial_conditions(Q, mesh, params):
     """Combine functions to either load initial conditions from files or calculate them ad hoc."""
-    if params.load_ini_cond:
+        if params.load_ini_cond:
         u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(params.init_path)
     else:
         u_t0, v_t0, theta_t0, k_t0 = calculate_initial_conditions(mesh.coordinates(), params.z0, params.u_G,
