@@ -1,5 +1,7 @@
 # h5
 *.h5
+*.nc
+*.zip
 
 # tar files
 *.tar
