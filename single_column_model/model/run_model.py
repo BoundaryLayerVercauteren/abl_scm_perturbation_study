@@ -83,7 +83,7 @@ def run_single_simulation_model(
     """Function to perform one single model run for a given set of parameters."""
     # Update parameter
     model_param.sim_index = sim_index
-    if len(u_G_param) > 1:
+    if u_G_param is not None and len(u_G_param) > 1:
         model_param.u_G = np.around(u_G_param[0], 1)
         model_param.perturbation_strength = np.around(u_G_param[1], 3)
     else:
@@ -128,7 +128,7 @@ def run_sensitivity_study(in_params, fen_params, out_params):
                  "sensitivity analysis.")
     # Define range of parameters for geostrophic wind and strength of the perturbation
     u_G_range = in_params.u_G_range
-    perturb_strength_list = np.round(np.arange(0, 0.01, 0.001), 3)
+    perturb_strength_list = np.round(np.arange(0, in_params.perturbation_strength, 0.0001), 3)
 
     unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list)).T.reshape(-1,2)
 
@@ -148,7 +148,6 @@ def run_model():
     input_params, fenics_params, output_params = make_setup_for_model_run()
 
     if input_params.sensitivity_study:
-        'hi'
         run_sensitivity_study(input_params, fenics_params, output_params)
     elif input_params.u_G_range is not None:
         run_multi_uG_simulations(input_params, fenics_params, output_params)

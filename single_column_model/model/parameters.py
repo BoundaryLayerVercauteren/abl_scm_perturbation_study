@@ -25,7 +25,7 @@ class Parameters:
 
     perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added
     perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
-    perturbation_strength: float = 0.001  # strength of perturbation
+    perturbation_strength: float = 0.01  # strength of perturbation
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
