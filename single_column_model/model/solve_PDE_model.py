@@ -64,7 +64,7 @@ def solution_loop(params, output, fenics_params, u_n, v_n, theta_n, k_n):
     saving_idx = 0  # index for writing
 
     for time_idx in range(params.num_steps):
-        print(time_idx, params.num_steps)
+
         if params.perturbation_param != 'stab_func':
             # Add perturbation to weak formulation of PDE model
             perturbation_at_time_idx, perturbed_F = add_perturbation_to_weak_form_of_model(

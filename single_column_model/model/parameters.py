@@ -11,26 +11,26 @@ import numpy as np
 @dataclass
 class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
-    load_ini_cond: bool = False  # load existing initial condition
+    load_ini_cond: bool = True  # load existing initial condition
 
-    T_end_h: float = 60  # hour
+    T_end_h: float = 12  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
     sensitivity_study: bool = False  # perform sensitivity study
-    u_G_range: np.ndarray = np.arange(1.0,5.6,0.1)
+    u_G_range: np.ndarray = np.arange(1.0,4.4,0.1)
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
-    perturbation_param: str = 'none'  # specify to which equation a perturbation is added
-    perturbation_type: str = 'none'  # type of perturbation to be added
-    perturbation_strength: float = 0.03  # strength of perturbation
+    perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added
+    perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
+    perturbation_strength: float = 0.001  # strength of perturbation
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     num_simulation: int = 1
-    num_proc: int = 1
+    num_proc: int = 4
 
     # file name for initial conditions
     init_cond_path: str = f'{stab_func_type}_steady_state_'

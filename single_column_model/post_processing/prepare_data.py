@@ -1,7 +1,8 @@
 import os
+
+import h5py
 import numpy as np
 import pandas as pd
-import h5py
 
 
 def find_files_in_directory(data_path):
@@ -10,33 +11,32 @@ def find_files_in_directory(data_path):
     files = []
 
     for file in os.listdir(data_path):
-
-        if '_u_' in file:
+        if "_u_" in file:
             u_files.append(file)
-        elif '_theta_' in file:
+        elif "_theta_" in file:
             theta_files.append(file)
-        elif '.h5' in file:
+        elif ".h5" in file:
             files.append(file)
 
     # Sort files
-    u_files = sorted(u_files, key=lambda x: float(x.split('_')[2].strip()))
-    theta_files = sorted(theta_files, key=lambda x: float(x.split('_')[2].strip()))
-    files = sorted(files, key=lambda x: float(x.split('_')[2].strip()))
+    u_files = sorted(u_files, key=lambda x: float(x.split("_")[2].strip()))
+    theta_files = sorted(theta_files, key=lambda x: float(x.split("_")[2].strip()))
+    files = sorted(files, key=lambda x: float(x.split("_")[2].strip()))
 
     return u_files, theta_files, files
 
 
 def load_data_from_file_for_specific_height(file_paths, height_z):
     # Load data
-    with h5py.File(file_paths, 'r+') as file:
-        t = file['t'][:]
-        z = file['z'][:]
-        r = file['r'][:]
-        u = file['u'][:]
-        v = file['v'][:]
-        theta = file['theta'][:]
-        tke = file['TKE'][:]
-        perturbation = file['perturbation'][:]
+    with h5py.File(file_paths, "r+") as file:
+        t = file["t"][:]
+        z = file["z"][:]
+        r = file["r"][:]
+        u = file["u"][:]
+        v = file["v"][:]
+        theta = file["theta"][:]
+        tke = file["TKE"][:]
+        perturbation = file["perturbation"][:]
 
     # Find z which is closest to given value
     z_idx = (np.abs(z - height_z)).argmin()
@@ -55,13 +55,24 @@ def load_data_from_file_for_specific_height(file_paths, height_z):
         max_perturbation = np.nanmin(perturbation)
 
     z_idx_100m = (np.abs(z - 100)).argmin()
-    max_u = np.nanmax(np.abs(u[:z_idx_100m,0]))
-    max_theta = np.nanmax(np.abs(theta[:z_idx_100m,0]))
+    max_u = np.nanmax(np.abs(u[:z_idx_100m, 0]))
+    max_theta = np.nanmax(np.abs(theta[:z_idx_100m, 0]))
 
-    return t.flatten(), z.flatten(), r[0][0], u_height_z, v_height_z, theta_height_z, delta_theta, tke_height_z, max_perturbation/max_u, max_perturbation/max_theta
+    return (
+        t.flatten(),
+        z.flatten(),
+        r[0][0],
+        u_height_z,
+        v_height_z,
+        theta_height_z,
+        delta_theta,
+        tke_height_z,
+        max_perturbation / max_u,
+        max_perturbation / max_theta,
+    )
 
 
-def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='deterministic'):
+def create_df_for_fixed_z(data_path, file_paths, height_z, file_type="deterministic"):
     # Create empty pandas dataframes
     df_u_temp = {}
     df_v_temp = {}
@@ -73,35 +84,36 @@ def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='determinis
     for file_idx, file_path in enumerate(file_paths):
         full_file_path = data_path + file_path
 
-        with h5py.File(full_file_path, 'r+') as file:
-            z = file['z'][:]
-            t = file['t'][:]
+        with h5py.File(full_file_path, "r+") as file:
+
+            z = file["z"][:]
+            t = file["t"][:]
 
             # Find z which is closest to given value
             z_idx = (np.abs(z - height_z)).argmin()
 
             # Set name of column
-            if file_type == 'deterministic':
-                index_sim = file_path.find('sim')
-                index_h5 = file_path.find('.h5')
+            if file_type == "deterministic":
+                index_sim = file_path.find("sim")
+                index_h5 = file_path.find(".h5")
                 column_name = file_path[index_sim:index_h5]
             else:
-                r = file['r'][:][0][0]
+                r = file["r"][:][0][0]
                 column_name = r  # str(r)
 
-            u = file['u'][:]
+            u = file["u"][:]
             df_u_temp[column_name] = u[z_idx, :]
             df_u_temp[column_name] = df_u_temp[column_name]
 
-            v = file['v'][:]
+            v = file["v"][:]
             df_v_temp[column_name] = v[z_idx, :]
             df_v_temp[column_name] = df_v_temp[column_name]
 
-            theta = file['theta'][:]
+            theta = file["theta"][:]
             df_delta_theta_temp[column_name] = theta[z_idx, :] - theta[0, :]
             df_delta_theta_temp[column_name] = df_delta_theta_temp[column_name]
 
-            tke = file['TKE'][:]
+            tke = file["TKE"][:]
             df_tke_temp[column_name] = tke[z_idx, :]
             df_tke_temp[column_name] = df_tke_temp[column_name]
 
@@ -121,9 +133,9 @@ def create_df_for_fixed_z(data_path, file_paths, height_z, file_type='determinis
     df_files = df_files.reindex(sorted(df_files.columns), axis=1)
 
     # Add time column to dataframe
-    df_u['time'] = t.flatten()
-    df_v['time'] = t.flatten()
-    df_delta_theta['time'] = t.flatten()
-    df_tke['time'] = t.flatten()
+    df_u["time"] = t.flatten()
+    df_v["time"] = t.flatten()
+    df_delta_theta["time"] = t.flatten()
+    df_tke["time"] = t.flatten()
 
     return df_u, df_v, df_delta_theta, df_tke, df_files
