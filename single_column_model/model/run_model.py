@@ -83,10 +83,14 @@ def run_single_simulation_model(
     """Function to perform one single model run for a given set of parameters."""
     # Update parameter
     model_param.sim_index = sim_index
-    if u_G_param is not None:
-        model_param.u_G = np.around(u_G_param, 1)
-    if perturb_param is not None:
-        model_param.perturbation_strength = np.around(perturb_param, 3)
+    if len(u_G_param) > 1:
+        model_param.u_G = np.around(u_G_param[0], 1)
+        model_param.perturbation_strength = np.around(u_G_param[1], 3)
+    else:
+        if u_G_param is not None:
+            model_param.u_G = np.around(u_G_param, 1)
+        if perturb_param is not None:
+            model_param.perturbation_strength = np.around(perturb_param, 3)
 
     # Define file name for initial conditions
     model_param.init_path = (
@@ -124,19 +128,13 @@ def run_sensitivity_study(in_params, fen_params, out_params):
                  "sensitivity analysis.")
     # Define range of parameters for geostrophic wind and strength of the perturbation
     u_G_range = in_params.u_G_range
-    perturb_strength_list = np.round(np.arange(0, 0.03, 0.001), 3)
-    # Create parameter grid, i.e. all combinations of u_G and perturbation strength
-    unique_param_combinations = list(
-        list(zip(u_G_range, element))
-        for element in product(perturb_strength_list, repeat=len(u_G_range))
-    )
-    unique_param_combinations = [elem for sublist in unique_param_combinations for elem in sublist]
+    perturb_strength_list = np.round(np.arange(0, 0.01, 0.001), 3)
+
+    unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list)).T.reshape(-1,2)
 
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
-        for param_val in unique_param_combinations:
-            pool.map(partial(run_single_simulation_model, in_params, fen_params, out_params, param_val[0],
-                             param_val[1]), range(in_params.num_simulation))
+        pool.map(partial(run_single_simulation_model, in_params, fen_params, out_params), unique_param_combinations)
 
 
 def run_multi_uG_simulations(in_params, fen_params, out_params):
@@ -150,6 +148,7 @@ def run_model():
     input_params, fenics_params, output_params = make_setup_for_model_run()
 
     if input_params.sensitivity_study:
+        'hi'
         run_sensitivity_study(input_params, fenics_params, output_params)
     elif input_params.u_G_range is not None:
         run_multi_uG_simulations(input_params, fenics_params, output_params)

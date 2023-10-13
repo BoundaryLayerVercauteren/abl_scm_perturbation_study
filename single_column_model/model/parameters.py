@@ -18,8 +18,8 @@ class Parameters:
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    sensitivity_study: bool = False  # perform sensitivity study
-    u_G_range: np.ndarray = np.arange(1.0,4.4,0.1)
+    sensitivity_study: bool = True  # perform sensitivity study
+    u_G_range: np.ndarray = np.arange(1.0,3.2,0.1)
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
@@ -30,7 +30,7 @@ class Parameters:
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     num_simulation: int = 1
-    num_proc: int = 4
+    num_proc: int = 125
 
     # file name for initial conditions
     init_cond_path: str = f'{stab_func_type}_steady_state_'
