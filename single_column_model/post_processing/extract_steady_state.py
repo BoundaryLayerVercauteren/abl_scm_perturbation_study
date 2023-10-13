@@ -53,7 +53,7 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
     data_tke["diff_mean"] = np.abs(data_tke["rol_mean"] - data_tke["sim_0"])
 
     # Find all values where the difference is less or equal to 2% of the maximum of the corresponding value
-    deviation_percentage = 0.03
+    deviation_percentage = 0.05
     data_u["bel_thresh"] = data_u["diff_mean"] <= deviation_percentage
     data_v["bel_thresh"] = data_v["diff_mean"] <= deviation_percentage
     data_delta_theta["bel_thresh"] = data_delta_theta["diff_mean"] <= deviation_percentage
@@ -407,7 +407,7 @@ def extract_initial_cond(
 
 if __name__ == "__main__":
     # Define path to deterministic data
-    stab_func_type = 'long_tail'
+    stab_func_type = 'short_tail'
     det_directory_path = f"single_column_model/solution/{stab_func_type}/deterministic/"
     det_data_directory_path = det_directory_path + "simulations/"
 
@@ -421,7 +421,7 @@ if __name__ == "__main__":
 
     # bl_top_height_det_sim_dict, z = prepare_data.find_z_where_u_const(det_data_directory_path, files_det)
 
-    for var in np.arange(5.0, 5.1, 0.1):
+    for var in np.arange(1.0, 5.6, 0.1):
         try:
             var = np.around(var, 1)
 
@@ -443,18 +443,18 @@ if __name__ == "__main__":
                 det_data_directory_path, curr_file_det_sim, bl_top_height_det_sim
             )
 
-            # calculate_stable_BL_height_based_on_Richardson_number(det_data_directory_path, vis_directory_path,
-            #                                                       curr_file_det_sim[0], var)
+            calculate_stable_BL_height_based_on_Richardson_number(det_data_directory_path, vis_directory_path,
+                                                                  curr_file_det_sim[0], var)
 
             steady_state = find_steady_state_fixed_height(
                 df_u, df_v, df_delta_theta, df_tke
             )
             print(var, steady_state)
-            # #Plot variables over time at BL height
-            # visualize_deterministic_model_output.plot_combined_data_over_t(vis_directory_path, df_u, df_v,
-            #                                                                df_delta_theta, df_tke,
-            #                                                                f'_z_20_steady_{var}',
-            #                                                                steady_state)
+            #Plot variables over time at BL height
+            visualize_deterministic_model_output.plot_combined_data_over_t(vis_directory_path, df_u, df_v,
+                                                                           df_delta_theta, df_tke,
+                                                                           f'_z_20_steady_{var}',
+                                                                           steady_state)
 
             # Extract initial condition
             init_dir_path = "single_column_model/init_condition/"
@@ -490,9 +490,9 @@ if __name__ == "__main__":
             # plot_inversion_strength(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var,
             #                         [steady_state, bl_top_height_det_sim])
             #
-            # # Plot Ekman layer height
-            # _ = find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var,
-            #                             [steady_state, bl_top_height_det_sim])
+            # Plot Ekman layer height
+            _ = find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var,
+                                        [steady_state, bl_top_height_det_sim])
 
         except Exception:
             print(traceback.format_exc())

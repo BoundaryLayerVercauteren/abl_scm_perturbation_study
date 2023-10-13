@@ -333,7 +333,7 @@ def plot_histogram(vis_path, data, variable_name, suffix):
     # data.stack().plot.hist(grid=False, bins=10, color='blue')
     # data = data.drop(data.index[0:14400])
     data.stack().plot.hist(grid=False, bins=10, color="black")
-    plt.xlim((0, 10))
+    #plt.xlim((0, 10))
     plt.xlabel(r"$\Delta \theta$ [K]")
     plt.title(r"$t \geq 4 h$")
 
@@ -445,7 +445,7 @@ def plot_transitioned_solutions(
 
 if __name__ == "__main__":
     # Define path to stochastic data
-    data_directory_path = "single_column_model/solution/long_tail/perturbed/neg_theta/"
+    data_directory_path = "single_column_model/solution/long_tail/perturbed/neg_u/"
     data_directory_path_single = data_directory_path + "simulations/"
 
     # Create directory to store visualization
@@ -456,7 +456,7 @@ if __name__ == "__main__":
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.arange(1.0, 4.3, 0.1):
+    for var in np.arange(1.0, 3.2, 0.1):
         try:
             var = np.around(var, 1)
 

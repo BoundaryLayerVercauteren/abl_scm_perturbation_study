@@ -364,7 +364,7 @@ def make_bifurcation_plot_with_Ekman_height(
 if __name__ == "__main__":
     # Define path to deterministic data
     det_directory_path = (
-        "single_column_model/solution/short_tail/deterministic/"
+        "single_column_model/solution/long_tail/deterministic/"
     )
     det_data_directory_path = det_directory_path + "simulations/"
 
@@ -376,7 +376,7 @@ if __name__ == "__main__":
     # Get a list of all file names in given directory for u and theta
     _, _, files_det = prepare_data.find_files_in_directory(det_data_directory_path)
 
-    param_range = np.arange(1.0, 5.8, 0.1)
+    param_range = np.arange(1.0, 5.6, 0.1)
 
     # make_bifurcation_plot_with_Ekman_height(det_data_directory_path, vis_directory_path, param_range)
 
@@ -441,7 +441,7 @@ if __name__ == "__main__":
             var = np.around(var, 1)
 
             # Define height at which theta_top is calculated
-            top_height = 35
+            top_height = 50
 
             curr_file_det_sim = [s for s in files_det if "_" + str(var) + "_" in s]
 
