@@ -179,72 +179,6 @@ def find_z_where_u_const(data_path, file_paths):
     return z_idx_dict, z
 
 
-#
-# def create_df_for_fixed_z(data_path, file_paths, height_z_idx):
-#     # Create empty pandas dataframes
-#     df_u_temp = {}
-#     df_v_temp = {}
-#     df_delta_theta_temp = {}
-#     df_files_temp = {}
-#     df_tke_temp = {}
-#
-#     # Open output file and load variables
-#     for file_idx, file_path in enumerate(file_paths):
-#         full_file_path = data_path + file_path
-#
-#         with h5py.File(full_file_path, 'r+') as file:
-#             z = file['z'][:]
-#             t = file['t'][:]
-#             r = file['r'][:][0][0]
-#             # Find z which is closest to given value
-#             height_z = z[height_z_idx, :]
-#             z_idx = (np.abs(z - height_z)).argmin()
-#
-#             # Set name of column
-#             # index_sim = file_path.find('sim')
-#             # index_h5 = file_path.find('.h5')
-#             column_name = str(r)
-#
-#             u = file['u'][:]
-#             df_u_temp[column_name] = u[z_idx, :]
-#             df_u_temp[column_name] = df_u_temp[column_name]
-#
-#             v = file['v'][:]
-#             df_v_temp[column_name] = v[z_idx, :]
-#             df_v_temp[column_name] = df_v_temp[column_name]
-#
-#             theta = file['theta'][:]
-#             df_delta_theta_temp[column_name] = theta[z_idx, :] - theta[0, :]
-#             df_delta_theta_temp[column_name] = df_delta_theta_temp[column_name]
-#
-#             tke = file['TKE'][:]
-#             df_tke_temp[column_name] = tke[z_idx, :]
-#             df_tke_temp[column_name] = df_tke_temp[column_name]
-#
-#             df_files_temp[column_name] = file_path
-#
-#     df_u = pd.DataFrame({k: list(v) for k, v in df_u_temp.items()})
-#     df_v = pd.DataFrame({k: list(v) for k, v in df_v_temp.items()})
-#     df_delta_theta = pd.DataFrame({k: list(v) for k, v in df_delta_theta_temp.items()})
-#     df_tke = pd.DataFrame({k: list(v) for k, v in df_tke_temp.items()})
-#     df_files = pd.DataFrame([df_files_temp])
-#
-#     # Sort columns
-#     df_u = df_u.reindex(sorted(df_u.columns), axis=1)
-#     df_v = df_v.reindex(sorted(df_v.columns), axis=1)
-#     df_delta_theta = df_delta_theta.reindex(sorted(df_delta_theta.columns), axis=1)
-#     df_tke = df_tke.reindex(sorted(df_tke.columns), axis=1)
-#     df_files = df_files.reindex(sorted(df_files.columns), axis=1)
-#
-#     # Add time column to dataframe
-#     df_u['time'] = t.flatten()
-#     df_v['time'] = t.flatten()
-#     df_delta_theta['time'] = t.flatten()
-#     df_tke['time'] = t.flatten()
-#
-#     return df_u, df_v, df_delta_theta, df_tke, df_files
-
-
 def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
     data_delta_theta = data_delta_theta.drop(columns=["time"])
     data_u = data_u.drop(columns=["time"])
@@ -278,7 +212,7 @@ def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
     cbar.set_label("r", rotation=0)
 
     plt.savefig(
-        vis_path + "/delta_theta_over_u" + suffix + ".png", bbox_inches="tight", dpi=300
+        vis_path + "/delta_theta_over_u/delta_theta_over_u" + suffix + ".png", bbox_inches="tight", dpi=300
     )
 
     # To clear memory
@@ -316,7 +250,7 @@ def plot_data_over_t(vis_path, data, suffix):
         # plt.ylim((0, 0.2))
 
     plt.savefig(
-        vis_path + "/var_over_t" + suffix + ".png", bbox_inches="tight", dpi=300
+        vis_path + "/delta_theta_over_t/var_over_t" + suffix + ".png", bbox_inches="tight", dpi=300
     )
 
     # To clear memory
@@ -338,7 +272,7 @@ def plot_histogram(vis_path, data, variable_name, suffix):
     plt.title(r"$t \geq 4 h$")
 
     plt.savefig(
-        vis_path + "/histogram_of_" + variable_name + suffix + ".png",
+        vis_path + "/histograms/histogram_of_" + variable_name + suffix + ".png",
         bbox_inches="tight",
         dpi=300,
     )
@@ -362,7 +296,7 @@ def plot_1D_stoch_process(directory_path, vis_path, file_path):
     ax.set_ylabel("stoch. process")
 
     plt.savefig(
-        vis_path + "/stoch_process_" + str(file_path) + ".png",
+        vis_path + "/perturbed/stoch_process_" + str(file_path) + ".png",
         bbox_inches="tight",
         dpi=300,
     )
@@ -393,7 +327,7 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
     fig.colorbar(cp)
 
     plt.savefig(
-        vis_path + "/perturbation_" + str(file_path) + ".png",
+        vis_path + "/perturbed/perturbation_" + str(file_path) + ".png",
         bbox_inches="tight",
         dpi=300,
     )
@@ -452,6 +386,10 @@ if __name__ == "__main__":
     vis_directory_path = os.path.join(data_directory_path, "visualization")
     if not os.path.exists(vis_directory_path):
         os.makedirs(vis_directory_path)
+    os.makedirs(vis_directory_path+'/perturbed')
+    os.makedirs(vis_directory_path + '/delta_theta_over_t')
+    os.makedirs(vis_directory_path + '/delta_theta_over_u')
+    os.makedirs(vis_directory_path + '/histograms')
 
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
@@ -480,9 +418,9 @@ if __name__ == "__main__":
                 "stochastic",
             )
 
-            # Make 3D plot of time series with transitions
-            plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
-                                        df_delta_theta_sing_sim, idx_bl_top_height)
+            # # Make 3D plot of time series with transitions
+            # plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
+            #                             df_delta_theta_sing_sim, idx_bl_top_height)
 
             # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
             plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
