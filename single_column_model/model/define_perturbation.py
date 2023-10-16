@@ -1,7 +1,8 @@
 import numpy as np
 
+
 # coding=utf-8
-#!/usr/bin/env python
+# !/usr/bin/env python
 
 
 def define_abraham_function(num_steps, T_end, z, t_k, r):
@@ -45,37 +46,23 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
         if t_k <= t_curr < t_wk:
             h_k[t_idx] = h_b
             sigma_k[t_idx] = (sigma_w + 1) / 2 * np.tanh(
-                (t_curr - 0.5 * tau_w - t_wk)
-                / (0.5 * tau_w)
-                * np.arctanh((sigma_w - 1) / (sigma_w + 1))
-            ) + (sigma_w + 1) / 2
-            s_k[t_idx] = (
-                0.505
-                * r
-                * np.tanh(
-                    (t_curr - 0.5 * tau_w - t_wk) / (0.5 * tau_w) * np.arctanh(99 / 101)
-                )
-                + 0.505 * r
-            )
+                (t_curr - 0.5 * tau_w - t_wk) / (0.5 * tau_w) * np.arctanh((sigma_w - 1) / (sigma_w + 1))) + (
+                                         sigma_w + 1) / 2
+            s_k[t_idx] = (0.505 * r * np.tanh(
+                (t_curr - 0.5 * tau_w - t_wk) / (0.5 * tau_w) * np.arctanh(99 / 101)) + 0.505 * r)
 
         elif t_curr >= t_wk:
             s_k[t_idx] = r * np.exp(-(t_curr - t_wk) / tau_e)
             h_k[t_idx] = -(h_b - h_e) * np.exp(-(t_curr - t_wk) / tau_h) + h_e
-            sigma_k[t_idx] = (sigma_w - sigma_e) * np.exp(
-                -(t_curr - t_wk) / tau_sigma
-            ) + sigma_e
+            sigma_k[t_idx] = (sigma_w - sigma_e) * np.exp(-(t_curr - t_wk) / tau_sigma) + sigma_e
 
         if t_curr > t_k:
-            SF_k[:, t_idx] = (
-                s_k[t_idx]
-                * np.exp(-((-z - h_k[t_idx]) ** 2) / (2 * sigma_k[t_idx] ** 2))
-            ).flatten()
+            SF_k[:, t_idx] = (s_k[t_idx] * np.exp(-((-z - h_k[t_idx]) ** 2) / (2 * sigma_k[t_idx] ** 2))).flatten()
 
     return SF_k
 
 
 def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end, z, pulse_strength):
-
     t_k = perturbation_start
 
     return pulse_strength, define_abraham_function(num_steps, T_end, z, t_k, pulse_strength)
@@ -117,9 +104,7 @@ def create_space_time_perturbation(params, fenics_params):
     return pulse_strength_val, perturbation_val
 
 
-def create_time_gauss_process_perturbation(
-    num_steps, perturbation_length, perturb_start, pulse_max, simulation_idx, num_sim
-):
+def create_time_gauss_process_perturbation(num_steps, perturbation_length, perturb_start, perturbation_strength):
     """
     Create 1D (time) perturbation which is a Gauss process.
 
@@ -131,15 +116,10 @@ def create_time_gauss_process_perturbation(
     Returns:
         (numpy array): Values of perturbation.
     """
-    pulse_min = 5.0  # 0.0
-    r = pulse_min + (pulse_max - pulse_min) / num_sim * simulation_idx
+    gauss_perturbation = np.abs(np.random.normal(0.0, perturbation_strength, perturbation_length))
+    perturbation = np.concatenate((np.zeros(perturb_start - 1), gauss_perturbation)).reshape(1, num_steps)
 
-    gauss_perturbation = np.abs(np.random.normal(0.0, r, perturbation_length))
-    perturbation = np.concatenate(
-        (np.zeros(perturb_start - 1), gauss_perturbation)
-    ).reshape(1, num_steps)
-
-    return r, perturbation
+    return perturbation_strength, perturbation
 
 
 def create_time_perturbation(params):
@@ -149,8 +129,6 @@ def create_time_perturbation(params):
             params.perturbation_length,
             params.perturbation_start,
             params.perturbation_strength,
-            params.sim_index,
-            params.num_simulation,
         )
 
     return pulse_strength_val, perturbation_val

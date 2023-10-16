@@ -23,13 +23,14 @@ class Parameters:
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
-    perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added
-    perturbation_type: str = 'neg_mod_abraham'  # type of perturbation to be added
-    perturbation_strength: float = 0.01  # strength of perturbation
+    perturbation_param: str = 'net_rad'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad]
+    perturbation_type: str = 'gauss_process'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
+    perturbation_max: float = 10  # strength of perturbation
+    perturbation_step_size: float = 1.0  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
-    num_simulation: int = 1
+    num_simulation: int = 500
     num_proc: int = 125
 
     # file name for initial conditions

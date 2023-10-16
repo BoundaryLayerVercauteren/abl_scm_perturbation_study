@@ -86,6 +86,8 @@ def run_single_simulation_model(
     if u_G_param is not None and len(u_G_param) > 1:
         model_param.u_G = u_G_param[0]
         model_param.perturbation_strength = u_G_param[1]
+        if len(u_G_param) > 2:
+            model_param.sim_index = u_G_param[2]
     else:
         if u_G_param is not None:
             model_param.u_G = np.around(u_G_param, 1)
@@ -128,11 +130,13 @@ def run_sensitivity_study(in_params, fen_params, out_params):
                  "sensitivity analysis.")
     # Define range of parameters for geostrophic wind and strength of the perturbation
     u_G_range = np.round(in_params.u_G_range, 1)
-    perturb_strength_list = np.round(np.arange(0, in_params.perturbation_strength, 0.0001), 4)
+    perturb_strength_list = np.round(np.arange(0, in_params.perturbation_max, in_params.perturbation_step_size), 4)
+    if in_params.num_simulation==1:
+        unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list)).T.reshape(-1,2)
+    else:
+        sim_range = np.arange(0,in_params.num_simulation,1)
+        unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list, sim_range)).T.reshape(-1, 3)
 
-    unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list)).T.reshape(-1,2)
-    print(unique_param_combinations)
-    exit()
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
         pool.map(partial(run_single_simulation_model, in_params, fen_params, out_params), unique_param_combinations)
