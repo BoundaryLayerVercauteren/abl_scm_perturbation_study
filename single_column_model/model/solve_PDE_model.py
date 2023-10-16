@@ -1,30 +1,22 @@
 # coding=utf-8
 # !/usr/bin/env python
 
-import traceback
-
 import fenics as fe
 import numpy as np
+import traceback
 from scipy import interpolate
 
-from single_column_model.model import (control_tke,
-                                       define_initial_and_boundary_conditions,
-                                       define_PDE_model,
-                                       define_stochastic_part,
-                                       surface_energy_balance)
+from single_column_model.model import control_tke, define_initial_and_boundary_conditions, define_PDE_model, \
+    define_stochastic_part, surface_energy_balance
 from single_column_model.utils import save_solution, transform_values
 
 
-def add_perturbation_to_weak_form_of_model(
-        perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test, idx
-):
+def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test, idx):
     """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
     if "pde" in perturbation_param:
         # Transform perturbation values for current time step to fenics function. This is necessary when the PDEs
         # themselves are perturbed
-        cur_perturbation = transform_values.convert_numpy_array_to_fenics_function(
-            perturbation[:, idx], Q
-        )
+        cur_perturbation = transform_values.convert_numpy_array_to_fenics_function(perturbation[:, idx], Q)
         # Add perturbation to one of the differential equations in the weak form.
         if perturbation_param == "pde_u":
             perturbed_weak_form = det_weak_form - cur_perturbation * u_test * fe.dx
