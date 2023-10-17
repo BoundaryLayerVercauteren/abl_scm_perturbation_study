@@ -7,7 +7,7 @@ import traceback
 from scipy import interpolate
 
 from single_column_model.model import control_tke, define_initial_and_boundary_conditions, define_PDE_model, \
-    define_stochastic_part, surface_energy_balance
+    define_parts_for_stoch_stability_function, surface_energy_balance
 from single_column_model.utils import save_solution, transform_values
 
 
@@ -38,18 +38,26 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, 
     return cur_perturbation, perturbed_weak_form
 
 
-def solve_stoch_stab_func_current_time_step(fenics_param, model_param):
+def get_richardson_number_stochastic_grid(fenics_param, model_param):
     # Calculate richardson number for current time step
     richardson_num_det = define_PDE_model.Ri(fenics_param, model_param)
     # Interpolate richardson number from deterministic to stochastic grid
     interpolation_func = interpolate.interp1d(fenics_param.z[:, 0], richardson_num_det, fill_value='extrapolate')
     richardson_num_stoch = interpolation_func(model_param.stoch_grid)[:, 0]
-    # Get parameter for stability function
-    Lambda, Upsilon, Sigma = define_stochastic_part.get_stoch_stab_function_parameter(richardson_num_stoch)
+
+    return richardson_num_stoch
 
 
-def solution_loop(params, output, fenics_params, u_n, v_n, theta_n, k_n):
+def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n, k_n):
     theta_g_n = params.theta_g_n
+
+    # Set time step parameters for stochastic stability function
+    tau_s = 10
+    dtau_s = params.dt / tau_s  # smaller time step for stable solution of the SDE
+    sqrt_dtau_s = np.sqrt(dtau_s)  # calculate the sqrt outside the loop for speed up
+    # Initialize stoch. stability function
+    phi_0 = np.ones(params.Ns_n)
+    phi_sol_det_grid = np.ones(params.Nz)
 
     # --------------------------------------------------------------------------
     print("Solving PDE system ... ")
@@ -89,12 +97,31 @@ def solution_loop(params, output, fenics_params, u_n, v_n, theta_n, k_n):
         k_n = control_tke.set_minimum_tke_level(params, k_sol, k_n)
 
         if params.perturbation_param == 'stab_func':
-            pass  # fenics_params.f_ms.value = solve_stoch_stab_func_current_time_step()
+            # Get stoch stability function parameters for current u,v, theta
+            Ri_stoch = get_richardson_number_stochastic_grid(fenics_params, params)
+            Lambda, Upsilon, Sigma = define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(Ri_stoch)
+
+            # Calculate phi on stochastic grid
+            for _ in range(tau_s):
+                stoch_solver.evolve(phi_0, dtau_s, Lambda, Upsilon, Sigma, sqrt_dtau_s, params.lz)
+                phi_sol_stoch_grid = stoch_solver.getState()
+                phi_0 = np.copy(phi_sol_stoch_grid)
+
+            # Interpolate phi from stochastic grid to deterministic one
+            phi_sol_extrapolated = interpolate.interp1d(params.s_grid[:, 0], phi_sol_stoch_grid, fill_value='extrapolate')
+            phi_sol_det_grid[0:params.Hs_ind] = phi_sol_extrapolated(fenics_params.z[0:params.Hs_ind, 0])
+
+            # change the value of the stochastic stab correction
+            phi_sol = fe.project(fenics_params.f_ms, fenics_params.Q)
+            phi_sol.vector().set_local(np.flipud(phi_sol_det_grid))
+            fenics_params.f_ms.value = phi_sol
+        else:
+            phi_sol = fe.project(fenics_params.f_ms, fenics_params.Q)
 
         # Save solution at current time step if it fits with the saving time interval
         if time_idx % params.save_dt_sim == 0:
             output = save_solution.save_current_result(output, params, fenics_params, saving_idx, u_sol, v_sol,
-                                                       theta_sol, k_sol)
+                                                       theta_sol, k_sol, phi_sol)
             saving_idx += 1
 
         # Transform values to numpy arrays

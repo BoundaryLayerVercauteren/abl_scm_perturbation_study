@@ -102,6 +102,9 @@ def define_boundary_conditions(fenics_params, params):
 
     params.theta_g_n = theta_g_0
 
+    # Initial condition for stochastic stability function
+    fenics_params.f_ms = fe.Expression("value", value=fe.Constant(1.0), degree=0)
+
     return fenics_params, params
 
 

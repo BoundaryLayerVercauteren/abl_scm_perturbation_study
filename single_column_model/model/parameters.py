@@ -23,14 +23,14 @@ class Parameters:
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
-    perturbation_param: str = 'net_rad'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad]
-    perturbation_type: str = 'gauss_process'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
-    perturbation_max: float = 10  # strength of perturbation
-    perturbation_step_size: float = 1.0  # step size of sensitivity analysis
+    perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad, stab_func]
+    perturbation_type: str = 'mod_abraham'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
+    perturbation_max: float = 0.01  # strength of perturbation
+    perturbation_step_size: float = 0.0001  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
-    num_simulation: int = 500
+    num_simulation: int = 1
     num_proc: int = 125
 
     # file name for initial conditions
@@ -45,6 +45,10 @@ class Parameters:
     z0: float = 0.044  # roughness length in meter
     z0h: float = z0 * 0.1  # roughness length for heat in meter
     H: float = 300.0  # domain height in meters  ! should be H > z_l * s_dom_ext
+
+    # stochastic model specific parameter
+    H_sl: float = 50  # Height of the stochastic layer (excluding the blending height)
+    stoch_domain_ext: float = 2  # H_sl*stoch_domain_ext is the height of the stochastic layer incl. the blending height
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
     theta_m: float = 290  # restoring temperature of peat soil [K]
@@ -62,7 +66,7 @@ class Parameters:
     sigma: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
 
     # Geostrophic wind forcing
-    u_G: float = 5.0  # u geostrophic wind
+    u_G: float = 1.0  # u geostrophic wind
     v_G: float = 0.0  # v geostrophic wind
 
     latitude: float = 40  # latitude in grad

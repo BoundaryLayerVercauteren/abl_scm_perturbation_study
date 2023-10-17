@@ -15,7 +15,7 @@ from single_column_model.model import \
     space_discretization  # define_stochastic_part,
 from single_column_model.model import (define_initial_and_boundary_conditions,
                                        define_PDE_model, define_perturbation,
-                                       define_stochastic_part, solve_PDE_model)
+                                       define_parts_for_stoch_stability_function, solve_PDE_model)
 from single_column_model.utils import plot_solution, save_solution
 
 
@@ -38,7 +38,7 @@ def combine_model_solver_functions(fenics_params, params, output):
     mesh = space_discretization.create_grid(params, "power")
 
     # Create stochastic grid
-    #params.stoch_grid, params.Hs_det_idx = define_stochastic_part.make_stochastic_grid(params, mesh.coordinates())
+    params.stoch_grid, params.Hs_det_idx, params.Hs, params.Ns_n, params.dz_s = define_parts_for_stoch_stability_function.make_stochastic_grid(params, mesh.coordinates())
 
     # Define variables to use the fenics library
     fenics_params = define_PDE_model.setup_fenics_variables(fenics_params, mesh)
@@ -52,6 +52,9 @@ def combine_model_solver_functions(fenics_params, params, output):
     # Set up the weak formulation of the equations
     fenics_params.F = define_PDE_model.weak_formulation(fenics_params, params, u_n, v_n, T_n, k_n)
 
+    # Set up the stochastic solver
+    stoch_solver, params = define_parts_for_stoch_stability_function.initialize_SDEsolver(params)
+
     # Create the variables to write output
     output = save_solution.initialize(output, params)
 
@@ -59,7 +62,7 @@ def combine_model_solver_functions(fenics_params, params, output):
     output = define_perturbation.create_perturbation(params, fenics_params, output)
 
     # Solve the system
-    output = solve_PDE_model.solution_loop(params, output, fenics_params, u_n, v_n, T_n, k_n)
+    output = solve_PDE_model.solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, T_n, k_n)
 
     #plot_solution.make_3d_plot(output, params, fenics_params)
 
@@ -93,7 +96,8 @@ def run_single_simulation_model(
             model_param.u_G = np.around(u_G_param, 1)
         if perturb_param is not None:
             model_param.perturbation_strength = np.around(perturb_param, 3)
-
+        else:
+            model_param.perturbation_strength = np.around(model_param.perturbation_max, 3)
     # Define file name for initial conditions
     model_param.init_path = (
         output_val.init_directory

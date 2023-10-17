@@ -3,9 +3,9 @@ import numpy as np
 
 def make_stochastic_grid(params, z):
     H_s_det_idx, H_s, N_s, delta_s = calculate_stochastic_grid_parameter(params, z)
-    stoch_grid = define_grid_for_stochastic_part(params.z0, H_s, N_s)
+    stoch_grid = define_grid_for_stoch_stab_function(params.z0, H_s, N_s)
 
-    return stoch_grid, H_s_det_idx
+    return stoch_grid, H_s_det_idx, H_s, N_s, delta_s
 
 
 def calculate_stochastic_grid_parameter(model_params, det_grid):
@@ -32,7 +32,7 @@ def calculate_stochastic_grid_parameter(model_params, det_grid):
     return H_s_total_det_idx, H_s_total, N_s, delta_s
 
 
-def define_grid_for_stochastic_part(lowest_grid_point, height, num_grid_points):
+def define_grid_for_stoch_stab_function(lowest_grid_point, height, num_grid_points):
     return np.linspace(lowest_grid_point, height, num_grid_points)
 
 
@@ -63,6 +63,19 @@ def define_stoch_stab_function_param_Sigma(Ri, sigma_s=0.0):
     return 10 ** (sigma_1 * np.tanh(sigma_2 * np.log(Ri) - sigma_3) + sigma_s)
 
 
+def initialize_SDEsolver(params):
+    # The space discretization needs to be equidistant. We will re-map it for the variable: "mixing lenght"
+    # Space points
+    params.s_grid = np.linspace(params.z0, params.z0 + params.Hs, params.Ns_n)
+
+    M = 1
+    q = 15
+
+    stoch_solver = SDEsolver(params.Ns_n, M, params.dz_s, q)
+
+    return stoch_solver, params
+
+
 class SDEsolver:
     def __init__(self, dof, ext_dof, dz, q):
         self.__dof = dof
@@ -72,7 +85,8 @@ class SDEsolver:
         self.__state = np.zeros(self.__dof)
 
     def __sample_gaussian_with_circulant_covariance(self, vector):
-        """See page 245 of Lord et al. 2014, for a detailed description of the method. Same notation is used."""
+        """See page 245 and following of Lord et al., 2014, for a detailed description of the method. Same notation is
+        used."""
         # mirror the vector without first! and last element
         vector_mir = vector[-2:0:-1]
 

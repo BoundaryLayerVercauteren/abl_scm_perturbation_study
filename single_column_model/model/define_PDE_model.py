@@ -14,12 +14,19 @@ def define_short_tail_stability_function(fenics_params, params):
     return 1.0 + 4.7 * Ri(fenics_params, params)
 
 
+def sigmoid(fenics_params, params, k=0.1):
+    return 1 / (1 + fe.exp(-k * (fenics_params.x[0] - params.z_l)))
+
+
 def f_m(fenics_params, params):
     """Stability function for momentum."""
     if params.stab_func_type == "long_tail":
         fm = define_long_tail_stability_function(fenics_params, params)
     elif params.stab_func_type == "short_tail":
         fm = define_short_tail_stability_function(fenics_params, params)
+
+    if params.perturbation_param == 'stab_func':
+        fm = fm * sigmoid(fenics_params, params) + fenics_params.f_ms * (1 - sigmoid(fenics_params, params))
     return fm
 
 
