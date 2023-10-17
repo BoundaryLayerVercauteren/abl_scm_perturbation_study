@@ -36,7 +36,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
     tau_w = 60  # growth time
     t_wk = t_k + tau_w
     h_b = 75  # centre of turbulent pulse at t0
-    h_e = 20  # centre of turbulent pulse at the end
+    h_e = 10  # centre of turbulent pulse at the end
     tau_h = 900  # vertical migration timescale of the centre
     sigma_w = 30  # width of turbulent pulse at t0
     sigma_e = 50  # width of turbulent pulse at the end
