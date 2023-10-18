@@ -70,10 +70,10 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end,
 
 def two_dim_gaussian_function(num_steps, T_end, z, start, amplitude):
     t = np.linspace(0, T_end, num_steps)
-    time_spread = 1000
+    time_spread = 450
     time_perturb_center = start*10 + time_spread / 2
-    height_perturb_center = 25
-    height_spread = 10
+    height_perturb_center = 20
+    height_spread = 4
     gaussian = amplitude * np.exp(
         -((t - time_perturb_center) ** 2 / (2 * time_spread ** 2) + (z - height_perturb_center) ** 2 / (
                 2 * height_spread ** 2)))
