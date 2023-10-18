@@ -26,13 +26,14 @@ def make_3d_plot(output, params, fparams, file_spec=''):
     z = fparams.z
     X, Y = np.meshgrid(t, z)
 
-    values = [output.U_save, output.V_save, output.T_save, output.k_save]
-    title = ['U [m/s]', 'V [m/s]', r"$\theta$ [K]", r'TKE [$m^2/s^2$]']
+    values = [output.U_save, output.V_save, output.T_save, output.k_save, output.perturbation[:,::params.save_dt_sim]]
+    title = ['U [m/s]', 'V [m/s]', r"$\theta$ [K]", r'TKE [$m^2/s^2$]', 'perturbation']
     file_names = ['u_over_time_z_' + file_spec + '.png',
                   'v_over_time_z_' + file_spec + '.png',
                   'theta_over_time_z_' + file_spec + '.png',
-                  'tke_over_time_z_' + file_spec + '.png']
-    colours = [cm.davos, cm.davos, cm.lajolla, cm.tokyo]
+                  'tke_over_time_z_' + file_spec + '.png',
+                  'perturbation_over_time_z_' + file_spec + '.png']
+    colours = [cm.davos, cm.davos, cm.lajolla, cm.tokyo, cm.tokyo]
     # color_range = [(0.0, 5.0), (0.0, 1.5), (298.0, 302.0)]
 
     # Create plot for all variables

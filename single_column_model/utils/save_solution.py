@@ -65,12 +65,13 @@ def save_parameters_in_file(params, output, file_spec=''):
         json.dump(json.loads(params_json), file)
 
 
-def save_current_result(output, params, fparams, i, us, vs, Ts, ks):
+def save_current_result(output, params, fparams, i, us, vs, Ts, ks, phi_s):
     # convert 2 numpy array and save
     output.U_save[:, i] = np.flipud(interpolate(us, fparams.Q).vector().get_local())
     output.V_save[:, i] = np.flipud(interpolate(vs, fparams.Q).vector().get_local())
     output.T_save[:, i] = np.flipud(interpolate(Ts, fparams.Q).vector().get_local())
     output.k_save[:, i] = np.flipud(interpolate(ks, fparams.Q).vector().get_local())
+    output.phi_stoch[:, i] = np.flipud(interpolate(phi_s, fparams.Q).vector().get_local())
 
     # Write Ri number
     calc_Ri = project(fut.Ri(fparams, params), fparams.Q)
@@ -107,6 +108,7 @@ def initialize(output, params):
     output.Ri_save = np.zeros((params.Nz, params.save_num_steps))
     output.Kh_save = np.zeros((params.Nz, params.save_num_steps))
     output.Km_save = np.zeros((params.Nz, params.save_num_steps))
+    output.phi_stoch = np.zeros((params.Nz, params.save_num_steps))
 
     output.U_save[:] = np.nan
     output.V_save[:] = np.nan
@@ -115,6 +117,7 @@ def initialize(output, params):
     output.Ri_save[:] = np.nan
     output.Kh_save[:] = np.nan
     output.Km_save[:] = np.nan
+    output.phi_stoch[:] = np.nan
 
     return output
 
@@ -136,6 +139,7 @@ def save_solution(output, params, fparams, file_spec=''):
     Ri_ds = saveFile.create_dataset('/Ri', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     Kh_ds = saveFile.create_dataset('/Kh', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     Km_ds = saveFile.create_dataset('/Km', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
+    phi_ds = saveFile.create_dataset('/phi', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
     perturbation_ds = saveFile.create_dataset('/perturbation',
                                               (params.Nz, params.save_num_steps),
                                               h5py.h5t.IEEE_F64BE)
@@ -151,6 +155,7 @@ def save_solution(output, params, fparams, file_spec=''):
     Ri_ds[...] = output.Ri_save
     Kh_ds[...] = output.Kh_save
     Km_ds[...] = output.Km_save
+    phi_ds[...] = output.phi_stoch
 
     z_ds[...] = fparams.z
     t_ds[...] = np.linspace(0, params.T_end_h, params.save_num_steps)
