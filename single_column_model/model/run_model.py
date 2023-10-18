@@ -141,6 +141,11 @@ def run_sensitivity_study(in_params, fen_params, out_params):
         sim_range = np.arange(0,in_params.num_simulation,1)
         unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list, sim_range)).T.reshape(-1, 3)
 
+    if sys.argv[1]:
+        job_idx = sys.argv[1]
+        task_indices = np.arange(0, in_params.num_simulation+in_params.num_proc, in_params.num_proc)
+        unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx+1]-1]
+
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
         pool.map(partial(run_single_simulation_model, in_params, fen_params, out_params), unique_param_combinations)
