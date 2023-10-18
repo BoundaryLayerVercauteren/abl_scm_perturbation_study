@@ -19,19 +19,19 @@ class Parameters:
     num_steps: int = int(T_end / dt)  # number of time steps
 
     sensitivity_study: bool = True  # perform sensitivity study
-    u_G_range: np.ndarray = np.arange(1.0,3.2,0.1)
+    u_G_range: np.ndarray = np.array([1.0])#np.arange(1.0,1.0,0.1)
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
     perturbation_param: str = 'pde_theta'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad, stab_func]
-    perturbation_type: str = 'mod_abraham'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
+    perturbation_type: str = 'pos_gaussian'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
     perturbation_max: float = 0.01  # strength of perturbation
-    perturbation_step_size: float = 0.0001  # step size of sensitivity analysis
+    perturbation_step_size: float = 0.001  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
 
     num_simulation: int = 1
-    num_proc: int = 125
+    num_proc: int = 4
 
     # file name for initial conditions
     init_cond_path: str = f'{stab_func_type}_steady_state_'

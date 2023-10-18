@@ -36,7 +36,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
     tau_w = 60  # growth time
     t_wk = t_k + tau_w
     h_b = 75  # centre of turbulent pulse at t0
-    h_e = 10  # centre of turbulent pulse at the end
+    h_e = 15  # centre of turbulent pulse at the end
     tau_h = 900  # vertical migration timescale of the centre
     sigma_w = 30  # width of turbulent pulse at t0
     sigma_e = 50  # width of turbulent pulse at the end
@@ -47,7 +47,7 @@ def define_abraham_function(num_steps, T_end, z, t_k, r):
             h_k[t_idx] = h_b
             sigma_k[t_idx] = (sigma_w + 1) / 2 * np.tanh(
                 (t_curr - 0.5 * tau_w - t_wk) / (0.5 * tau_w) * np.arctanh((sigma_w - 1) / (sigma_w + 1))) + (
-                                         sigma_w + 1) / 2
+                                     sigma_w + 1) / 2
             s_k[t_idx] = (0.505 * r * np.tanh(
                 (t_curr - 0.5 * tau_w - t_wk) / (0.5 * tau_w) * np.arctanh(99 / 101)) + 0.505 * r)
 
@@ -66,6 +66,18 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end,
     t_k = perturbation_start
 
     return pulse_strength, define_abraham_function(num_steps, T_end, z, t_k, pulse_strength)
+
+
+def two_dim_gaussian_function(num_steps, T_end, z, start, amplitude):
+    t = np.linspace(0, T_end, num_steps)
+    time_spread = 1000
+    time_perturb_center = start*10 + time_spread / 2
+    height_perturb_center = 25
+    height_spread = 10
+    gaussian = amplitude * np.exp(
+        -((t - time_perturb_center) ** 2 / (2 * time_spread ** 2) + (z - height_perturb_center) ** 2 / (
+                2 * height_spread ** 2)))
+    return amplitude, gaussian
 
 
 def create_space_time_perturbation(params, fenics_params):
@@ -95,6 +107,16 @@ def create_space_time_perturbation(params, fenics_params):
             fenics_params.z,
             params.perturbation_strength
         )
+        perturbation_val = -1.0 * perturbation_val
+        pulse_strength_val = -1.0 * pulse_strength_val
+    elif "pos_gaussian" == params.perturbation_type:
+        pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
+                                                                         fenics_params.z, params.perturbation_start,
+                                                                         params.perturbation_strength)
+    elif "neg_gaussian" == params.perturbation_type:
+        pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
+                                                                         fenics_params.z, params.perturbation_start,
+                                                                         params.perturbation_strength)
         perturbation_val = -1.0 * perturbation_val
         pulse_strength_val = -1.0 * pulse_strength_val
     else:
