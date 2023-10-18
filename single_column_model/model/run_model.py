@@ -144,7 +144,8 @@ def run_sensitivity_study(in_params, fen_params, out_params):
     if sys.argv[1]:
         job_idx = int(sys.argv[1])-1
         task_indices = np.arange(0, in_params.num_simulation+in_params.num_proc, in_params.num_proc)
-        unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx+1]-1]
+        print(job_idx, task_indices[job_idx]:task_indices[job_idx+1])
+        unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx+1]]
 
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
