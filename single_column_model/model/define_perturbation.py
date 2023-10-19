@@ -68,12 +68,10 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end,
     return pulse_strength, define_abraham_function(num_steps, T_end, z, t_k, pulse_strength)
 
 
-def two_dim_gaussian_function(num_steps, T_end, z, start, amplitude):
+def two_dim_gaussian_function(num_steps, T_end, z, start, amplitude, time_spread, height_spread):
     t = np.linspace(0, T_end, num_steps)
-    time_spread = 450
     time_perturb_center = start*10 + time_spread / 2
     height_perturb_center = 20
-    height_spread = 4
     gaussian = amplitude * np.exp(
         -((t - time_perturb_center) ** 2 / (2 * time_spread ** 2) + (z - height_perturb_center) ** 2 / (
                 2 * height_spread ** 2)))
@@ -112,16 +110,18 @@ def create_space_time_perturbation(params, fenics_params):
     elif "pos_gaussian" == params.perturbation_type:
         pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
                                                                          fenics_params.z, params.perturbation_start,
-                                                                         params.perturbation_strength)
+                                                                         params.perturbation_strength,
+                                                                         params.time_spread, params.height_spread)
     elif "neg_gaussian" == params.perturbation_type:
         pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
                                                                          fenics_params.z, params.perturbation_start,
-                                                                         params.perturbation_strength)
+                                                                         params.perturbation_strength,
+                                                                         params.time_spread, params.height_spread)
         perturbation_val = -1.0 * perturbation_val
         pulse_strength_val = -1.0 * pulse_strength_val
     else:
         raise ValueError(f'The specified perturbation type {params.perturbation_type} is not valid. Valid options are:'
-                         f'mod_abraham and neg_mod_abraham if {params.perturbation_param} is perturbed.')
+                         f'(neg_)mod_abraham and (neg)pos_gaussian if {params.perturbation_param} is perturbed.')
 
     return pulse_strength_val, perturbation_val
 

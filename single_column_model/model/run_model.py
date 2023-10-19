@@ -96,7 +96,7 @@ def run_single_simulation_model(
             model_param.u_G = np.around(u_G_param, 1)
         if perturb_param is not None:
             model_param.perturbation_strength = np.around(perturb_param, 3)
-        else:
+        elif model_param.perturbation_param is not 'none':
             model_param.perturbation_strength = np.around(model_param.perturbation_max, 3)
     # Define file name for initial conditions
     model_param.init_path = (
@@ -141,10 +141,9 @@ def run_sensitivity_study(in_params, fen_params, out_params):
         sim_range = np.arange(0,in_params.num_simulation,1)
         unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list, sim_range)).T.reshape(-1, 3)
 
-    if sys.argv[1]:
+    if len(sys.argv)>1:
         job_idx = int(sys.argv[1])-1
         task_indices = np.arange(0, in_params.num_simulation+in_params.num_proc, in_params.num_proc)
-        print(job_idx, task_indices[job_idx]:task_indices[job_idx+1])
         unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx+1]]
 
     # Solve model for every parameter combination
