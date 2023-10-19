@@ -111,12 +111,14 @@ def create_space_time_perturbation(params, fenics_params):
         pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
                                                                          fenics_params.z, params.perturbation_start,
                                                                          params.perturbation_strength,
-                                                                         params.time_spread, params.height_spread)
+                                                                         params.perturbation_time_spread,
+                                                                         params.perturbation_height_spread)
     elif "neg_gaussian" == params.perturbation_type:
         pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
                                                                          fenics_params.z, params.perturbation_start,
                                                                          params.perturbation_strength,
-                                                                         params.time_spread, params.height_spread)
+                                                                         params.perturbation_time_spread,
+                                                                         params.perturbation_height_spread)
         perturbation_val = -1.0 * perturbation_val
         pulse_strength_val = -1.0 * pulse_strength_val
     else:
