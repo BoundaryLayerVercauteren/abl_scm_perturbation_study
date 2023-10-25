@@ -68,9 +68,9 @@ def create_space_time_abraham_perturbation(num_steps, perturbation_start, T_end,
     return pulse_strength, define_abraham_function(num_steps, T_end, z, t_k, pulse_strength)
 
 
-def two_dim_gaussian_function(num_steps, T_end, z, start, amplitude, time_spread, height_spread):
+def two_dim_gaussian_function(num_steps, T_end, z, start, amplitude, time_spread, height_spread, dt):
     t = np.linspace(0, T_end, num_steps)
-    time_perturb_center = start*10 + time_spread / 2
+    time_perturb_center = start*dt + time_spread / 2
     height_perturb_center = 20
     gaussian = amplitude * np.exp(
         -((t - time_perturb_center) ** 2 / (2 * time_spread ** 2) + (z - height_perturb_center) ** 2 / (
@@ -112,13 +112,15 @@ def create_space_time_perturbation(params, fenics_params):
                                                                          fenics_params.z, params.perturbation_start,
                                                                          params.perturbation_strength,
                                                                          params.perturbation_time_spread,
-                                                                         params.perturbation_height_spread)
+                                                                         params.perturbation_height_spread,
+                                                                         params.dt)
     elif "neg_gaussian" == params.perturbation_type:
         pulse_strength_val, perturbation_val = two_dim_gaussian_function(params.num_steps, params.T_end,
                                                                          fenics_params.z, params.perturbation_start,
                                                                          params.perturbation_strength,
                                                                          params.perturbation_time_spread,
-                                                                         params.perturbation_height_spread)
+                                                                         params.perturbation_height_spread,
+                                                                         params.dt)
         perturbation_val = -1.0 * perturbation_val
         pulse_strength_val = -1.0 * pulse_strength_val
     else:
