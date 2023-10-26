@@ -140,15 +140,15 @@ def run_sensitivity_study(in_params, fen_params, out_params):
         sim_range = np.arange(0, in_params.num_simulation, 1)
         unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list, sim_range)).T.reshape(-1, 3)
 
-    if len(sys.argv) > 1:
-        job_idx = int(sys.argv[1]) - 1
-        if in_params.num_simulation > 1:
-            task_indices = np.arange(0, in_params.num_simulation + in_params.num_proc, in_params.num_proc)
-        else:
-            task_indices = np.arange(0, np.shape(unique_param_combinations)[0], in_params.num_proc)
-            if task_indices[-1] != np.shape(unique_param_combinations)[0]:
-                task_indices = np.append(task_indices, np.shape(unique_param_combinations)[0])
-        unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx + 1]]
+    # if len(sys.argv) > 1:
+    #     job_idx = int(sys.argv[1]) - 1
+    #     if in_params.num_simulation > 1:
+    #         task_indices = np.arange(0, in_params.num_simulation + in_params.num_proc, in_params.num_proc)
+    #     else:
+    #         task_indices = np.arange(0, np.shape(unique_param_combinations)[0], in_params.num_proc)
+    #         if task_indices[-1] != np.shape(unique_param_combinations)[0]:
+    #             task_indices = np.append(task_indices, np.shape(unique_param_combinations)[0])
+    #     unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx + 1]]
 
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
@@ -165,11 +165,40 @@ def run_model():
     """Main function to run model depending on user specification"""
     input_params, fenics_params, output_params = make_setup_for_model_run()
 
-    if input_params.sensitivity_study:
-        run_sensitivity_study(input_params, fenics_params, output_params)
-    elif input_params.u_G_range is not None:
-        run_multi_uG_simulations(input_params, fenics_params, output_params)
+    if input_params.sensitivity_study and input_params.perturbation_param=='pde_all':
+        perturb_param = ['pde_u', 'pde_theta']
+        perturb_type = ['pos_gaussian', 'neg_gaussian']
+        if input_params.perturbation_time_spread == 'grid':
+            perturbation_time_spread = np.array([1,5,10])
+            perturbation_space_spread = np.arange(100, 500, 100)
+        else:
+            perturbation_time_spread = input_params.perturbation_time_spread
+            perturbation_space_spread = input_params.perturbation_space_spread
+
+        perturb_param_comb = np.array(np.meshgrid(perturb_param,
+                                                  perturb_type,
+                                                  perturbation_time_spread,
+                                                  perturbation_space_spread)).T.reshape(-1, 4)
+        if len(sys.argv) > 1:
+            job_idx = int(sys.argv[1]) - 1
+            task_indices = np.arange(0, np.shape(perturb_param_comb)[0], int(sys.argv[2]))
+            if task_indices[-1] != np.shape(perturb_param_comb)[0]:
+                task_indices = np.append(task_indices, np.shape(perturb_param_comb)[0])
+            perturb_param_comb = perturb_param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
+
+            for elem in perturb_param_comb:
+                input_params, fenics_params, output_params = make_setup_for_model_run()
+                input_params.perturbation_param = elem[0]
+                input_params.perturbation_type = elem[1]
+                input_params.perturbation_time_spread = int(elem[2])
+                input_params.perturbation_space_spread = int(elem[3])
+                run_sensitivity_study(input_params, fenics_params, output_params)
     else:
-        run_single_simulation_model(input_params, fenics_params, output_params)
+        if input_params.sensitivity_study:
+            run_sensitivity_study(input_params, fenics_params, output_params)
+        elif input_params.u_G_range is not None:
+            run_multi_uG_simulations(input_params, fenics_params, output_params)
+        else:
+            run_single_simulation_model(input_params, fenics_params, output_params)
 
     return output_params.solution_directory
