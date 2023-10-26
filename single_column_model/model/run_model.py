@@ -170,15 +170,15 @@ def run_model():
         perturb_type = ['pos_gaussian', 'neg_gaussian']
         if input_params.perturbation_time_spread == 'grid':
             perturbation_time_spread = np.array([1,5,10])
-            perturbation_space_spread = np.arange(100, 500, 100)
+            perturbation_height_spread = np.arange(100, 500, 100)
         else:
             perturbation_time_spread = input_params.perturbation_time_spread
-            perturbation_space_spread = input_params.perturbation_space_spread
+            perturbation_height_spread = input_params.perturbation_height_spread
 
         perturb_param_comb = np.array(np.meshgrid(perturb_param,
                                                   perturb_type,
                                                   perturbation_time_spread,
-                                                  perturbation_space_spread)).T.reshape(-1, 4)
+                                                  perturbation_height_spread)).T.reshape(-1, 4)
         if len(sys.argv) > 1:
             job_idx = int(sys.argv[1]) - 1
             task_indices = np.arange(0, np.shape(perturb_param_comb)[0], int(sys.argv[2]))
@@ -191,7 +191,7 @@ def run_model():
                 input_params.perturbation_param = elem[0]
                 input_params.perturbation_type = elem[1]
                 input_params.perturbation_time_spread = int(elem[2])
-                input_params.perturbation_space_spread = int(elem[3])
+                input_params.perturbation_height_spread = int(elem[3])
                 run_sensitivity_study(input_params, fenics_params, output_params)
     else:
         if input_params.sensitivity_study:
