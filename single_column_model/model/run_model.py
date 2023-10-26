@@ -182,7 +182,7 @@ def run_model():
                                                   perturbation_height_spread)).T.reshape(-1, 4)
         if len(sys.argv) > 1:
             job_idx = int(sys.argv[1]) - 1
-            task_indices = np.arange(0, np.shape(perturb_param_comb)[0], int(sys.argv[2]))
+            task_indices = np.linspace(0, np.shape(perturb_param_comb)[0], int(sys.argv[2])).astype(int)
             if task_indices[-1] != np.shape(perturb_param_comb)[0]:
                 task_indices = np.append(task_indices, np.shape(perturb_param_comb)[0])
             perturb_param_comb = perturb_param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
