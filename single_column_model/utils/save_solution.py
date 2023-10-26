@@ -31,9 +31,9 @@ def create_solution_directory(params):
     timestr = time.strftime("%Y%m%d_%H%M%S")
     # Define name of directory where solutions will be stored
     solution_directory = 'single_column_model/solution/' + timestr + '/'
-    if params.perturbation_param=='pde_all':
+    if params.perturbation_param!='none':
         solution_directory += f'{params.perturbation_type}_{params.perturbation_param}/'
-    if params.perturbation_time_spread == 'grid':
+    if 'gaussian' in params.perturbation_type:
         solution_directory += f'{params.perturbation_time_spread}_{params.perturbation_height_spread}/'
     # Create directory (if it does not exist already)
     current_directory = os.getcwd()
