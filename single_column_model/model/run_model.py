@@ -170,8 +170,8 @@ def run_model():
         perturb_param = ['pde_u', 'pde_theta']
         perturb_type = ['pos_gaussian', 'neg_gaussian']
         if input_params.perturbation_time_spread == 'grid':
-            perturbation_time_spread = np.array([1,5,10])
-            perturbation_height_spread = np.arange(100, 500, 100)
+            perturbation_time_spread = np.arange(100, 500, 100)
+            perturbation_height_spread = np.array([1,5,10])
         else:
             perturbation_time_spread = input_params.perturbation_time_spread
             perturbation_height_spread = input_params.perturbation_height_spread
