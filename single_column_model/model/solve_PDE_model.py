@@ -41,6 +41,8 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, 
 def get_richardson_number_stochastic_grid(fenics_param, model_param):
     # Calculate richardson number for current time step
     richardson_num_det = define_PDE_model.Ri(fenics_param, model_param)
+    # Transform Ri from fenics variable to numpy array
+    richardson_num_det = transform_values.project_fenics_function_to_numpy_array(richardson_num_det, fenics_param.Q)
     # Interpolate richardson number from deterministic to stochastic grid
     interpolation_func = interpolate.interp1d(fenics_param.z[:, 0], richardson_num_det, fill_value='extrapolate')
     richardson_num_stoch = interpolation_func(model_param.stoch_grid)[:, 0]
@@ -78,6 +80,10 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
             )
             # Solve PDE model with Finite Element Method in space
             solver = define_PDE_model.prepare_fenics_solver(fenics_params, perturbed_F)
+        else:
+            perturbation_at_time_idx=[]
+            # Solve PDE model with Finite Element Method in space
+            solver = define_PDE_model.prepare_fenics_solver(fenics_params, fenics_params.F)
 
         try:
             solver.solve()
@@ -108,8 +114,8 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
                 phi_0 = np.copy(phi_sol_stoch_grid)
 
             # Interpolate phi from stochastic grid to deterministic one
-            phi_sol_extrapolated = interpolate.interp1d(params.s_grid[:, 0], phi_sol_stoch_grid, fill_value='extrapolate')
-            phi_sol_det_grid[0:params.Hs_ind] = phi_sol_extrapolated(fenics_params.z[0:params.Hs_ind, 0])
+            phi_sol_extrapolated = interpolate.interp1d(params.stoch_grid[:, 0], phi_sol_stoch_grid, fill_value='extrapolate')
+            phi_sol_det_grid[0:params.Hs_det_idx] = phi_sol_extrapolated(fenics_params.z[0:params.Hs_det_idx, 0])
 
             # change the value of the stochastic stab correction
             phi_sol = fe.project(fenics_params.f_ms, fenics_params.Q)

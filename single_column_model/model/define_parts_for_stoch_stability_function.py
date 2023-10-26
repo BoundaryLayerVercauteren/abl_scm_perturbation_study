@@ -3,7 +3,7 @@ import numpy as np
 
 def make_stochastic_grid(params, z):
     H_s_det_idx, H_s, N_s, delta_s = calculate_stochastic_grid_parameter(params, z)
-    stoch_grid = define_grid_for_stoch_stab_function(params.z0, H_s, N_s)
+    stoch_grid = define_grid_for_stoch_stab_function(params.z0, params.z0 + H_s, N_s)
 
     return stoch_grid, H_s_det_idx, H_s, N_s, delta_s
 
@@ -16,12 +16,12 @@ def calculate_stochastic_grid_parameter(model_params, det_grid):
 
     # Step 2: Height of stochastic grid
     # Calculate height of stochastic grid
-    H_s_total = model_params.H_sl * model_params.stoch_domain_ext
+    H_s_total = model_params.z_l * model_params.stoch_domain_ext
     # Find corresponding grid point of the deterministic grid
     H_s_total_det_idx = np.abs(det_grid - H_s_total).argmin()
     H_s_total_det = det_grid[H_s_total_det_idx]
     # The stochastic grid starts at s=0 not z0
-    H_s_total = H_s_total_det
+    H_s_total = H_s_total_det - model_params.z0
 
     # Step 3: Number of grid points
     N_s = int(np.ceil(H_s_total / delta_s))
@@ -64,10 +64,6 @@ def define_stoch_stab_function_param_Sigma(Ri, sigma_s=0.0):
 
 
 def initialize_SDEsolver(params):
-    # The space discretization needs to be equidistant. We will re-map it for the variable: "mixing lenght"
-    # Space points
-    params.s_grid = np.linspace(params.z0, params.z0 + params.Hs, params.Ns_n)
-
     M = 1
     q = 15
 

@@ -13,27 +13,27 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = True  # load existing initial condition
 
-    T_end_h: float = 12  # hour
+    T_end_h: float = 2  # hour
     T_end: float = T_end_h * 3600  # seconds
-    dt: float = 10  # seconds
+    dt: float = 1  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    sensitivity_study: bool = True  # perform sensitivity study
-    u_G_range: np.ndarray = np.arange(1.0,3.2,0.1)
+    sensitivity_study: bool = False  # perform sensitivity study
+    u_G_range: np.ndarray = None #np.arange(1.7,1.8,0.1)
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
-    perturbation_param: str = 'pde_u'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad, stab_func]
+    perturbation_param: str = 'stab_func'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad, stab_func]
     perturbation_type: str = 'pos_gaussian'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
-    perturbation_max: float = 0.013  # strength of perturbation
+    perturbation_max: float = 0.006  # strength of perturbation
     perturbation_step_size: float = 0.001  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
     perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
     perturbation_time_spread: int = 500
-    perturbation_height_spread: int = 5
+    perturbation_height_spread: int = 10
 
     num_simulation: int = 1
-    num_proc: int = 125
+    num_proc: int = 1
 
     # file name for initial conditions
     init_cond_path: str = f'{stab_func_type}_steady_state_'
@@ -49,8 +49,10 @@ class Parameters:
     H: float = 300.0  # domain height in meters  ! should be H > z_l * s_dom_ext
 
     # stochastic model specific parameter
-    H_sl: float = 50  # Height of the stochastic layer (excluding the blending height)
+    #H_sl: float = 50  # Height of the stochastic layer (excluding the blending height)
     stoch_domain_ext: float = 2  # H_sl*stoch_domain_ext is the height of the stochastic layer incl. the blending height
+    z_l: float = 50  # height [m] till the stochastic model is active. Above the classical mixing is active
+    lz: float = 20  # covariance length in height [m]
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
     theta_m: float = 290  # restoring temperature of peat soil [K]
@@ -68,7 +70,7 @@ class Parameters:
     sigma: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
 
     # Geostrophic wind forcing
-    u_G: float = 1.6  # u geostrophic wind
+    u_G: float = 1.7  # u geostrophic wind
     v_G: float = 0.0  # v geostrophic wind
 
     latitude: float = 40  # latitude in grad
