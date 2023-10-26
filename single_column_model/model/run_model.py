@@ -17,7 +17,7 @@ from single_column_model.model import (define_initial_and_boundary_conditions,
 from single_column_model.utils import save_solution
 
 
-def make_setup_for_model_run():
+def make_setup_for_model_run(create_dir=True):
     # Initialize parameters
     params, fparams, output = parameters.initialize_project_variables()
 
@@ -25,8 +25,9 @@ def make_setup_for_model_run():
     if params.perturbation_type == 'none':
         params.perturbation_strength = 'nan'
 
-    # Create directory for solutions and initial conditions (if required)
-    output.solution_directory, output.init_directory = save_solution.create_solution_directory(params)
+    if create_dir:
+        # Create directory for solutions and initial conditions (if required)
+        output.solution_directory, output.init_directory = save_solution.create_solution_directory(params)
 
     return params, fparams, output
 
@@ -187,11 +188,12 @@ def run_model():
             perturb_param_comb = perturb_param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
 
             for elem in perturb_param_comb:
-                input_params, fenics_params, output_params = make_setup_for_model_run()
+                input_params, fenics_params, output_params = make_setup_for_model_run(create_dir=False)
                 input_params.perturbation_param = elem[0]
                 input_params.perturbation_type = elem[1]
                 input_params.perturbation_time_spread = int(elem[2])
                 input_params.perturbation_height_spread = int(elem[3])
+                output_params.solution_directory, output_params.init_directory = save_solution.create_solution_directory(input_params)
                 run_sensitivity_study(input_params, fenics_params, output_params)
     else:
         if input_params.sensitivity_study:
