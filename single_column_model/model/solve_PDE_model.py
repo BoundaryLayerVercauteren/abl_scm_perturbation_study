@@ -105,7 +105,7 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
         if params.perturbation_param == 'stab_func':
             # Get stoch stability function parameters for current u,v, theta
             Ri_stoch = get_richardson_number_stochastic_grid(fenics_params, params)
-            Lambda, Upsilon, Sigma = define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(Ri_stoch)
+            Lambda, Upsilon, Sigma = define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(Ri_stoch, params.perturbation_strength)
 
             # Calculate phi on stochastic grid
             for _ in range(tau_s):
