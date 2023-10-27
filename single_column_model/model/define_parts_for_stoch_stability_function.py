@@ -36,10 +36,10 @@ def define_grid_for_stoch_stab_function(lowest_grid_point, height, num_grid_poin
     return np.linspace(lowest_grid_point, height, num_grid_points)
 
 
-def get_stoch_stab_function_parameter(richardson_num):
+def get_stoch_stab_function_parameter(richardson_num, perturbation_strength):
     return (define_stoch_stab_function_param_Lambda(richardson_num),
             define_stoch_stab_function_param_Upsilon(richardson_num),
-            define_stoch_stab_function_param_Sigma(richardson_num))
+            define_stoch_stab_function_param_Sigma(richardson_num, sigma_s=perturbation_strength))
 
 
 def define_stoch_stab_function_param_Lambda(Ri):
