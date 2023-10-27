@@ -22,7 +22,7 @@ def make_setup_for_model_run(create_dir=True):
     params, fparams, output = parameters.initialize_project_variables()
 
     # To make naming of output files correct
-    if params.perturbation_type == 'none':
+    if params.perturbation_type == 'none' and params.perturbation_param != 'stab_func':
         params.perturbation_strength = 'nan'
 
     if create_dir:
@@ -86,7 +86,7 @@ def run_single_simulation_model(
     """Function to perform one single model run for a given set of parameters."""
     # Update parameter
     model_param.sim_index = sim_index
-    if u_G_param is not None and len(u_G_param) > 1:
+    if u_G_param is not None and isinstance(u_G_param, np.ndarray):
         model_param.u_G = u_G_param[0]
         model_param.perturbation_strength = u_G_param[1]
         if len(u_G_param) > 2:
@@ -168,7 +168,7 @@ def run_model():
 
     if input_params.sensitivity_study and input_params.perturbation_param=='pde_all':
         perturb_param = ['pde_u', 'pde_theta']
-        perturb_type = ['pos_gaussian', 'neg_gaussian']
+        perturb_type = ['pos', 'neg']
         if input_params.perturbation_time_spread == 'grid':
             perturbation_time_spread = np.arange(100, 500, 100)
             perturbation_height_spread = np.array([1,5,10])
