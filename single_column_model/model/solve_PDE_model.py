@@ -13,14 +13,14 @@ from single_column_model.utils import save_solution, transform_values
 
 def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test, idx):
     """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
-    if "pde" in perturbation_param:
+    if perturbation_param=='u' or perturbation_param=='theta':
         # Transform perturbation values for current time step to fenics function. This is necessary when the PDEs
         # themselves are perturbed
         cur_perturbation = transform_values.convert_numpy_array_to_fenics_function(perturbation[:, idx], Q)
         # Add perturbation to one of the differential equations in the weak form.
-        if perturbation_param == "pde_u":
+        if perturbation_param == "u":
             perturbed_weak_form = det_weak_form - cur_perturbation * u_test * fe.dx
-        elif perturbation_param == "pde_theta":
+        elif perturbation_param == "theta":
             perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
         else:
             raise SystemExit(f"\n The given perturbation ({perturbation_param}) is not defined.")

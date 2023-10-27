@@ -31,10 +31,6 @@ def create_solution_directory(params):
     timestr = time.strftime("%Y%m%d_%H%M%S")
     # Define name of directory where solutions will be stored
     solution_directory = 'single_column_model/solution/' + timestr + '/'
-    if params.perturbation_param!='none':
-        solution_directory += f'{params.perturbation_type}_{params.perturbation_param}/'
-    if 'gaussian' in params.perturbation_type:
-        solution_directory += f'{params.perturbation_time_spread}_{params.perturbation_height_spread}/'
     # Create directory (if it does not exist already)
     current_directory = os.getcwd()
     sol_directory = os.path.join(current_directory, solution_directory)
@@ -52,6 +48,17 @@ def create_solution_directory(params):
         init_directory = ''
     return sol_directory, init_directory
 
+
+def create_sub_solution_directory(params, output):
+    if params.perturbation_time_spread!=None and params.perturbation_height_spread!=None:
+        output.solution_directory += f'{params.perturbation_time_spread}_{params.perturbation_height_spread}/'
+    if params.perturbation_param!=None:
+        output.solution_directory += f'{params.perturbation_type}_{params.perturbation_param}/'
+
+    if not os.path.exists(output.solution_directory):
+        os.makedirs(output.solution_directory)
+
+    return output
 
 def save_parameters_in_file(params, output, file_spec=''):
     """

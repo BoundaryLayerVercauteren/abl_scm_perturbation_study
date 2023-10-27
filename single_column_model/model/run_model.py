@@ -74,37 +74,36 @@ def combine_model_solver_functions(fenics_params, params, output):
         f"uG_{params.u_G}_perturbstr_{params.perturbation_strength}_sim_{params.sim_index}",
     )
 
+def setup_simulation_parameters(input_val, parameter_class_val):
+    if not isinstance(input_val, np.ndarray):
+        parameter_class_val.u_G = input_val
+    else:
+        parameter_class_val.perturbation_param = input_val[0]
+        parameter_class_val.perturbation_type = input_val[1]
+        parameter_class_val.perturbation_time_spread = int(input_val[2])
+        parameter_class_val.perturbation_height_spread = int(input_val[3])
+        parameter_class_val.u_G = float(input_val[4])
+        parameter_class_val.perturbation_strength = float(input_val[5])
+        parameter_class_val.sim_index = float(input_val[6])
+
+    return parameter_class_val
+
 
 def run_single_simulation_model(
         model_param,
         fenics_param,
         output_val,
-        u_G_param=None,
-        perturb_param=None,
-        sim_index=0,
+        sim_parameters,
 ):
     """Function to perform one single model run for a given set of parameters."""
     # Update parameter
-    model_param.sim_index = sim_index
-    if u_G_param is not None and isinstance(u_G_param, np.ndarray):
-        model_param.u_G = u_G_param[0]
-        model_param.perturbation_strength = u_G_param[1]
-        if len(u_G_param) > 2:
-            model_param.sim_index = u_G_param[2]
-    else:
-        if u_G_param is not None:
-            model_param.u_G = np.around(u_G_param, 1)
-        if perturb_param is not None:
-            model_param.perturbation_strength = np.around(perturb_param, 3)
-        elif model_param.perturbation_param is not 'none':
-            model_param.perturbation_strength = np.around(model_param.perturbation_max, 3)
+    model_param = setup_simulation_parameters(sim_parameters, model_param)
+
     # Define file name for initial conditions
-    model_param.init_path = (
-            output_val.init_directory
-            + model_param.init_cond_path
-            + "Ug"
-            + str(model_param.u_G)
-    )
+    model_param.init_path = f'{output_val.init_directory}{model_param.init_cond_path}Ug{model_param.u_G}'
+
+    # Creat sub directory for current simulation type
+    output_val = save_solution.create_sub_solution_directory(model_param, output_val)
 
     # Check if initial condition file exists
     if model_param.load_ini_cond:
@@ -115,7 +114,7 @@ def run_single_simulation_model(
             return
 
     # Save parameter specifications in file for later reference
-    if sim_index == 0:
+    if model_param.sim_index == 0:
         save_solution.save_parameters_in_file(
             model_param,
             output_val,
@@ -126,30 +125,66 @@ def run_single_simulation_model(
     combine_model_solver_functions(fenics_param, model_param, output_val)
 
 
+def setup_for_sensitivity_study(parameters):
+    if parameters.perturbation_param == 'u and theta' or parameters.perturbation_param == 'theta and u':
+        perturbation_param_list = ['u', 'theta']
+    else:
+        perturbation_param_list = [parameters.perturbation_param]
+
+    if parameters.perturbation_type == 'pos and neg' or parameters.perturbation_type == 'neg and pos':
+        perturbation_type_list = ['pos', 'neg']
+    else:
+        perturbation_type_list = [parameters.perturbation_type]
+
+    if parameters.perturbation_time_spread=='all':
+        perturbation_time_spread_list = np.arange(100, 500, 100)
+    else:
+        perturbation_time_spread_list = [parameters.perturbation_time_spread]
+
+    if parameters.perturbation_height_spread=='all':
+        perturbation_height_spread_list = np.array([1, 5, 10])
+    else:
+        perturbation_height_spread_list = [parameters.perturbation_height_spread]
+
+    u_G_list = np.round(parameters.u_G_range, 1)
+
+    perturb_strength_list = np.round(np.arange(0, parameters.perturbation_max, parameters.perturbation_step_size), 4)
+
+    sim_idx_list = np.arange(0,parameters.num_simulation).astype(int)
+
+    param_combination = np.array(np.meshgrid(perturbation_param_list,
+                                             perturbation_type_list,
+                                             perturbation_time_spread_list,
+                                             perturbation_height_spread_list,
+                                             u_G_list,
+                                             perturb_strength_list,
+                                             sim_idx_list)
+                                 ).T.reshape(-1, 7)
+
+    return param_combination
+
+
+def split_into_job_array_tasks(param_comb):
+    if len(sys.argv) > 1:
+        job_idx = int(sys.argv[1]) - 1
+        task_indices = np.linspace(0, np.shape(perturb_param_comb)[0], int(sys.argv[2])).astype(int)
+        if task_indices[-1] != np.shape(perturb_param_comb)[0]:
+            task_indices = np.append(task_indices, np.shape(perturb_param_comb)[0])
+        perturb_param_comb = perturb_param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
+
+
 def run_sensitivity_study(in_params, fen_params, out_params):
     """Function to run model for a combination of parameters in parallel."""
     # Make sure that all required parameter are given
     if in_params.perturbation_type == 'none' or in_params.perturbation_param == 'none':
         sys.exit("The type of perturbation and to which equation it should be added needs to be specified to run the "
                  "sensitivity analysis.")
-    # Define range of parameters for geostrophic wind and strength of the perturbation
-    u_G_range = np.round(in_params.u_G_range, 1)
-    perturb_strength_list = np.round(np.arange(0, in_params.perturbation_max, in_params.perturbation_step_size), 4)
-    if in_params.num_simulation == 1:
-        unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list)).T.reshape(-1, 2)
-    else:
-        sim_range = np.arange(0, in_params.num_simulation, 1)
-        unique_param_combinations = np.array(np.meshgrid(u_G_range, perturb_strength_list, sim_range)).T.reshape(-1, 3)
+    # Define range of parameters
+    unique_param_combinations = [setup_for_sensitivity_study(in_params)[0]]
 
-    # if len(sys.argv) > 1:
-    #     job_idx = int(sys.argv[1]) - 1
-    #     if in_params.num_simulation > 1:
-    #         task_indices = np.arange(0, in_params.num_simulation + in_params.num_proc, in_params.num_proc)
-    #     else:
-    #         task_indices = np.arange(0, np.shape(unique_param_combinations)[0], in_params.num_proc)
-    #         if task_indices[-1] != np.shape(unique_param_combinations)[0]:
-    #             task_indices = np.append(task_indices, np.shape(unique_param_combinations)[0])
-    #     unique_param_combinations = unique_param_combinations[task_indices[job_idx]:task_indices[job_idx + 1]]
+    # Split parameter combination list into blocks such that each job in a job array has roughly the same amount
+    # of tasks
+    #unique_param_combinations = split_into_job_array_tasks(unique_param_combinations)
 
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
@@ -166,41 +201,11 @@ def run_model():
     """Main function to run model depending on user specification"""
     input_params, fenics_params, output_params = make_setup_for_model_run()
 
-    if input_params.sensitivity_study and input_params.perturbation_param=='pde_all':
-        perturb_param = ['pde_u', 'pde_theta']
-        perturb_type = ['pos', 'neg']
-        if input_params.perturbation_time_spread == 'grid':
-            perturbation_time_spread = np.arange(100, 500, 100)
-            perturbation_height_spread = np.array([1,5,10])
-        else:
-            perturbation_time_spread = input_params.perturbation_time_spread
-            perturbation_height_spread = input_params.perturbation_height_spread
-
-        perturb_param_comb = np.array(np.meshgrid(perturb_param,
-                                                  perturb_type,
-                                                  perturbation_time_spread,
-                                                  perturbation_height_spread)).T.reshape(-1, 4)
-        if len(sys.argv) > 1:
-            job_idx = int(sys.argv[1]) - 1
-            task_indices = np.linspace(0, np.shape(perturb_param_comb)[0], int(sys.argv[2])).astype(int)
-            if task_indices[-1] != np.shape(perturb_param_comb)[0]:
-                task_indices = np.append(task_indices, np.shape(perturb_param_comb)[0])
-            perturb_param_comb = perturb_param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
-
-            for elem in perturb_param_comb:
-                input_params, fenics_params, output_params = make_setup_for_model_run(create_dir=False)
-                input_params.perturbation_param = elem[0]
-                input_params.perturbation_type = elem[1]
-                input_params.perturbation_time_spread = int(elem[2])
-                input_params.perturbation_height_spread = int(elem[3])
-                output_params.solution_directory, output_params.init_directory = save_solution.create_solution_directory(input_params)
-                run_sensitivity_study(input_params, fenics_params, output_params)
+    if input_params.sensitivity_study:
+        run_sensitivity_study(input_params, fenics_params, output_params)
+    elif input_params.u_G_range is not None:
+        run_multi_uG_simulations(input_params, fenics_params, output_params)
     else:
-        if input_params.sensitivity_study:
-            run_sensitivity_study(input_params, fenics_params, output_params)
-        elif input_params.u_G_range is not None:
-            run_multi_uG_simulations(input_params, fenics_params, output_params)
-        else:
-            run_single_simulation_model(input_params, fenics_params, output_params)
+        run_single_simulation_model(input_params, fenics_params, output_params)
 
     return output_params.solution_directory

@@ -67,7 +67,7 @@ def create_time_perturbation(params):
     if "gauss_process" == params.perturbation_type:
         pulse_strength_val, perturbation_val = create_time_gauss_process_perturbation(
             params.num_steps,
-            params.perturbation_length,
+            params.perturbation_time_spread,
             params.perturbation_start,
             params.perturbation_strength,
         )
