@@ -13,27 +13,26 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = True  # load existing initial condition
 
-    T_end_h: float = 2  # hour
+    T_end_h: float = 12  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 1  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    sensitivity_study: bool = False  # perform sensitivity study
-    u_G_range: np.ndarray = None #np.arange(1.7,1.8,0.1)
+    sensitivity_study: bool = True  # perform sensitivity study
+    u_G_range: np.ndarray = np.arange(1.0,3.2,0.1)
 
     stab_func_type: str = 'long_tail'  # type of stability function
 
-    perturbation_param: str = 'stab_func'  # specify to which equation a perturbation is added [pde_u, pde_theta, net_rad, stab_func]
-    perturbation_type: str = 'pos_gaussian'  # type of perturbation to be added [neg_mod_abraham, mod_abraham, gauss_process]
-    perturbation_max: float = 0.006  # strength of perturbation
+    perturbation_param: str = 'u and v'  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
+    perturbation_type: str = 'neg and pos'  # type of perturbation to be added [neg, pos, neg and pos, gauss_process]
+    perturbation_max: float = 0.02  # strength of perturbation
     perturbation_step_size: float = 0.001  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
-    perturbation_length: int = num_steps - perturbation_start + 1  # length of perturbation
-    perturbation_time_spread: int = 500
-    perturbation_height_spread: int = 10
+    perturbation_time_spread: int = 500 # either int or 'all'; all indicates that a range of perturbations should be tested
+    perturbation_height_spread: int = 10 # either int or 'all'; all indicates that a range of perturbations should be tested
 
     num_simulation: int = 1
-    num_proc: int = 1
+    num_proc: int = 125
 
     # file name for initial conditions
     init_cond_path: str = f'{stab_func_type}_steady_state_'

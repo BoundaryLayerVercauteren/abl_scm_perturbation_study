@@ -11,9 +11,10 @@ from single_column_model.model import control_tke, define_initial_and_boundary_c
 from single_column_model.utils import save_solution, transform_values
 
 
-def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test, idx):
+def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test,
+                                           v_test, cur_u, cur_v, idx):
     """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
-    if perturbation_param=='u' or perturbation_param=='theta':
+    if perturbation_param=='u' or perturbation_param=='theta' or perturbation_param=='u and v':
         # Transform perturbation values for current time step to fenics function. This is necessary when the PDEs
         # themselves are perturbed
         cur_perturbation = transform_values.convert_numpy_array_to_fenics_function(perturbation[:, idx], Q)
@@ -22,6 +23,9 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, 
             perturbed_weak_form = det_weak_form - cur_perturbation * u_test * fe.dx
         elif perturbation_param == "theta":
             perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
+        elif perturbation_param == "u and v":
+            perturbed_weak_form = (det_weak_form - 0.8 * cur_perturbation * u_test * fe.dx +
+                                   0.2 * cur_perturbation * v_test * fe.dx)
         else:
             raise SystemExit(f"\n The given perturbation ({perturbation_param}) is not defined.")
 
@@ -52,6 +56,8 @@ def get_richardson_number_stochastic_grid(fenics_param, model_param):
 
 def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n, k_n):
     theta_g_n = params.theta_g_n
+    u_sol = 1 # only needed for wind speed perturbation
+    v_sol = 1
 
     # Set time step parameters for stochastic stability function
     tau_s = 10
@@ -76,6 +82,9 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
                 fenics_params.F,
                 fenics_params.u_test,
                 fenics_params.theta_test,
+                fenics_params.v_test,
+                u_sol,
+                v_sol,
                 time_idx,
             )
             # Solve PDE model with Finite Element Method in space

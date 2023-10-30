@@ -137,7 +137,7 @@ def setup_for_sensitivity_study(parameters):
         perturbation_type_list = [parameters.perturbation_type]
 
     if parameters.perturbation_time_spread=='all':
-        perturbation_time_spread_list = np.arange(100, 500, 100)
+        perturbation_time_spread_list = np.arange(100, 600, 100)
     else:
         perturbation_time_spread_list = [parameters.perturbation_time_spread]
 
@@ -164,13 +164,24 @@ def setup_for_sensitivity_study(parameters):
     return param_combination
 
 
-def split_into_job_array_tasks(param_comb):
-    if len(sys.argv) > 1:
-        job_idx = int(sys.argv[1]) - 1
-        task_indices = np.linspace(0, np.shape(perturb_param_comb)[0], int(sys.argv[2])).astype(int)
-        if task_indices[-1] != np.shape(perturb_param_comb)[0]:
-            task_indices = np.append(task_indices, np.shape(perturb_param_comb)[0])
-        perturb_param_comb = perturb_param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
+def split_into_job_array_tasks(param_comb, params):
+    if True: #len(sys.argv) > 1:
+        job_idx = 1#int(sys.argv[1]) - 1
+        total_num_jobs = 4#sys.argv[2]
+        # Define first
+        task_indices = np.arange(0, np.shape(param_comb)[0], params.num_proc).astype(int)
+        if task_indices[-1] != np.shape(param_comb)[0]:
+            task_indices = np.append(task_indices, np.shape(param_comb)[0])
+        task_start_end_idx = [(task_indices[i], task_indices[i+1]) for i in np.arange(0, len(task_indices[:-1]))]
+        print(task_start_end_idx, len(task_start_end_idx))
+        num_blocks_per_job = np.floor(len(task_start_end_idx) / total_num_jobs)
+        for block_idx in np.arange(0, len(task_start_end_idx), num_blocks_per_job):
+            task_start_end_idx_blocks = task_start_end_idx[block_idx]
+        exit()
+        block_idx = []
+        task_start_end_idx_for_current_job = task_start_end_idx#[]
+        exit()
+        #perturb_param_comb = param_comb[task_indices[job_idx]:task_indices[job_idx + 1]]
 
 
 def run_sensitivity_study(in_params, fen_params, out_params):
@@ -180,11 +191,11 @@ def run_sensitivity_study(in_params, fen_params, out_params):
         sys.exit("The type of perturbation and to which equation it should be added needs to be specified to run the "
                  "sensitivity analysis.")
     # Define range of parameters
-    unique_param_combinations = [setup_for_sensitivity_study(in_params)[0]]
+    unique_param_combinations = setup_for_sensitivity_study(in_params)
 
     # Split parameter combination list into blocks such that each job in a job array has roughly the same amount
     # of tasks
-    #unique_param_combinations = split_into_job_array_tasks(unique_param_combinations)
+    #split_into_job_array_tasks(unique_param_combinations, in_params)
 
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
