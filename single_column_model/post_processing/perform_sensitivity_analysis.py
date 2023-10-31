@@ -1,11 +1,32 @@
 import h5py
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import os
 import pandas as pd
+import scienceplots
+import cmcrameri as cram
 
-data_directory = 'single_column_model/solution/long_tail/perturbed/'
+plt.style.use("science")
+
+# set font sizes for plots
+SMALL_SIZE = 11
+MEDIUM_SIZE = 12
+BIGGER_SIZE = 15
+
+plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
+plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
+plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
+plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+data_directory = 'results/long_tail/dt_1/'
 perturb_dir = ['neg_theta/', 'pos_theta/', 'neg_u/', 'pos_u/']
+grid_dirs = ['500_10/']#'100_1/','200_1/','300_1/','400_1/','500_1/', 
+#             '100_5/','200_5/','300_5/','400_5/','500_5/',
+#             '100_10/','200_10/','300_10/','400_10/','500_10/']
 sim_directory = 'simulations/'
 
 
@@ -48,12 +69,12 @@ def calculate_perturbation_strength(variable, cur_r, r_range, height_idx):
     normalized_time_variance_data = (time_variance_data - time_variance_data.min()) / (
             time_variance_data.max() - time_variance_data.min()) + 1
     # Normalize the range of perturbation values
-    idx_r = np.where(r_range == cur_r)[0]
+    idx_r = np.where(r_range == np.abs(np.round(cur_r,3)))[0]
     normalized_r_range = (r_range - r_range.min()) / (r_range.max() - r_range.min()) + 1
     # Calculate percentage of related to variance
     perturbation_percentage = normalized_r_range[idx_r] / normalized_time_variance_data[height_idx] * 100
 
-    return perturbation_percentage
+    return perturbation_percentage[0]
 
 
 def get_temp_inversion_data(all_file_paths, r_range, z_idx=37):
@@ -115,21 +136,30 @@ def get_transition_statistics(grouped_file_paths, perturb_range):
 
 labels = [r'$\theta^-$', r'$\theta^+$', r'$u^-$', r'$u^+$']
 markers = ['v', '^', 's', 'd']
+colors = matplotlib.cm.get_cmap("cmc.batlow", 5).colors
 
-plt.figure(figsize=(10, 5))
+for grid_dir in grid_dirs:
+    plt.figure(figsize=(10, 5))
 
-for idx, dir in enumerate(perturb_dir):
-    directory_path = data_directory + dir + sim_directory
+    for idx, dir in enumerate(perturb_dir):
+        directory_path = data_directory + grid_dir + dir + sim_directory
 
-    solution_files = get_all_data_files(directory_path)
-    uGs, solution_files_uG, rs = group_solution_files_by_uG(solution_files)
-    min_r_for_uG = get_transition_statistics(solution_files_uG, rs)
+        solution_files = get_all_data_files(directory_path)
+        uGs, solution_files_uG, rs = group_solution_files_by_uG(solution_files)
+        min_r_for_uG = get_transition_statistics(solution_files_uG, rs)
 
-    plt.plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()))
-    plt.scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx])
+        plt.plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()), color=colors[idx])
+        plt.scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx], color=colors[idx])
 
-plt.ylabel('r', rotation=0)
-plt.xlabel(r'$u_G$ [m/s]')
-plt.legend()
-plt.tight_layout()
-plt.savefig(data_directory + 'sensitivity_analysis.png')
+    plt.ylabel('r', rotation=0)
+    plt.xlabel(r'$u_G$ [m/s]')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(data_directory + grid_dir + 'sensitivity_analysis.png')
+
+    # Clear memory
+    plt.cla()  # Clear the current axes.
+    plt.clf()  # Clear the current figure.
+    plt.close("all")  # Closes all the figure windows.
+
+    print(f'Plots for directory: {directory_path} are done!')
