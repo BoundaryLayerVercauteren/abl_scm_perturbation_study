@@ -51,9 +51,9 @@ def create_solution_directory(params):
 
 def create_sub_solution_directory(params, output):
     if params.perturbation_time_spread!=None and params.perturbation_height_spread!=None:
-        output.solution_directory += f'{params.perturbation_time_spread}_{params.perturbation_height_spread}/'
+        output.solution_directory = output.top_solution_directory + '{params.perturbation_time_spread}_{params.perturbation_height_spread}/'
     if params.perturbation_param!=None:
-        output.solution_directory += f'{params.perturbation_type}_{params.perturbation_param}/'
+        output.solution_directory = output.top_solution_directory + f'{params.perturbation_type}_{params.perturbation_param}/'
 
     if not os.path.exists(output.solution_directory):
         os.makedirs(output.solution_directory)

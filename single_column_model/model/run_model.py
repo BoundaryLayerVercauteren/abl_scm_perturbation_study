@@ -17,7 +17,7 @@ from single_column_model.model import (define_initial_and_boundary_conditions,
 from single_column_model.utils import save_solution
 
 
-def make_setup_for_model_run(create_dir=True):
+def make_setup_for_model_run():
     # Initialize parameters
     params, fparams, output = parameters.initialize_project_variables()
 
@@ -25,9 +25,9 @@ def make_setup_for_model_run(create_dir=True):
     if params.perturbation_type == 'none' and params.perturbation_param != 'stab_func':
         params.perturbation_strength = 'nan'
 
-    if create_dir:
-        # Create directory for solutions and initial conditions (if required)
-        output.solution_directory, output.init_directory = save_solution.create_solution_directory(params)
+    # Create directory for solutions and initial conditions (if required)
+    output.solution_directory, output.init_directory = save_solution.create_solution_directory(params)
+    output.top_solution_directory = output.solution_directory
 
     return params, fparams, output
 
