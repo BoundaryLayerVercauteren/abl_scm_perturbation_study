@@ -65,6 +65,7 @@ def group_solution_files_by_uG(file_list):
 def calculate_perturbation_strength(variable, cur_r, r_range, height_idx):
     time_idx = 15
     time_variance_data = np.var(variable[:, :time_idx], axis=1)
+    #time_variance_data = (variable[:, time_idx] - variable[:, 0]) / (15 * 60)
     # Normalize the variance vector
     normalized_time_variance_data = (time_variance_data - time_variance_data.min()) / (
             time_variance_data.max() - time_variance_data.min()) + 1
@@ -155,7 +156,7 @@ for grid_dir in grid_dirs:
     plt.xlabel(r'$u_G$ [m/s]')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(data_directory + grid_dir + 'sensitivity_analysis.png')
+    plt.savefig(data_directory + grid_dir + 'sensitivity_analysis_var.png')
 
     # Clear memory
     plt.cla()  # Clear the current axes.
