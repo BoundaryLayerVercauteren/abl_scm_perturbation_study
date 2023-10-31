@@ -14,7 +14,7 @@ from single_column_model.utils import save_solution, transform_values
 def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test,
                                            v_test, cur_u, cur_v, idx):
     """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
-    if perturbation_param=='u' or perturbation_param=='theta' or perturbation_param=='u and v':
+    if perturbation_param == 'u' or perturbation_param == 'theta' or perturbation_param == 'u and v':
         # Transform perturbation values for current time step to fenics function. This is necessary when the PDEs
         # themselves are perturbed
         cur_perturbation = transform_values.convert_numpy_array_to_fenics_function(perturbation[:, idx], Q)
@@ -24,8 +24,10 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, 
         elif perturbation_param == "theta":
             perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
         elif perturbation_param == "u and v":
-            perturbed_weak_form = (det_weak_form - 0.8 * cur_perturbation * u_test * fe.dx +
-                                   0.2 * cur_perturbation * v_test * fe.dx)
+            perturbed_weak_form = (det_weak_form
+                                   - 0.8 * cur_perturbation * u_test * fe.dx
+                                   - 0.8 * cur_perturbation * cur_v / (cur_u + 1e-16) * v_test * fe.dx
+                                   )
         else:
             raise SystemExit(f"\n The given perturbation ({perturbation_param}) is not defined.")
 
@@ -56,7 +58,7 @@ def get_richardson_number_stochastic_grid(fenics_param, model_param):
 
 def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n, k_n):
     theta_g_n = params.theta_g_n
-    u_sol = 1 # only needed for wind speed perturbation
+    u_sol = 1  # only needed for wind speed perturbation
     v_sol = 1
 
     # Set time step parameters for stochastic stability function
@@ -90,7 +92,7 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
             # Solve PDE model with Finite Element Method in space
             solver = define_PDE_model.prepare_fenics_solver(fenics_params, perturbed_F)
         else:
-            perturbation_at_time_idx=[]
+            perturbation_at_time_idx = []
             # Solve PDE model with Finite Element Method in space
             solver = define_PDE_model.prepare_fenics_solver(fenics_params, fenics_params.F)
 
@@ -114,7 +116,8 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
         if params.perturbation_param == 'stab_func':
             # Get stoch stability function parameters for current u,v, theta
             Ri_stoch = get_richardson_number_stochastic_grid(fenics_params, params)
-            Lambda, Upsilon, Sigma = define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(Ri_stoch, params.perturbation_strength)
+            Lambda, Upsilon, Sigma = define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(
+                Ri_stoch, params.perturbation_strength)
 
             # Calculate phi on stochastic grid
             for _ in range(tau_s):
@@ -123,7 +126,8 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
                 phi_0 = np.copy(phi_sol_stoch_grid)
 
             # Interpolate phi from stochastic grid to deterministic one
-            phi_sol_extrapolated = interpolate.interp1d(params.stoch_grid[:, 0], phi_sol_stoch_grid, fill_value='extrapolate')
+            phi_sol_extrapolated = interpolate.interp1d(params.stoch_grid[:, 0], phi_sol_stoch_grid,
+                                                        fill_value='extrapolate')
             phi_sol_det_grid[0:params.Hs_det_idx] = phi_sol_extrapolated(fenics_params.z[0:params.Hs_det_idx, 0])
 
             # change the value of the stochastic stab correction
