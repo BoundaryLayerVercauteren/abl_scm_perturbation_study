@@ -24,9 +24,9 @@ plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 data_directory = 'results/long_tail/dt_1/'
 perturb_dir = ['neg_theta/', 'pos_theta/', 'neg_u/', 'pos_u/']
-grid_dirs = ['500_10/']#'100_1/','200_1/','300_1/','400_1/','500_1/', 
-#             '100_5/','200_5/','300_5/','400_5/','500_5/',
-#             '100_10/','200_10/','300_10/','400_10/','500_10/']
+grid_dirs = ['100_1/','200_1/','300_1/','400_1/','500_1/', 
+            '100_5/','200_5/','300_5/','400_5/','500_5/',
+            '100_10/','200_10/','300_10/','400_10/','500_10/']
 sim_directory = 'simulations/'
 
 
@@ -64,8 +64,8 @@ def group_solution_files_by_uG(file_list):
 
 def calculate_perturbation_strength(variable, cur_r, r_range, height_idx):
     time_idx = 15
-    time_variance_data = np.var(variable[:, :time_idx], axis=1)
-    #time_variance_data = (variable[:, time_idx] - variable[:, 0]) / (15 * 60)
+    #time_variance_data = np.var(variable[:, :time_idx], axis=1)
+    time_variance_data = (variable[:, time_idx] - variable[:, 0]) / (15 * 60)
     # Normalize the variance vector
     normalized_time_variance_data = (time_variance_data - time_variance_data.min()) / (
             time_variance_data.max() - time_variance_data.min()) + 1
@@ -152,11 +152,11 @@ for grid_dir in grid_dirs:
         plt.plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()), color=colors[idx])
         plt.scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx], color=colors[idx])
 
-    plt.ylabel('r', rotation=0)
+    plt.ylabel(r'perturbation strength [\%]')#, rotation=0)
     plt.xlabel(r'$u_G$ [m/s]')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(data_directory + grid_dir + 'sensitivity_analysis_var.png')
+    plt.savefig(data_directory + grid_dir + 'sensitivity_analysis_gradient.png')
 
     # Clear memory
     plt.cla()  # Clear the current axes.
