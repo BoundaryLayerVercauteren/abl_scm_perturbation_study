@@ -77,7 +77,8 @@ def create_time_perturbation(params):
 
 def create_perturbation(params, fenics_params, output):
     # Calculate perturbation
-    if params.perturbation_param == 'u' or params.perturbation_param == 'theta':
+    if (params.perturbation_param == 'u' or params.perturbation_param == 'theta' or
+            params.perturbation_param == 'u and v'):
         pulse_strength, perturbation = create_space_time_perturbation(
             params, fenics_params
         )
