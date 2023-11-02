@@ -25,11 +25,11 @@ class Parameters:
 
     perturbation_param: str = 'u and v'  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
     perturbation_type: str = 'neg and pos'  # type of perturbation to be added [neg, pos, neg and pos, gauss_process]
-    perturbation_max: float = 0.02  # strength of perturbation
+    perturbation_max: float = 0.015  # strength of perturbation
     perturbation_step_size: float = 0.001  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
-    perturbation_time_spread: int = 500 # either int or 'all'; all indicates that a range of perturbations should be tested
-    perturbation_height_spread: int = 10 # either int or 'all'; all indicates that a range of perturbations should be tested
+    perturbation_time_spread: int = 'all' # either int or 'all'; all indicates that a range of perturbations should be tested
+    perturbation_height_spread: int = 'all' # either int or 'all'; all indicates that a range of perturbations should be tested
 
     num_simulation: int = 1
     num_proc: int = 125
