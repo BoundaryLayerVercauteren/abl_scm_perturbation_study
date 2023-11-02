@@ -103,7 +103,7 @@ def run_single_simulation_model(
     # Define file name for initial conditions
     model_param.init_path = f'{output_val.init_directory}{model_param.init_cond_path}Ug{model_param.u_G}'
 
-    # Creat sub directory for current simulation type
+    # Creat subdirectory for current simulation type
     output_val = save_solution.create_sub_solution_directory(model_param, output_val)
 
     # Check if initial condition file exists
