@@ -3,8 +3,8 @@
 #SBATCH --account=account_name
 
 # Runtime and memory
-#SBATCH --mem=100GB
-#SBATCH --time=1-00:00:00
+#SBATCH --mem=2GB
+#SBATCH --time=01:00:00
 
 #SBATCH --ntasks-per-node=1 # number of cores, max 128 on fox
 
