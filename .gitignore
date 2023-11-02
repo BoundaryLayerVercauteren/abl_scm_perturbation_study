@@ -2,13 +2,14 @@
 *.h5
 *.nc
 *.zip
-
+*.sif
 # tar files
 *.tar
 
 # extra code
 supplementary/
 solution/
+results/
 #FLOSS/
 
 # pip virtual environment
