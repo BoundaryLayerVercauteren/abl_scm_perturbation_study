@@ -176,6 +176,8 @@ def split_into_job_array_tasks(param_comb):
         task_start_end_idx = [(task_indices[i], task_indices[i + 1]) for i in np.arange(0, len(task_indices[:-1]))]
 
         return param_comb[task_start_end_idx[job_idx][0]:task_start_end_idx[job_idx][1], :]
+    else:
+        return param_comb
 
 
 def run_sensitivity_study(in_params, fen_params, out_params):
@@ -189,11 +191,11 @@ def run_sensitivity_study(in_params, fen_params, out_params):
 
     # Split parameter combination list into blocks such that each job in a job array has roughly the same amount
     # of tasks
-    split_into_job_array_tasks(unique_param_combinations)
+    sub_param_combinations = split_into_job_array_tasks(unique_param_combinations)
 
     # Solve model for every parameter combination
     with multiprocessing.Pool(processes=in_params.num_proc) as pool:
-        pool.map(partial(run_single_simulation_model, in_params, fen_params, out_params), unique_param_combinations)
+        pool.map(partial(run_single_simulation_model, in_params, fen_params, out_params), sub_param_combinations)
 
 
 def run_multi_uG_simulations(in_params, fen_params, out_params):
