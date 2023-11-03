@@ -58,8 +58,11 @@ def create_sub_solution_directory(params, output):
         if params.perturbation_param!=None:
             output.solution_directory = output.top_solution_directory + f'{params.perturbation_type}_{params.perturbation_param.replace(" ", "_")}/'
 
-    if not os.path.exists(output.solution_directory):
+    try:
         os.makedirs(output.solution_directory)
+    except FileExistsError:
+        # directory already exists
+        pass
 
     return output
 
