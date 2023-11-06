@@ -11,7 +11,8 @@ from single_column_model.model import control_tke, define_initial_and_boundary_c
 from single_column_model.utils import save_solution, transform_values
 
 
-def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, det_weak_form, u_test, theta_test,
+def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, idx_end_perturb, idx_start_perturb, Q,
+                                           det_weak_form, u_test, theta_test,
                                            v_test, cur_u, cur_v, idx):
     """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
     if perturbation_param == 'u' or perturbation_param == 'theta' or perturbation_param == 'u and v':
@@ -25,8 +26,7 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q, 
             perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
         elif perturbation_param == "u and v":
             u_np = transform_values.project_fenics_function_to_numpy_array(cur_u, Q)
-            idx_no_perturb = np.where(perturbation[:, idx]==0)[0][0]
-            if any(u_np[:idx_no_perturb] < 1.0):
+            if any(u_np[idx_start_perturb:idx_end_perturb] < 1.0):
                 perturbed_weak_form = det_weak_form - cur_perturbation * u_test * fe.dx
             else:
                 perturbed_weak_form = (det_weak_form
@@ -79,12 +79,13 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
     saving_idx = 0  # index for writing
 
     for time_idx in range(params.num_steps):
-
         if params.perturbation_param != 'stab_func':
             # Add perturbation to weak formulation of PDE model
             perturbation_at_time_idx, perturbed_F = add_perturbation_to_weak_form_of_model(
                 params.perturbation_param,
                 output.perturbation,
+                np.where(fenics_params.z >= (20 + 2 * params.perturbation_height_spread))[0][0],
+                np.where(fenics_params.z <= (20 - 2 * params.perturbation_height_spread))[0][-1],
                 fenics_params.Q,
                 fenics_params.F,
                 fenics_params.u_test,
