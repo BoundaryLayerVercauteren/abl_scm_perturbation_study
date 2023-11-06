@@ -81,8 +81,14 @@ def setup_simulation_parameters(input_val, parameter_class_val):
     else:
         parameter_class_val.perturbation_param = input_val[0]
         parameter_class_val.perturbation_type = input_val[1]
-        parameter_class_val.perturbation_time_spread = int(input_val[2])
-        parameter_class_val.perturbation_height_spread = int(input_val[3])
+        if input_val[2] is not None:
+            parameter_class_val.perturbation_time_spread = int(input_val[2])
+        else:
+            parameter_class_val.perturbation_time_spread = None
+        if input_val[3] is not None:
+            parameter_class_val.perturbation_height_spread = int(input_val[3])
+        else:
+            parameter_class_val.perturbation_height_spread = None
         parameter_class_val.u_G = float(input_val[4])
         parameter_class_val.perturbation_strength = float(input_val[5])
         parameter_class_val.sim_index = float(input_val[6])
