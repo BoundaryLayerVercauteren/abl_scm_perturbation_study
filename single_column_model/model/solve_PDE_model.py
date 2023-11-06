@@ -27,9 +27,9 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q,
         elif perturbation_param == "u and v":
             v_np = transform_values.project_fenics_function_to_numpy_array(cur_v, Q)
             perturbation_v = perturbation[:, idx]
-            for idx_v, val in enumerate(v_np):
-                if val < 0.1:
-                    perturbation_v[idx_v] = 0
+            # for idx_v, val in enumerate(v_np):
+            #     if val < 0.1:
+            #         perturbation_v[idx_v] = 0
             cur_perturbation_v = transform_values.convert_numpy_array_to_fenics_function(perturbation_v, Q)
             perturbed_weak_form = (det_weak_form
                                    - 1 * cur_perturbation * u_test * fe.dx
