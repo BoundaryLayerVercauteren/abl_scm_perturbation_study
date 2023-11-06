@@ -11,7 +11,7 @@ from single_column_model.model import control_tke, define_initial_and_boundary_c
 from single_column_model.utils import save_solution, transform_values
 
 
-def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, idx_end_perturb, idx_start_perturb, Q,
+def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q,
                                            det_weak_form, u_test, theta_test,
                                            v_test, cur_u, cur_v, idx):
     """Function to add perturbation values for the current time step to the weak formulation of the PDE model."""
@@ -86,8 +86,6 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
             perturbation_at_time_idx, perturbed_F = add_perturbation_to_weak_form_of_model(
                 params.perturbation_param,
                 output.perturbation,
-                np.where(fenics_params.z >= (20 + 2 * params.perturbation_height_spread))[0][0],
-                np.where(fenics_params.z <= (20 - 2 * params.perturbation_height_spread))[0][-1],
                 fenics_params.Q,
                 fenics_params.F,
                 fenics_params.u_test,
