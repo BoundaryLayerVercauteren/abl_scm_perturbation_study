@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scienceplots
 
-#plt.style.use("science")
+plt.style.use("science")
 
 # set font sizes for plots
 SMALL_SIZE = 11
@@ -28,11 +28,11 @@ def define_vandewiel_short_tail_stab_function(Ri, alpha=5):
     return (1 - alpha * Ri) ** 2
 
 
-def define_delage_long_tail_stab_function(Ri):
+def define_delage_short_tail_stab_function(Ri):
     return 1 + 12 * Ri
 
 
-def define_delage_short_tail_stab_function(Ri):
+def define_delage_long_tail_stab_function(Ri):
     return 1 + 4.7 * Ri
 
 
@@ -52,19 +52,19 @@ def make_comparison():
     ax1.plot(
         richardson_num,
         vec_delage_long_tail_stab_func(richardson_num),
-        label=r"$1 + 12  Ri$ (long)",
+        label=r"$1 + 12  Ri$",
         color=color[1],
         marker=markers[1],
         markevery=100,
     )
-    ax1.plot(
-        richardson_num,
-        vec_delage_short_tail_stab_func(richardson_num),
-        label=r"$1 + 4.7  Ri$ (short)",
-        color=color[2],
-        marker=markers[2],
-        markevery=100,
-    )
+    # ax1.plot(
+    #     richardson_num,
+    #     vec_delage_short_tail_stab_func(richardson_num),
+    #     label=r"$1 + 4.7  Ri$ (short)",
+    #     color=color[2],
+    #     marker=markers[2],
+    #     markevery=100,
+    # )
 
     ax1.set_xscale('log')
     ax1.set_xlabel("Ri")
