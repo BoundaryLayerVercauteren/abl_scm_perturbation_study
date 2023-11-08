@@ -6,12 +6,13 @@ import numpy as np
 import os
 import random
 import traceback
+import scienceplots
 
-from single_column_model.post_processing import prepare_data
+from single_column_model.post_processing.perturbed_data import prepare_data
 
 # warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
-##plt.style.use("science")
+plt.style.use("science")
 
 # set font sizes for plots
 SMALL_SIZE = 18
@@ -73,7 +74,18 @@ def make_3D_plot(
     full_file_path = data_path + file_name
     # Open output file and load variables
     with h5py.File(full_file_path, "r+") as file:
-        variable_val = file[variable_name][:]
+        if variable_name == 'wind_speed':
+            u = file['u'][:]
+            v = file['v'][:]
+            variable_val = np.sqrt(u**2 + v**2)
+        elif variable_name == 'wind_direction':
+            u = file['u'][:]
+            v = file['v'][:]
+            wind_speed = np.sqrt(u**2 + v**2)
+            variable_val = np.arcsin(- u/(wind_speed + 1e-16))*180/np.pi
+            variable_val = np.arctan2(v,u)*180/np.pi
+        else:
+            variable_val = file[variable_name][:]
         z = file["z"][:]
         t = file["t"][:]
 
@@ -86,25 +98,17 @@ def make_3D_plot(
     # Choose colour
     if variable_name == "theta":
         colours = cram.lajolla
-        v_min = 289
-        v_max = 302
-    elif variable_name == "u":
+    elif variable_name == "u" or variable_name == 'wind_direction' or variable_name == 'wind_speed':
         colours = cram.davos
-        v_min = -2.5
-        v_max = 7.5
     elif variable_name == "v":
         colours = cram.davos
-        v_min = 0.0
-        v_max = 3.5
 
     # Make plot
     plt.figure(figsize=(5, 5))
     if z_max:
-        plt.pcolor(
-            X, Y, variable_val[:z_max, :], cmap=colours
-        )  # vmin=v_min, vmax=v_max)
+        plt.pcolor(X, Y, variable_val[:z_max, :], cmap=colours)
     else:
-        plt.pcolor(X, Y, variable_val, cmap=colours)  # vmin=v_min, vmax=v_max)
+        plt.pcolor(X, Y, variable_val, cmap=colours)
 
     if suffix:
         plt.title(r"$u_G = $" + str(curr_param) + ", $r = $" + suffix)
@@ -112,16 +116,21 @@ def make_3D_plot(
         plt.title(r"$u_G = $" + str(curr_param))
     plt.xlabel("time [h]")
     plt.ylabel("z [m]")
+    plt.xlim((0,1))
     cbar = plt.colorbar()
     if variable_name == "theta":
         cbar.set_label(r"$\theta$", rotation=0)
+    elif variable_name == 'wind_direction':
+        cbar.set_label(r"$\gamma$", rotation=0)
+    elif variable_name == 'wind_speed':
+        cbar.set_label(r"S", rotation=0)
     else:
         cbar.set_label(variable_name, rotation=0)
 
     # Save plot
     plt.savefig(
         vis_path
-        + "/3D_plots_"
+        + "/3D/3D_plots_"
         + variable_name
         + "_"
         + str(curr_param)
@@ -320,7 +329,8 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
     fig, ax = plt.subplots(1, 1, figsize=(5, 5))
     cp = ax.contourf(T, Z, stoch_pro, cmap=cram.lapaz)
 
-    ax.set_xlim((0, 2))
+    ax.set_xlim((0, 1))
+    ax.set_ylim((0, 50))
 
     ax.set_xlabel("t [h]")
     ax.set_ylabel("z [m]")
@@ -371,6 +381,8 @@ def plot_transitioned_solutions(
         make_3D_plot(data_path, vis_path, file_name, var, "u", suffix=str(np.round(column, 3)))
         make_3D_plot(data_path, vis_path, file_name, var, "v", suffix=str(np.round(column, 3)))
         make_3D_plot(data_path, vis_path, file_name, var, "theta", suffix=str(np.round(column, 3)))
+        make_3D_plot(data_path, vis_path, file_name, var, "wind_speed", suffix=str(np.round(column, 3)))
+        make_3D_plot(data_path, vis_path, file_name, var, "wind_direction", suffix=str(np.round(column, 3)))
 
         # make_3D_plot(data_path, vis_path, file_name, var, "u", suffix=str(column), z_max=z_top)
         # make_3D_plot(data_path, vis_path, file_name, var, "v", suffix=str(column), z_max=z_top)
@@ -379,21 +391,18 @@ def plot_transitioned_solutions(
 
 if __name__ == "__main__":
     # Define path to stochastic data
-    data_directory_path = "single_column_model/solution/20231026_114034/pos_gaussian_stab_func/500_10/"#single_column_model/solution/long_tail/perturbed/neg_u/"
-    data_directory_path_single = data_directory_path #+ "simulations/"
+    data_directory_path = "results/long_tail/dt_1/500_10/neg_u_v_test_3/"
+    data_directory_path_single = data_directory_path + "simulations/"
 
     # Create directory to store visualization
     vis_directory_path = os.path.join(data_directory_path, "visualization")
     if not os.path.exists(vis_directory_path):
         os.makedirs(vis_directory_path)
-    if not os.path.exists(vis_directory_path+'/perturbed'):
-        os.makedirs(vis_directory_path+'/perturbed')
-    if not os.path.exists(vis_directory_path + '/delta_theta_over_t'):
+        os.makedirs(vis_directory_path + '/perturbed')
         os.makedirs(vis_directory_path + '/delta_theta_over_t')
-    if not os.path.exists(vis_directory_path + '/delta_theta_over_u'):
         os.makedirs(vis_directory_path + '/delta_theta_over_u')
-    if not os.path.exists(vis_directory_path + '/histograms'):
         os.makedirs(vis_directory_path + '/histograms')
+        os.makedirs(vis_directory_path + '/3D')
 
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
@@ -415,7 +424,6 @@ if __name__ == "__main__":
                 df_delta_theta_sing_sim,
                 df_tke,
                 df_files_names,
-                df_km, df_kh, df_ri
             ) = prepare_data.create_df_for_fixed_z(
                 data_directory_path_single,
                 curr_files_single_sim,
@@ -426,12 +434,12 @@ if __name__ == "__main__":
             # Make 3D plot of time series with transitions
             plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
                                         df_delta_theta_sing_sim, idx_bl_top_height)
-            continue
-            # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
-            plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
 
-            # Plot delta theta over u (single simulations)
-            plot_delta_theta_over_u(vis_directory_path, df_u_sing_sim, df_delta_theta_sing_sim, '_' + str(var))
+            # # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
+            # plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
+
+            # # Plot delta theta over u (single simulations)
+            # plot_delta_theta_over_u(vis_directory_path, df_u_sing_sim, df_delta_theta_sing_sim, '_' + str(var))
 
             # Plot delta theta over t (single simulations)
             plot_data_over_t(vis_directory_path, df_delta_theta_sing_sim, '_delta_theta_' + str(var))
@@ -446,11 +454,13 @@ if __name__ == "__main__":
             # plot_data_over_t(vis_directory_path, df_tke, '_tke_' + str(var))
 
             # Plot one random stochastic process
-            random_file = random.choice(curr_files_single_sim)
-            plot_2D_stoch_process(
-                data_directory_path_single, vis_directory_path, random_file
-            )
+            for file in curr_files_single_sim:
+                if file=='solution_uG_1.7_perturbstr_0.01_sim_0.h5':
+                    random_file = file
+            #random_file = random.choice(curr_files_single_sim)
+            plot_2D_stoch_process(data_directory_path_single, vis_directory_path, random_file)
 
         except Exception:
             print(traceback.format_exc())
             pass
+>>>>>>> 4f56da88803eddbae36ec6a7a11523d24e5281f0:single_column_model/post_processing/visualize_perturbed_model_output.py

@@ -99,7 +99,7 @@ def create_df_for_fixed_z(data_path, file_paths, height_z, file_type="determinis
                 column_name = file_path[index_sim:index_h5]
             else:
                 r = file["r"][:][0][0]
-                column_name = r  # str(r)
+                column_name = r
 
             u = file["u"][:]
             df_u_temp[column_name] = u[z_idx, :]
