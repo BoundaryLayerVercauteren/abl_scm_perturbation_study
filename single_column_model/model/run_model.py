@@ -170,14 +170,15 @@ def setup_for_sensitivity_study(parameters):
                                  ).T.reshape(-1, 7)
 
     # Remove all rows where sim_idx>0 and perturbation strength=0
-    print(param_combination)
+    print('1', np.shape(param_combination))
     if len(sim_idx_list) > 1:
         rows_to_be_deleted = []
         for row_idx in np.arange(0, np.shape(param_combination)[0]):
             if param_combination[row_idx, -2] == 0 and param_combination[row_idx, -1] > 0:
                 rows_to_be_deleted.append(row_idx)
         param_combination = np.delete(param_combination, rows_to_be_deleted, 0)
-    print(param_combination)
+        print(rows_to_be_deleted)
+        print('2', np.shape(param_combination))
     exit()
     return param_combination
 
