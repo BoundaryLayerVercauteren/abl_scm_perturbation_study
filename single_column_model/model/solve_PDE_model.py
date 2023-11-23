@@ -25,15 +25,9 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q,
         elif perturbation_param == "theta":
             perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
         elif perturbation_param == "u and v":
-            v_np = transform_values.project_fenics_function_to_numpy_array(cur_v, Q)
-            perturbation_v = perturbation[:, idx]
-            # for idx_v, val in enumerate(v_np):
-            #     if val < 0.1:
-            #         perturbation_v[idx_v] = 0
-            cur_perturbation_v = transform_values.convert_numpy_array_to_fenics_function(perturbation_v, Q)
             perturbed_weak_form = (det_weak_form
-                                   - 1 * cur_perturbation * u_test * fe.dx
-                                   - 1 * cur_perturbation_v * cur_u / cur_v * v_test * fe.dx
+                                   - 1 * cur_perturbation * fe.conditional(fe.gt(cur_v / cur_u, 1), 1, cur_v / cur_u) * u_test * fe.dx
+                                   - 1 * cur_perturbation * fe.conditional(fe.gt((cur_v / cur_u)**2, 1), 1, (cur_v / cur_u)**2) * v_test * fe.dx
                                    )
         else:
             raise SystemExit(f"\n The given perturbation ({perturbation_param}) is not defined.")
