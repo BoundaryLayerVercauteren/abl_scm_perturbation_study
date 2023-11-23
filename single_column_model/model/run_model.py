@@ -155,7 +155,8 @@ def setup_for_sensitivity_study(parameters):
 
     u_G_list = np.round(parameters.u_G_range, 1)
 
-    perturb_strength_list = np.round(np.arange(0, parameters.perturbation_max, parameters.perturbation_step_size), 4)
+    perturb_strength_list = np.round(np.arange(0, parameters.perturbation_max + parameters.perturbation_step_size,
+                                               parameters.perturbation_step_size), 4)
 
     sim_idx_list = np.arange(0, parameters.num_simulation).astype(int)
 
@@ -168,6 +169,16 @@ def setup_for_sensitivity_study(parameters):
                                              sim_idx_list)
                                  ).T.reshape(-1, 7)
 
+    # Remove all rows where sim_idx>0 and perturbation strength=0
+    print(param_combination)
+    if len(sim_idx_list)>1:
+        rows_to_be_deleted=[]
+        for row_idx in np.shape(param_combination)[0]:
+            if param_combination[row_idx, -2]==0 and param_combination[row_idx, -1]>0:
+                rows_to_be_deleted.append(row_idx)
+        param_combination = np.delete(param_combination, rows_to_be_deleted, 0)
+    print(param_combination)
+    exit()
     return param_combination
 
 
