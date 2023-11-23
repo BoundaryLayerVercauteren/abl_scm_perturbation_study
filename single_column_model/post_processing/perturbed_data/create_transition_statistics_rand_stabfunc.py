@@ -7,7 +7,7 @@ import numpy as np
 
 # ---------------------------------------------------------------------------
 # Define directory where simulation output is saved
-output_directory = "output/sensitivity_study/internal_variability/very_weakly/"
+output_directory = "results/long_tail/stab_func/gauss_process_stab_func/"
 # ---------------------------------------------------------------------------
 # Define where the unstable equilibrium is located
 location_unstable_eq = 5
@@ -41,7 +41,7 @@ def combine_info_about_simulation_type(file_path):
 
     u_val = float(file_elements[2])
     sigma_s = float(file_elements[4])
-    sim_idx = int(file_elements[-1][:-3])
+    sim_idx = int(float(file_elements[-1][:-3]))
 
     # Calculate how many transitions take place on average over all simulations
     transitioned = check_if_transitioned(delta_theta.flatten())
