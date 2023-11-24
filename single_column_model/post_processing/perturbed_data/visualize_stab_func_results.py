@@ -45,7 +45,7 @@ def combine_all_sim_files(file_paths):
             u = file["u"][:]
             v = file["v"][:]
             wind_data_dict[sim_idx] = np.sqrt(u[z_idx, :]**2+v[z_idx, :]**2)
-            t = file['time'][:]
+            t = file['t'][:]
 
     delta_theta_data = pd.DataFrame.from_dict(delta_theta_data_dict)
     wind_data = pd.DataFrame.from_dict(wind_data_dict)
