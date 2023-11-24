@@ -36,7 +36,7 @@ def combine_all_sim_files(file_paths):
     delta_theta_data_dict = {}
 
     for file_path in file_paths:
-        sim_idx = int(float(file_path.split('.')[-3]))
+        sim_idx = int(float(file_path.split('.')[-3].split('_')[-1]))
         with h5py.File(file_path, "r+") as file:
             z = file["z"][:]
             z_idx = (np.abs(z - 20)).argmin()
