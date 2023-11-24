@@ -53,8 +53,8 @@ def combine_all_sim_files(file_paths):
     delta_theta_data = delta_theta_data.reindex(sorted(delta_theta_data.columns), axis=1)
     wind_data = wind_data.reindex(sorted(wind_data.columns), axis=1)
 
-    wind_data = wind_data.set_index(t)
-    delta_theta_data = delta_theta_data.set_index(t)
+    wind_data = wind_data.set_index(t.flatten())
+    delta_theta_data = delta_theta_data.set_index(t.flatten())
 
     return delta_theta_data, wind_data
 
