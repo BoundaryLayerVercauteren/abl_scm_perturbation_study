@@ -1,9 +1,10 @@
-import os
 import h5py
+import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pandas as pd
 import scienceplots
-import matplotlib.pyplot as plt
+import cmcrameri.cm as cmc
 
 # Set plotting style
 plt.style.use("science")
@@ -31,6 +32,7 @@ for path, subdirs, files in os.walk(output_directory):
         if 'solution' in name:
             output_files.append(os.path.join(path, name))
 
+
 def combine_all_sim_files(file_paths):
     wind_data_dict = {}
     delta_theta_data_dict = {}
@@ -44,7 +46,7 @@ def combine_all_sim_files(file_paths):
             delta_theta_data_dict[sim_idx] = theta[z_idx, :] - theta[0, :]
             u = file["u"][:]
             v = file["v"][:]
-            wind_data_dict[sim_idx] = np.sqrt(u[z_idx, :]**2+v[z_idx, :]**2)
+            wind_data_dict[sim_idx] = np.sqrt(u[z_idx, :] ** 2 + v[z_idx, :] ** 2)
             t = file['t'][:]
 
     delta_theta_data = pd.DataFrame.from_dict(delta_theta_data_dict)
@@ -57,6 +59,7 @@ def combine_all_sim_files(file_paths):
     delta_theta_data = delta_theta_data.set_index(t.flatten())
 
     return delta_theta_data, wind_data
+
 
 data_delta_theta, data_wind = combine_all_sim_files(output_files)
 
@@ -71,4 +74,4 @@ ax[1].set_xlabel('time [h]')
 ax[0].set_ylabel("s [m/s]")
 ax[1].set_ylabel(r"$\Delta \theta$ [K]")
 
-plt.savefig(output_directory+'transitions.png', bbox_inches="tight", dpi=300)
+plt.savefig(output_directory + 'transitions.png', bbox_inches="tight", dpi=300)
