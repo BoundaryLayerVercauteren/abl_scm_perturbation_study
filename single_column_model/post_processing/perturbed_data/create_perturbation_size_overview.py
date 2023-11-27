@@ -50,9 +50,12 @@ data_file_paths = np.unique(np.array(get_all_data_files(data_directory)))
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 ax = ax.ravel()
 for idx, file in enumerate(data_file_paths):
-    X, Y, data = get_perturbation_data(file)
-    ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
-    ax[idx].set_title(file.split('/')[3])
+    try:
+        X, Y, data = get_perturbation_data(file)
+        ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
+        ax[idx].set_title(file.split('/')[3])
+    except Exception:
+        pass
 
 # ax.set_xlim((0, 1))
 # ax.set_ylim((0, 50))
