@@ -26,7 +26,7 @@ data_directory = 'results/long_tail/dt_1/'
 def get_all_data_files(main_path):
     solution_file_paths = []
     for path, subdirs, files in os.walk(main_path):
-        if 'pos_theta' in path:
+        if '/pos_theta/simulations' in path:
             for name in files:
                 if 'solution_uG_1.0_perturbstr_0.001_sim_0.h5' in name:
                     solution_file_paths.append(os.path.join(path, name))
@@ -45,7 +45,7 @@ def get_all_data_files(main_path):
         for file in solution_file_paths:
             if grid_size in file:
                 sorted_solution_file_paths[idx]=file
-    print(sorted_solution_file_paths)
+
     return sorted_solution_file_paths
 
 
@@ -61,13 +61,12 @@ def get_perturbation_data(full_file_path):
 
 
 data_file_paths = np.unique(np.array(get_all_data_files(data_directory)))
-# data_file_paths = data_file_paths.sort(key=lambda x:int(x.split('_')[-5]))
-# data_file_paths = sorted(data_file_paths, key=lambda s: tuple(map(int, s.split("_"))))
 
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 ax = ax.ravel()
 for idx, file in enumerate(data_file_paths):
     try:
+        print(idx, file)
         data, X, Y = get_perturbation_data(file)
         im = ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
         ax[idx].set_title(f'{file.split("/")[3].split("_")[0]} {file.split("/")[3].split("_")[1]}')
