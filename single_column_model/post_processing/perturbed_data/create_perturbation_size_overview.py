@@ -39,7 +39,7 @@ def get_all_data_files(main_path):
                  '400_1/', '400_5/', '400_10/',
                  '500_1/', '500_5/', '500_10/']
 
-    sorted_solution_file_paths = np.zeros(len(solution_file_paths))
+    sorted_solution_file_paths = np.copy(solution_file_paths)
 
     for idx, grid_size in enumerate(grid_dirs):
         for file in solution_file_paths:
