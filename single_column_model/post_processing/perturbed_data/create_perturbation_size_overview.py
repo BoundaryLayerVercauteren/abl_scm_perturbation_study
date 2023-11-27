@@ -3,7 +3,6 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import scienceplots
 
 plt.style.use("science")
 
@@ -30,6 +29,21 @@ def get_all_data_files(main_path):
             for name in files:
                 if 'solution_uG_1.0_perturbstr_0.001_sim_0.h5' in name:
                     solution_file_paths.append(os.path.join(path, name))
+
+    solution_file_paths = np.unique(np.array(solution_file_paths))
+
+    grid_dirs = ['100_1/', '100_5/', '100_10/',
+                 '200_1/', '200_5/', '200_10/',
+                 '300_1/', '300_5/', '300_10/',
+                 '400_1/', '400_5/', '400_10/',
+                 '500_1/', '500_5/', '500_10/']
+
+    sorted_solution_file_paths = []
+
+    for idx, grid_size in enumerate(grid_dirs):
+        for file in solution_file_paths:
+            if grid_size in file:
+                sorted_solution_file_paths.append(file)
 
     return solution_file_paths
 
@@ -61,7 +75,7 @@ for idx, file in enumerate(data_file_paths):
     except Exception:
         pass
 
-fig.text(0.5, 0.1, 't [h]', ha='center')
+fig.text(0.5, 0.08, 't [h]', ha='center')
 fig.text(0.1, 0.5, 'z [m]', va='center', rotation='vertical')
 
 fig.subplots_adjust(right=0.8)
@@ -69,7 +83,7 @@ cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
 
-plt.xticks(rotation = 45)
+plt.xticks(rotation=45)
 
 plt.subplots_adjust(wspace=0.01, hspace=0.01)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
