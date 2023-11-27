@@ -69,9 +69,13 @@ for idx, file in enumerate(data_file_paths):
         print(idx, file)
         data, X, Y = get_perturbation_data(file)
         im = ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
-        ax[idx].set_title(f'{file.split("/")[3].split("_")[0]} {file.split("/")[3].split("_")[1]}')
         ax[idx].set_xlim((0, 1))
         ax[idx].set_ylim((0, 50))
+        if idx == 0 or idx == 1 or idx == 2:
+            ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[0]}$m')
+        if idx==2 or idx==5 or idx==8:
+            ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[1]}$m', xy=(1.1, 0.5), rotation=90,
+                       ha='center', va='center', xycoords='axes fraction')
     except Exception:
         pass
 
@@ -83,7 +87,7 @@ cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
 
-plt.xticks(rotation=45)
+fig.autofmt_xdate(rotation=45)
 
 plt.subplots_adjust(wspace=0.01, hspace=0.01)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
