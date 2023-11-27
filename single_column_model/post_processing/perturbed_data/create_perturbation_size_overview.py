@@ -72,10 +72,12 @@ for idx, file in enumerate(data_file_paths):
         ax[idx].set_xlim((0, 1))
         ax[idx].set_ylim((0, 50))
         if idx == 0 or idx == 1 or idx == 2:
-            ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[0]}$m')
+            ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
         if idx==2 or idx==5 or idx==8:
-            ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[1]}$m', xy=(1.1, 0.5), rotation=90,
+            ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$m', xy=(1.1, 0.5), rotation=90,
                        ha='center', va='center', xycoords='axes fraction')
+        if idx == 6 or idx == 7 or idx == 8:
+            ax[idx].tick_params(axis='x', rotation=45)
     except Exception:
         pass
 
@@ -86,8 +88,6 @@ fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
-
-fig.autofmt_xdate(rotation=45)
 
 plt.subplots_adjust(wspace=0.01, hspace=0.01)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
