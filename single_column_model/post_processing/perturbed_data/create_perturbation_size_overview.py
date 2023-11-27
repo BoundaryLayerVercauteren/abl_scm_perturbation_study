@@ -51,18 +51,19 @@ fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 ax = ax.ravel()
 for idx, file in enumerate(data_file_paths):
     try:
-        X, Y, data = get_perturbation_data(file)
-        ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
+        data, X, Y = get_perturbation_data(file)
+        im = ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
         ax[idx].set_title(f'{file.split("/")[3].split("_")[0]} {file.split("/")[3].split("_")[1]}')
+        ax[idx].set_xlim((0, 1))
+        ax[idx].set_ylim((0, 50))
+        ax[idx].set_xlabel("t [h]")
+        ax[idx].set_ylabel("z [m]")
     except Exception:
         pass
 
-# ax.set_xlim((0, 1))
-# ax.set_ylim((0, 50))
-#
-# ax.set_xlabel("t [h]")
-# ax.set_ylabel("z [m]")
-# fig.colorbar(cp)
+fig.subplots_adjust(right=0.8)
+cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+fig.colorbar(im, cax=cbar_ax)
 
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
 
