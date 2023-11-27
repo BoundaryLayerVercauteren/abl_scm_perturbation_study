@@ -82,7 +82,7 @@ for idx, file in enumerate(data_file_paths):
         pass
 
 fig.text(0.5, 0.05, 't [h]', ha='center')
-fig.text(0.05, 0.5, 'z [m]', va='center', rotation='vertical')
+fig.text(0.08, 0.5, 'z [m]', va='center', rotation='vertical')
 
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
