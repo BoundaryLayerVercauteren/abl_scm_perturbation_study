@@ -61,7 +61,7 @@ def get_perturbation_data(full_file_path):
 
 
 data_file_paths = get_all_data_files(data_directory)
-
+print(data_file_paths)
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 ax = ax.ravel()
 for idx, file in enumerate(data_file_paths):
