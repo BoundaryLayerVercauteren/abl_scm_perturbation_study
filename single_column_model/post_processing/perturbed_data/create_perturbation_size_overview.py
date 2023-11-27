@@ -74,7 +74,7 @@ for idx, file in enumerate(data_file_paths):
         if idx == 0 or idx == 1 or idx == 2:
             ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
         if idx==2 or idx==5 or idx==8 or idx==11 or idx == 14:
-            ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$m', xy=(1.1, 0.5), rotation=90,
+            ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90,
                        ha='center', va='center', xycoords='axes fraction')
         if idx == 12 or idx == 13 or idx == 14:
             ax[idx].tick_params(axis='x', rotation=45)
@@ -89,7 +89,7 @@ cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
 
-plt.subplots_adjust(wspace=0.01, hspace=0.01)
+plt.subplots_adjust(wspace=0.02, hspace=0.02)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
 
 # To clear memory
