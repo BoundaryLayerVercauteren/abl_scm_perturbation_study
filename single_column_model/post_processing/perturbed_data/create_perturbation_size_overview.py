@@ -52,7 +52,7 @@ ax = ax.ravel()
 for idx, file in enumerate(data_file_paths):
     X, Y, data = get_perturbation_data(file)
     ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
-    ax[idx].set_title(data_file_paths.split('/')[3])
+    ax[idx].set_title(file.split('/')[3])
 
 # ax.set_xlim((0, 1))
 # ax.set_ylim((0, 50))
