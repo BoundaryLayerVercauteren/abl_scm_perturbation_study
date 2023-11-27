@@ -142,7 +142,7 @@ markers = ['v', '^', 's', 'd']
 colors = matplotlib.cm.get_cmap("cmc.batlow", 5).colors
 
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
-
+ax = ax.ravel()
 for grid_idx, grid_dir in enumerate(grid_dirs):
     for idx, dir in enumerate(perturb_dir):
         directory_path = data_directory + grid_dir + dir + sim_directory
