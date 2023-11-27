@@ -89,7 +89,7 @@ cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
 
-plt.subplots_adjust(wspace=0.02, hspace=0.02)
+plt.subplots_adjust(wspace=0.04, hspace=0.02)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
 
 # To clear memory
