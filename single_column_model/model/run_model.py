@@ -107,7 +107,10 @@ def run_single_simulation_model(
     model_param = setup_simulation_parameters(sim_parameters, model_param)
 
     # Set random seed dependent on sim_idx as otherwise the same one will be used for all processes on the same core
-    np.random.seed(model_param.sim_index+model_param.u_G+model_param.perturbation_strength)
+    seed_val = int(model_param.sim_index+model_param.u_G*100+model_param.perturbation_strength*100)
+
+    print(seed_val)
+    np.random.seed(seed_val)
 
     # Define file name for initial conditions
     model_param.init_path = f'{output_val.init_directory}{model_param.init_cond_path}Ug{model_param.u_G}'
