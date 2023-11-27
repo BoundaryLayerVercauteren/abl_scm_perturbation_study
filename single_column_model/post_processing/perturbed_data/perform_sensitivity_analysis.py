@@ -10,9 +10,9 @@ import cmcrameri as cram
 plt.style.use("science")
 
 # set font sizes for plots
-SMALL_SIZE = 11
-MEDIUM_SIZE = 12
-BIGGER_SIZE = 15
+SMALL_SIZE = 11*1.5
+MEDIUM_SIZE = 12*1.5
+BIGGER_SIZE = 15*1.5
 
 plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
 plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
@@ -47,9 +47,10 @@ def group_solution_files_by_uG(file_list):
     u_G_list = []
     r_list = []
     for file in file_list:
-        file_name = file.split('/')[-1]
-        u_G_list.append(file_name.split('_')[2])
-        r_list.append(float(file_name.split('_')[4]))
+        if float(file_name.split('_')[2]) <= 2.5:
+            file_name = file.split('/')[-1]
+            u_G_list.append(file_name.split('_')[2])
+            r_list.append(float(file_name.split('_')[4]))
     u_G_list = np.unique(u_G_list)
     r_list = np.unique(r_list)
 
@@ -66,8 +67,8 @@ def group_solution_files_by_uG(file_list):
 
 def calculate_perturbation_strength(variable, cur_r, r_range, height_idx):
     time_idx = 15
-    #time_variance_data = np.var(variable[:, :time_idx], axis=1)
-    time_variance_data = (variable[:, time_idx] - variable[:, 0]) / (15 * 60)
+    time_variance_data = np.var(variable[:, :time_idx], axis=1)
+    #time_variance_data = (variable[:, time_idx] - variable[:, 0]) / (15 * 60)
     # Normalize the variance vector
     normalized_time_variance_data = (time_variance_data - time_variance_data.min()) / (
             time_variance_data.max() - time_variance_data.min()) + 1
@@ -156,20 +157,19 @@ for grid_idx, grid_dir in enumerate(grid_dirs):
 
     ax[grid_idx].legend()
 
-    if idx == 0 or idx == 1 or idx == 2:
-        ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
-    if idx==2 or idx==5 or idx==8 or idx==11 or idx == 14:
-        ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90,
-                         ha='center', va='center', xycoords='axes fraction')
-    if idx == 12 or idx == 13 or idx == 14:
-        ax[idx].tick_params(axis='x', rotation=45)
+    if grid_idx == 0 or grid_idx == 1 or grid_idx == 2:
+        ax[grid_idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
+    if grid_idx==2 or grid_idx==5 or grid_idx==8 or grid_idx==11 or grid_idx == 14:
+        ax[grid_idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90, ha='center', va='center', xycoords='axes fraction')
+    if grid_idx == 12 or grid_idx == 13 or grid_idx == 14:
+        ax[grid_idx].tick_params(axis='x', rotation=45)
 
 
 fig.text(0.5, 0.05, r'$u_G$ [m/s]', ha='center')
 fig.text(0.08, 0.5, r'perturbation strength [\%]', va='center', rotation='vertical')
 
-plt.legend()
-plt.subplots_adjust(wspace=0.08, hspace=0.02)
+
+plt.subplots_adjust(wspace=0.02, hspace=0.02)
 
 plt.savefig(data_directory + 'sensitivity_analysis_variance.png')
 
