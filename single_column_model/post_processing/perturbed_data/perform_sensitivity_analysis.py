@@ -24,9 +24,11 @@ plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 data_directory = 'results/long_tail/dt_1/'
 perturb_dir = ['neg_theta/', 'pos_theta/', 'neg_u/', 'pos_u/']
-grid_dirs = ['100_1/','200_1/','300_1/','400_1/','500_1/', 
-            '100_5/','200_5/','300_5/','400_5/','500_5/',
-            '100_10/','200_10/','300_10/','400_10/','500_10/']
+grid_dirs = ['100_1/', '100_5/', '100_10/',
+             '200_1/', '200_5/', '200_10/',
+             '300_1/', '300_5/', '300_10/',
+             '400_1/', '400_5/', '400_10/',
+             '500_1/', '500_5/', '500_10/']
 sim_directory = 'simulations/'
 
 
@@ -139,9 +141,9 @@ labels = [r'$\theta^-$', r'$\theta^+$', r'$u^-$', r'$u^+$']
 markers = ['v', '^', 's', 'd']
 colors = matplotlib.cm.get_cmap("cmc.batlow", 5).colors
 
-for grid_dir in grid_dirs:
-    plt.figure(figsize=(10, 5))
+fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 
+for grid_idx, grid_dir in enumerate(grid_dirs):
     for idx, dir in enumerate(perturb_dir):
         directory_path = data_directory + grid_dir + dir + sim_directory
 
@@ -149,18 +151,31 @@ for grid_dir in grid_dirs:
         uGs, solution_files_uG, rs = group_solution_files_by_uG(solution_files)
         min_r_for_uG = get_transition_statistics(solution_files_uG, rs)
 
-        plt.plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()), color=colors[idx])
-        plt.scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx], color=colors[idx])
+        ax[grid_idx].plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()), color=colors[idx])
+        ax[grid_idx].scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx], color=colors[idx])
 
-    plt.ylabel(r'perturbation strength [\%]')#, rotation=0)
-    plt.xlabel(r'$u_G$ [m/s]')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(data_directory + grid_dir + 'sensitivity_analysis_gradient.png')
+    ax[grid_idx].legend()
 
-    # Clear memory
-    plt.cla()  # Clear the current axes.
-    plt.clf()  # Clear the current figure.
-    plt.close("all")  # Closes all the figure windows.
+    if idx == 0 or idx == 1 or idx == 2:
+        ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
+    if idx==2 or idx==5 or idx==8 or idx==11 or idx == 14:
+        ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90,
+                         ha='center', va='center', xycoords='axes fraction')
+    if idx == 12 or idx == 13 or idx == 14:
+        ax[idx].tick_params(axis='x', rotation=45)
 
-    print(f'Plots for directory: {directory_path} are done!')
+
+fig.text(0.5, 0.05, r'$u_G$ [m/s]', ha='center')
+fig.text(0.08, 0.5, r'perturbation strength [\%]', va='center', rotation='vertical')
+
+plt.legend()
+plt.subplots_adjust(wspace=0.08, hspace=0.02)
+
+plt.savefig(data_directory + 'sensitivity_analysis_variance.png')
+
+# Clear memory
+plt.cla()  # Clear the current axes.
+plt.clf()  # Clear the current figure.
+plt.close("all")  # Closes all the figure windows.
+
+print(f'Plots for directory: {directory_path} are done!')
