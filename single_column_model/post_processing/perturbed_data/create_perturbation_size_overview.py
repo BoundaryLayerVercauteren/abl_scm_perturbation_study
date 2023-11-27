@@ -73,10 +73,10 @@ for idx, file in enumerate(data_file_paths):
         ax[idx].set_ylim((0, 50))
         if idx == 0 or idx == 1 or idx == 2:
             ax[idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
-        if idx==2 or idx==5 or idx==8:
+        if idx==2 or idx==5 or idx==8 or idx==11 or idx == 14:
             ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$m', xy=(1.1, 0.5), rotation=90,
                        ha='center', va='center', xycoords='axes fraction')
-        if idx == 6 or idx == 7 or idx == 8:
+        if idx == 12 or idx == 13 or idx == 14:
             ax[idx].tick_params(axis='x', rotation=45)
     except Exception:
         pass
