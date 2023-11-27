@@ -61,13 +61,15 @@ for idx, file in enumerate(data_file_paths):
     except Exception:
         pass
 
-fig.text(0.5, 0.02, 't [h]', ha='center')
-fig.text(0.02, 0.5, 'z [m]', va='center', rotation='vertical')
+fig.text(0.5, 0.1, 't [h]', ha='center')
+fig.text(0.1, 0.5, 'z [m]', va='center', rotation='vertical')
 
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
+
+plt.xticks(rotation = 45)
 
 plt.subplots_adjust(wspace=0.01, hspace=0.01)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
