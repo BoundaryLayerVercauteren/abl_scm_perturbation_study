@@ -8,9 +8,9 @@ import scienceplots
 plt.style.use("science")
 
 # set font sizes for plots
-SMALL_SIZE = 18*2
-MEDIUM_SIZE = 22*2
-BIGGER_SIZE = 30*2
+SMALL_SIZE = 18*1.5
+MEDIUM_SIZE = 22*1.5
+BIGGER_SIZE = 30*1.5
 
 plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
 plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
@@ -77,7 +77,7 @@ for idx, file in enumerate(data_file_paths):
             ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90,
                        ha='center', va='center', xycoords='axes fraction')
         if idx == 12 or idx == 13 or idx == 14:
-            ax[idx].tick_params(axis='x', rotation=90)
+            ax[idx].tick_params(axis='x', rotation=45)
     except Exception:
         pass
 
@@ -89,7 +89,7 @@ cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
 cbar = fig.colorbar(im, cax=cbar_ax)
 cbar.set_label("r", rotation=0)
 
-plt.subplots_adjust(wspace=0.04, hspace=0.02)
+plt.subplots_adjust(wspace=0.08, hspace=0.02)
 plt.savefig(data_directory + 'perturbations.png', bbox_inches="tight", dpi=300)
 
 # To clear memory
