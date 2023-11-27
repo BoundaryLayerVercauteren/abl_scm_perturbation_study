@@ -53,7 +53,7 @@ for idx, file in enumerate(data_file_paths):
     try:
         X, Y, data = get_perturbation_data(file)
         ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
-        ax[idx].set_title(file.split('/')[3])
+        ax[idx].set_title(rf'{file.split("/")[3]}')
     except Exception:
         pass
 
