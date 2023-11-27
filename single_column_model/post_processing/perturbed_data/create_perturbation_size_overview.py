@@ -8,9 +8,9 @@ import scienceplots
 plt.style.use("science")
 
 # set font sizes for plots
-SMALL_SIZE = 18
-MEDIUM_SIZE = 22
-BIGGER_SIZE = 30
+SMALL_SIZE = 18*2
+MEDIUM_SIZE = 22*2
+BIGGER_SIZE = 30*2
 
 plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
 plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
@@ -77,12 +77,12 @@ for idx, file in enumerate(data_file_paths):
             ax[idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90,
                        ha='center', va='center', xycoords='axes fraction')
         if idx == 12 or idx == 13 or idx == 14:
-            ax[idx].tick_params(axis='x', rotation=45)
+            ax[idx].tick_params(axis='x', rotation=90)
     except Exception:
         pass
 
-fig.text(0.5, 0.08, 't [h]', ha='center')
-fig.text(0.1, 0.5, 'z [m]', va='center', rotation='vertical')
+fig.text(0.5, 0.05, 't [h]', ha='center')
+fig.text(0.05, 0.5, 'z [m]', va='center', rotation='vertical')
 
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
