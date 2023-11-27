@@ -45,7 +45,7 @@ def get_all_data_files(main_path):
             if grid_size in file:
                 sorted_solution_file_paths.append(file)
 
-    return solution_file_paths
+    return sorted_solution_file_paths
 
 
 def get_perturbation_data(full_file_path):
