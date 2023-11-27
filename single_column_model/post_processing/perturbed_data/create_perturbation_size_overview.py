@@ -60,7 +60,7 @@ def get_perturbation_data(full_file_path):
     return perturbation, T, Z
 
 
-data_file_paths = np.unique(np.array(get_all_data_files(data_directory)))
+data_file_paths = get_all_data_files(data_directory)
 
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 ax = ax.ravel()
