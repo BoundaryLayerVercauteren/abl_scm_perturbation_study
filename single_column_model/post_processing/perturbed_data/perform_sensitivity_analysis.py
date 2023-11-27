@@ -47,8 +47,8 @@ def group_solution_files_by_uG(file_list):
     u_G_list = []
     r_list = []
     for file in file_list:
-        if float(file_name.split('_')[2]) <= 2.5:
-            file_name = file.split('/')[-1]
+        file_name = file.split('/')[-1]
+            if float(file_name.split('_')[2]) <= 2.5:
             u_G_list.append(file_name.split('_')[2])
             r_list.append(float(file_name.split('_')[4]))
     u_G_list = np.unique(u_G_list)
