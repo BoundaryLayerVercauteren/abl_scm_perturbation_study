@@ -45,17 +45,14 @@ def get_perturbation_data(full_file_path):
     return perturbation, T, Z
 
 
-def plot_2D_stoch_process(X, Y, data, axes):
-    axes.contourf(X, Y, data, cmap=cram.lapaz)
+data_file_paths = np.unique(np.array(get_all_data_files(data_directory)))
 
-
-data_file_paths = get_all_data_files(data_directory)
-print(data_file_paths)
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
-
+ax = ax.ravel()
 for idx, file in enumerate(data_file_paths):
     X, Y, data = get_perturbation_data(file)
-    plot_2D_stoch_process(X, Y, data, ax[idx])
+    ax[idx].contourf(X, Y, data, cmap=cram.lapaz)
+    ax[idx].set_title(data_file_paths.split('/')[3])
 
 # ax.set_xlim((0, 1))
 # ax.set_ylim((0, 50))
