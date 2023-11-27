@@ -46,6 +46,8 @@ def get_perturbation_data(full_file_path):
 
 
 data_file_paths = np.unique(np.array(get_all_data_files(data_directory)))
+# data_file_paths = data_file_paths.sort(key=lambda x:int(x.split('_')[-5]))
+# data_file_paths = sorted(data_file_paths, key=lambda s: tuple(map(int, s.split("_"))))
 
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
 ax = ax.ravel()
@@ -56,10 +58,11 @@ for idx, file in enumerate(data_file_paths):
         ax[idx].set_title(f'{file.split("/")[3].split("_")[0]} {file.split("/")[3].split("_")[1]}')
         ax[idx].set_xlim((0, 1))
         ax[idx].set_ylim((0, 50))
-        ax[idx].set_xlabel("t [h]")
-        ax[idx].set_ylabel("z [m]")
     except Exception:
         pass
+
+fig.text(0.5, 0.04, 't [h]', ha='center')
+fig.text(0.04, 0.5, 'z [m]', va='center', rotation='vertical')
 
 fig.subplots_adjust(right=0.8)
 cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
