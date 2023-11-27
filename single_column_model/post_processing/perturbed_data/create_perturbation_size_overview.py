@@ -3,6 +3,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import scienceplots
 
 plt.style.use("science")
 
