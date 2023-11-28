@@ -158,9 +158,9 @@ for grid_idx, grid_dir in enumerate(grid_dirs):
     ax[grid_idx].legend()
 
     if grid_idx == 0 or grid_idx == 1 or grid_idx == 2:
-        ax[grid_idx].set_title(rf'$z_s={file.split("/")[3].split("_")[1]}$m')
+        ax[grid_idx].set_title(rf'$z_s={directory_path.split("/")[3].split("_")[1]}$m')
     if grid_idx==2 or grid_idx==5 or grid_idx==8 or grid_idx==11 or grid_idx == 14:
-        ax[grid_idx].annotate(rf'$t_s={file.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90, ha='center', va='center', xycoords='axes fraction')
+        ax[grid_idx].annotate(rf'$t_s={directory_path.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90, ha='center', va='center', xycoords='axes fraction')
     if grid_idx == 12 or grid_idx == 13 or grid_idx == 14:
         ax[grid_idx].tick_params(axis='x', rotation=45)
 
