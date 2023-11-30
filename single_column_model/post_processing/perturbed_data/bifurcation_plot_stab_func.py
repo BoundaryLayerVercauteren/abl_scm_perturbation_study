@@ -62,7 +62,7 @@ fig, ax = plt.subplots(1, figsize=(5, 10))
 
 for tuple in path_with_ug:
     wind_speed, delta_theta, _, _ = get_data(tuple[1])
-    print(float(tuple[0]), uG_range, np.where(uG_range==float(tuple[0])))
+    print(float(tuple[0]), uG_range, np.where(uG_range==1.3))
     uG_idx = np.where(uG_range==float(tuple[0]))[0][0]
     ax.scatter(wind_speed, delta_theta, s=20, color=color[uG_idx])
 
