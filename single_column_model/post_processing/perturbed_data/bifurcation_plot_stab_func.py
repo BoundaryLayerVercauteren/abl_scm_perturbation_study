@@ -55,7 +55,7 @@ uG_range = np.arange(1.0, 2.5, 0.1)
 NUM_COLORS = len(uG_range) + 1
 cmap = matplotlib.cm.get_cmap("cmc.batlow", NUM_COLORS)
 color = cmap.colors
-norm = matplotlib.colors.BoundaryNorm(param_range, cmap.N)
+norm = matplotlib.colors.BoundaryNorm(uG_range, cmap.N)
 
 fig, ax = plt.subplots(1, figsize=(5, 10))
 
