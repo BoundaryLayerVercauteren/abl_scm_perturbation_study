@@ -65,7 +65,7 @@ for tuple in path_with_ug:
     uG_idx = np.where(np.isclose(uG_range, float(tuple[0])))[0][0]
     ax.scatter(wind_speed, delta_theta, s=20, color=color[uG_idx])
 
-ax.set_xlabel(r"s_{20m} [m/s]")
+ax.set_xlabel(r"$s_{20m} [\mathrm{ms^{-1}}]$")
 ax.set_ylabel(r"$\Delta \theta$ [K]")
 cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), orientation="vertical",
                     label=r"$s_G [\mathrm{ms^{-1}}]$")
