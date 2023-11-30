@@ -1,5 +1,5 @@
 import os
-from itertools import groupby
+import itertools
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,9 +36,9 @@ path_with_ug = []
 
 for path in output_files:
     path_with_ug.append((path.split('/')[-3], path))
-print(path_with_ug)
+
 # Group them by directory, i.e. uG
-grouped_output_files = [list(g) for _, g in groupby(path_with_ug.sort(), lambda x: x[0])]
+grouped_output_files = [list(g) for _, g in itertools.groupby(path_with_ug, lambda x: x[0])]
 print(grouped_output_files)
 
 def get_data(full_file_path):
