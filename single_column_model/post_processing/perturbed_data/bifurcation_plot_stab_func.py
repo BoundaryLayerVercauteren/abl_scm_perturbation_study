@@ -32,9 +32,13 @@ for path, subdirs, files in os.walk(output_directory):
             if 'solution' in name:
                 output_files.append(os.path.join(path, name))
 
-print(output_files)
+path_with_ug = []
+
+for path in output_files:
+    path_with_ug.append((path.split('/')[-3], path))
+print(path_with_ug)
 # Group them by directory, i.e. uG
-grouped_output_files = [list(g) for _, g in groupby(output_files.sort(), lambda k: k[-3])]
+grouped_output_files = [list(g) for _, g in groupby(path_with_ug.sort(), lambda x: x[0])]
 print(grouped_output_files)
 
 def get_data(full_file_path):
