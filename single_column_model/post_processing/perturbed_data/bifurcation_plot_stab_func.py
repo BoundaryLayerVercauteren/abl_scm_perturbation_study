@@ -1,9 +1,9 @@
 import os
-import itertools
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import scienceplots
+import cmcrameri.cm as cmc
 
 plt.style.use("science")
 
@@ -37,10 +37,6 @@ path_with_ug = []
 for path in output_files:
     path_with_ug.append((path.split('/')[-3], path))
 
-# Group them by directory, i.e. uG
-grouped_output_files = [list(g) for _, g in itertools.groupby(path_with_ug, lambda x: x[0])]
-print(grouped_output_files)
-
 def get_data(full_file_path):
     with h5py.File(full_file_path, "r+") as file:
         z = file["z"][:]
@@ -63,12 +59,10 @@ norm = matplotlib.colors.BoundaryNorm(param_range, cmap.N)
 
 fig, ax = plt.subplots(1, figsize=(5, 10))
 
-for group in grouped_output_files:
-    for file in group:
-        wind_speed, delta_theta, _, _ = get_data(file)
-        uG = file.split('/')[-3]
-        uG_idx = np.where(uG_range==float(uG))[0][0]
-        ax.scatter(wind_speed, delta_theta, s=20, color=color[uG_idx])
+for tuple in path_with_ug:
+    wind_speed, delta_theta, _, _ = get_data(tuple[1])
+    uG_idx = np.where(uG_range==float(tuple[0]))[0][0]
+    ax.scatter(wind_speed, delta_theta, s=20, color=color[uG_idx])
 
 ax.set_xlabel(r"s_{20m} [m/s]")
 ax.set_ylabel(r"$\Delta \theta$ [K]")
