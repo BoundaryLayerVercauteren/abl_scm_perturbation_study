@@ -77,7 +77,11 @@ def combine_model_solver_functions(fenics_params, params, output):
 
 def setup_simulation_parameters(input_val, parameter_class_val):
     if not isinstance(input_val, np.ndarray):
-        parameter_class_val.u_G = input_val
+        parameter_class_val.u_G = np.round(input_val, 1)
+        parameter_class_val.perturbation_param = None
+        parameter_class_val.perturbation_type = None
+        parameter_class_val.perturbation_strength = 0
+        parameter_class_val.sim_index = 0
     else:
         parameter_class_val.perturbation_param = input_val[0]
         parameter_class_val.perturbation_type = input_val[1]
