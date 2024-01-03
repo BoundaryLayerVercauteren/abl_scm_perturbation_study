@@ -4,12 +4,12 @@
 import fenics as fe
 
 
-def define_long_tail_stability_function(fenics_params, params):
+def define_short_tail_stability_function(fenics_params, params):
     """See Delage (1997)."""
     return 1.0 + 12.0 * Ri(fenics_params, params)
 
 
-def define_short_tail_stability_function(fenics_params, params):
+def define_long_tail_stability_function(fenics_params, params):
     """See Delage (1997)."""
     return 1.0 + 4.7 * Ri(fenics_params, params)
 
