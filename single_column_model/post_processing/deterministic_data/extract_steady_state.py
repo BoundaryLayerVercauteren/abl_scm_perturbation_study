@@ -7,24 +7,11 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
-import scienceplots
 
 from single_column_model.post_processing.deterministic_data import prepare_data
+from single_column_model.post_processing import set_plotting_style
 
-plt.style.use("science")
-
-# Set font sizes for plots
-SMALL_SIZE = 11
-MEDIUM_SIZE = 12
-BIGGER_SIZE = 15
-
-plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
-plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
-plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
-plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
-plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+set_plotting_style.set_style_of_plots(figsize=(10,5))
 
 
 def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
