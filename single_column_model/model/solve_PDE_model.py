@@ -26,8 +26,8 @@ def add_perturbation_to_weak_form_of_model(perturbation_param, perturbation, Q,
             perturbed_weak_form = det_weak_form - cur_perturbation * theta_test * fe.dx
         elif perturbation_param == "u and v":
             perturbed_weak_form = (det_weak_form
-                                   - 1 * cur_perturbation * fe.conditional(fe.gt(cur_v / cur_u, 1), 1, cur_v / cur_u) * u_test * fe.dx
-                                   - 1 * cur_perturbation * fe.conditional(fe.gt((cur_v / cur_u)**2, 1), 1, (cur_v / cur_u)**2) * v_test * fe.dx
+                                   - 0.5 * cur_perturbation * u_test * fe.dx
+                                   - 0.5 * cur_perturbation * v_test * fe.dx
                                    )
         else:
             raise SystemExit(f"\n The given perturbation ({perturbation_param}) is not defined.")
