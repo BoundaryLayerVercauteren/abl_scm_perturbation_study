@@ -1,3 +1,5 @@
+"""Run with python3 -m single_column_model.post_processing.deterministic_data.examine_boundary_layer_height"""
+
 import h5py
 import numpy as np
 import os
@@ -6,20 +8,9 @@ import matplotlib.pyplot as plt
 import cmcrameri.cm as cram
 import seaborn as sns
 
-plt.style.use("science")
+from single_column_model.post_processing import set_plotting_style
 
-# set font sizes for plots
-SMALL_SIZE = 18
-MEDIUM_SIZE = 22
-BIGGER_SIZE = 30
-
-plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
-plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
-plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
-plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
-plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+set_plotting_style.set_style_of_plots(figsize=(10,10))
 
 data_directory = 'single_column_model/solution/short_tail/deterministic/'
 sim_data_directory = data_directory + 'simulations/'
@@ -100,80 +91,38 @@ def collect_ekman_layer_height_for_all_uG(directory):
     return df_ekman_layer_height[ten_h_idx:]
 
 
-def make_line_plot(data, save_dir):
+def make_line_plot(data, axes):
 
     columns = data.columns.astype(float)
 
-    sm = plt.cm.ScalarMappable(
-        cmap="cmc.batlow",
-        norm=plt.Normalize(vmin=columns.min(), vmax=columns.max()),
-    )
+    sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=plt.Normalize(vmin=columns.min(), vmax=columns.max()))
     sm._A = []
 
-    #data = data.rolling(10*60).mean()
-
-    data.plot(kind="line", colormap="cmc.batlow", legend=False, figsize=(10, 5))
+    data.plot(kind="line", colormap="cmc.batlow", legend=False, ax=axes)
 
     cbar = plt.colorbar(sm)
-    cbar.set_label(r"$s_G$ [m/s]")#, rotation=0, labelpad=50)
-    plt.ylabel('Ekman layer height [m]')
-    plt.xlabel(r't [h]')
-    plt.tight_layout()
-
-    plt.savefig(save_dir + 'ekman_layer_height_line_plot.png')
+    cbar.set_label(r"$s_G \ [\mathrm{ms^{-1}}]$")
+    axes.set_ylabel('Ekman layer height [m]')
+    axes.set_xlabel(r't [h]')
+    axes.set_title('a)', loc='left')
 
 
-def make_box_plot(data, save_dir):
-    plt.figure(figsize=(10, 5))
-    sns.boxplot(x="variable", y="value", data=pd.melt(data), palette="cmc.batlow")
-    data.iloc[40*60].plot(kind='line')
-    plt.axhline(20, color='red', linestyle='--', lw=2)
-    plt.ylabel('Ekman layer height [m]')
-    plt.xlabel(r'$s_G$ [m/s]')
-    plt.tight_layout()
-
-    plt.savefig(save_dir + 'ekman_layer_height_box_plot.png')
+def make_box_plot(data, axes):
+    sns.boxplot(x="variable", y="value", data=pd.melt(data), palette="cmc.batlow", ax=axes)
+    axes.axhline(20, color='red', linestyle='--', lw=2)
+    axes.set_ylabel('Ekman layer height [m]')
+    axes.set_xlabel(r'$s_G \ [\mathrm{ms^{-1}}]$')
+    axes.locator_params(axis='x', nbins=10)
+    axes.set_title('b)', loc='left')
 
 
 df_ekman_layer_height = collect_ekman_layer_height_for_all_uG(sim_data_directory)
 
-#make_line_plot(df_ekman_layer_height, vis_data_directory)
-#make_box_plot(df_ekman_layer_height, vis_data_directory)
+fig, ax = plt.subplots(2, 1, figsize=(10, 10))
+ax = ax.ravel()
 
-def collect_wind_speed_for_all_uG(directory, height=20):
-    sol_file_paths = get_all_data_files(directory)
-    u_G_list, solution_files_grouped = group_solution_files_by_uG(sol_file_paths)
+make_line_plot(df_ekman_layer_height, ax[0])
+make_box_plot(df_ekman_layer_height, ax[1])
 
-    dic_wind_speed = {}
-
-    for key, value in solution_files_grouped.items():
-        if float(key) <= 2.9:
-            with h5py.File(value[0], "r+") as file:
-                u = file["u"][:]
-                v = file["v"][:]
-                z = file["z"][:]
-                t = file["t"][:]
-                z_idx = (np.abs(z - height)).argmin()
-            wind_speed = np.sqrt(u[z_idx, :] ** 2 + v[z_idx, :] ** 2)
-            dic_wind_speed[key] = wind_speed
-
-    dic_wind_speed = pd.DataFrame({k: list(v) for k, v in dic_wind_speed.items()})
-    dic_wind_speed = dic_wind_speed.reindex(sorted(dic_wind_speed.columns), axis=1)
-
-    # Drop ten hours
-    ten_h_idx = 10
-
-    return dic_wind_speed[ten_h_idx:]
-
-def make_box_plot_wind_speed(data, save_dir):
-    plt.figure(figsize=(10, 5))
-    sns.boxplot(x="variable", y="value", data=pd.melt(data), palette="cmc.batlow")
-    #plt.axhline(20, color='red', linestyle='--', lw=2)
-    plt.ylabel('s')
-    plt.xlabel(r'$s_G$ [m/s]')
-    plt.tight_layout()
-
-    plt.savefig(save_dir + 'wind_speed_box_plot.png')
-
-wind_speed_data = collect_wind_speed_for_all_uG(sim_data_directory, height=20)
-make_box_plot_wind_speed(wind_speed_data, vis_data_directory)
+fig.tight_layout()
+plt.savefig(vis_data_directory + 'ekman_layer_height.png', bbox_inches="tight", dpi=300)
