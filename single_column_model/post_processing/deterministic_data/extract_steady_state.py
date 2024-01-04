@@ -169,7 +169,7 @@ def plot_steady_state_for_all_variables(vis_path, uG, data_u, data_v, data_delta
 
 
 # Define path to data for which the steady state shall be determined
-stab_func_type = 'short_tail'
+stab_func_type = 'long_tail'
 data_path = f"single_column_model/solution/{stab_func_type}/deterministic/simulations/"
 vis_path = f"single_column_model/solution/{stab_func_type}/deterministic/visualization/"
 
@@ -184,7 +184,7 @@ for uG in uG_range:
     uG = np.round(uG, 1)
 
     # Find file which corresponds to uG
-    curr_file = [s for s in data_files if f"_{uG}_" in s]#[0]
+    curr_file = [s for s in data_files if f"_{uG}_" in s]
 
     try:
         # Get simulation data for uG
@@ -196,6 +196,11 @@ for uG in uG_range:
 
     # Determine steady state
     steady_state = find_steady_state_fixed_height(df_u, df_v, df_delta_theta, df_tke)
+
+    if np.isnan(steady_state):
+        print(f'for ugG={uG} no steady state was found.')
+        plot_steady_state_for_all_variables(vis_path, uG, df_u, df_v, df_delta_theta, df_tke, df_u.shape[0]-600)
+        continue
 
     # Save steady state as initial condition
     save_initial_cond_for_all_variable_to_file(stab_func_type, uG, steady_state, data_path+curr_file[0])
