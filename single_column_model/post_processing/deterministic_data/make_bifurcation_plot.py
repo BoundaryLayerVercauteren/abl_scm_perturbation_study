@@ -1,30 +1,21 @@
+"""Run with python3 -m single_column_model.post_processing.deterministic_data.make_bifurcation_plot"""
+
 import os
 import numpy as np
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
-import scienceplots
+import cmcrameri.cm as cram
+
 import traceback
 
-import prepare_data, extract_steady_state
+from single_column_model.post_processing.deterministic_data import prepare_data, extract_steady_state
+from single_column_model.post_processing import set_plotting_style
 
-plt.style.use("science")
-
-# set font sizes for plots
-SMALL_SIZE = 18
-MEDIUM_SIZE = 22
-BIGGER_SIZE = 30
-
-plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
-plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
-plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
-plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
-plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
-plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+set_plotting_style.set_style_of_plots(figsize=(10,5))
 
 # Define path to deterministic data
-det_directory_path = "single_column_model/solution/long_tail/deterministic/"
+det_directory_path = "single_column_model/solution/short_tail/deterministic/"
 det_data_directory_path = det_directory_path + "simulations/"
 
 # Create directory to store visualization
@@ -32,8 +23,8 @@ vis_directory_path = os.path.join(det_directory_path, "visualization")
 if not os.path.exists(vis_directory_path):
     os.makedirs(vis_directory_path)
 
-# Get a list of all file names in given directory for u and theta
-_, _, files_det = prepare_data.find_files_in_directory(det_data_directory_path)
+# Get a list of all file names in given directory
+files_det = prepare_data.find_solution_files_in_directory(det_data_directory_path)
 
 param_range = np.arange(1.0, 2.9, 0.1)
 
@@ -137,10 +128,10 @@ except Exception:
 
 # ax.set_xlim((2, 7))
 # ax.set_ylim((0, 12))
-ax.set_xlabel("s [m/s]")
+ax.set_xlabel("s $[\mathrm{ms^{-1}}]$")
 ax.set_ylabel(r"$\Delta \theta$ [K]")
 
-cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), orientation="vertical", label=r"$s_G$ [m/s]")
+cbar = fig.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap), orientation="vertical", label=r"$s_G \ [\mathrm{ms^{-1}}]$")
 
 try:
     cbar.ax.hlines(trans_range_uG[0], 0, 1, colors="r", linewidth=2)
