@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 from operator import itemgetter
+import scienceplots
 
 # Set plotting style
 plt.style.use("science")
@@ -20,7 +21,7 @@ plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Define directory where simulation output is saved
-output_directory = "output/sensitivity_study/u_and_model/"  # u_and_model/'  #internal_variability
+output_directory = "results/long_tail/stab_func/gauss_process_stab_func/positive/"
 trans_percentage = 0.8
 
 # Load results from sensitivity analysis
@@ -38,7 +39,7 @@ def sort_list_of_list(input):
 
 result = sort_list_of_list(result)
 
-uG_range = np.unique([elem[0] for elem in result])
+uG_range = np.unique([elem[0]*-1 for elem in result])
 sigma_s_range = np.unique([elem[1] for elem in result])
 sim_idx_range = np.unique([elem[2] for elem in result])
 
@@ -70,13 +71,13 @@ def get_minimal_sigma_with_trans_for_every_u(trans_statistics, u_range):
 
 
 min_sigma = np.array(get_minimal_sigma_with_trans_for_every_u(result, uG_range))
-
+print(min_sigma)
 fig, ax = plt.subplots(1, 1, figsize=(10, 5))
 
 #ax.axvspan(5.31, 5.89, alpha=0.3, color="red", label="bistable region")
 
-ax.plot(uG_range, min_sigma[:, 0], color='darkgreen')
-ax.scatter(uG_range, min_sigma[:, 0], color='darkgreen', marker="v")
+ax.plot(uG_range, min_sigma, color='darkgreen')
+ax.scatter(uG_range, min_sigma, color='darkgreen', marker="v")
 
 #ax.set_xlim((4.5, 6.9))
 #ax.yaxis.set_major_locator(plt.MultipleLocator(0.04))

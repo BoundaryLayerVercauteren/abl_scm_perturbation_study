@@ -7,7 +7,7 @@ import numpy as np
 
 # ---------------------------------------------------------------------------
 # Define directory where simulation output is saved
-output_directory = "results/long_tail/stab_func/gauss_process_stab_func/"
+output_directory = "results/long_tail/stab_func/gauss_process_stab_func/positive/"
 # ---------------------------------------------------------------------------
 # Define where the unstable equilibrium is located
 location_unstable_eq = 5
