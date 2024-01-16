@@ -18,8 +18,8 @@ def load_initial_conditions_from_files(file_path):
 
 
 def calculate_initial_conditions(mesh_coordinates, roughness_length, geo_wind_vert, kappa, domain_height,
-                                 horiz_resolution, theta_reference, gamma):
-    u = initial_u_0(mesh_coordinates, geo_wind_vert, roughness_length, kappa)
+                                 horiz_resolution, theta_reference, gamma, initial_cond_perturbation):
+    u = initial_u_0(mesh_coordinates, geo_wind_vert, roughness_length, kappa, initial_cond_perturbation)
     v = 0 * np.ones(horiz_resolution)
     theta = initial_theta_0(mesh_coordinates, theta_reference, gamma, 200)
     k = initial_k_0(mesh_coordinates, geo_wind_vert, roughness_length, domain_height) + 0.01
@@ -44,7 +44,7 @@ def define_initial_conditions(Q, mesh, params):
     else:
         u_t0, v_t0, theta_t0, k_t0 = calculate_initial_conditions(mesh.coordinates(), params.z0, params.u_G,
                                                                   params.kappa, params.H, params.Nz, params.theta_ref,
-                                                                  params.gamma)
+                                                                  params.gamma, params.initial_cond_perturbation)
 
     return transfer_all_variables_to_fenics_functions(u_t0, v_t0, theta_t0, k_t0, Q)
 
@@ -108,12 +108,12 @@ def define_boundary_conditions(fenics_params, params):
     return fenics_params, params
 
 
-def initial_u_0(z, u_G, z0, kappa):
+def initial_u_0(z, u_G, z0, kappa, initial_cond_perturbation=0):
     """Calculate  initial profile for the wind velocity u."""
     # Set tuning parameter
     c_f = 4 * 10 ** (-3)
     # Calculate initial friction velocity
-    u_star_ini = np.sqrt(0.5 * c_f * u_G ** 2)
+    u_star_ini = np.sqrt(0.5 * c_f * (u_G + initial_cond_perturbation) ** 2)
     return u_star_ini / kappa * np.log(z / z0)
 
 
