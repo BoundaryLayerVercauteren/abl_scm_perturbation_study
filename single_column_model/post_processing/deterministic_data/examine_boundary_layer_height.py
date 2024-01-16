@@ -58,11 +58,14 @@ def find_Ekman_layer_height(file_path, u_G):
 
     data = pd.DataFrame(data=wind_speed.T, columns=z.flatten())
 
+    lower_z = [col for col in data.columns if col < 5]
+    data.loc[:, lower_z] = np.nan
+
     ekman_height_idx = np.zeros((1, len(t.flatten())))
     ekman_height_idx[...] = np.nan
     for row_idx in data.index:
         ekman_height_idx[0, row_idx] = np.argmax(
-            np.isclose(data.iloc[row_idx, :], u_G, atol=1e-1)
+            np.isclose(data.iloc[row_idx, :], u_G, atol=2e-1)
         )
 
     return z[list(map(int, ekman_height_idx.flatten())), :].flatten(), t.flatten()

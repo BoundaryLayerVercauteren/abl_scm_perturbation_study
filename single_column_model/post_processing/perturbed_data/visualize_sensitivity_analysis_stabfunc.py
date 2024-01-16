@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 from operator import itemgetter
+import scienceplots
 
 # Set plotting style
 plt.style.use("science")

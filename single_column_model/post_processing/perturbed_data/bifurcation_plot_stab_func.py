@@ -58,7 +58,7 @@ cmap = matplotlib.cm.get_cmap("cmc.batlow", NUM_COLORS)
 color = cmap.colors
 norm = matplotlib.colors.BoundaryNorm(uG_range, cmap.N)
 
-fig, ax = plt.subplots(1, figsize=(5, 10))
+fig, ax = plt.subplots(1, figsize=(10, 5))
 
 for tuple in path_with_ug:
     wind_speed, delta_theta, _, _ = get_data(tuple[1])
