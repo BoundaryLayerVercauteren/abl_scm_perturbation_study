@@ -81,8 +81,6 @@ def make_3D_plot(
         elif variable_name == 'wind_direction':
             u = file['u'][:]
             v = file['v'][:]
-            wind_speed = np.sqrt(u**2 + v**2)
-            variable_val = np.arcsin(- u/(wind_speed + 1e-16))*180/np.pi
             variable_val = np.arctan2(v,u)*180/np.pi
         else:
             variable_val = file[variable_name][:]
@@ -391,7 +389,7 @@ def plot_transitioned_solutions(
 
 if __name__ == "__main__":
     # Define path to stochastic data
-    data_directory_path = "results/long_tail/dt_1/500_10/neg_u_v_test_3/"
+    data_directory_path = "results/long_tail/dt_1/300_10/neg_u/"
     data_directory_path_single = data_directory_path + "simulations/"
 
     # Create directory to store visualization
@@ -407,7 +405,7 @@ if __name__ == "__main__":
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.arange(1.7, 1.8, 0.1):
+    for var in np.array([2.3]):#np.arange(1.8, 1.8, 0.1):
         try:
             var = np.around(var, 1)
 
@@ -453,12 +451,12 @@ if __name__ == "__main__":
             # # Plot TKE over t (single simulations)
             # plot_data_over_t(vis_directory_path, df_tke, '_tke_' + str(var))
 
-            # Plot one random stochastic process
-            for file in curr_files_single_sim:
-                if file=='solution_uG_1.7_perturbstr_0.01_sim_0.h5':
-                    random_file = file
-            #random_file = random.choice(curr_files_single_sim)
-            plot_2D_stoch_process(data_directory_path_single, vis_directory_path, random_file)
+            # # Plot one random stochastic process
+            # for file in curr_files_single_sim:
+            #     if file=='solution_uG_1.7_perturbstr_0.01_sim_0.h5':
+            #         random_file = file
+            #         #random_file = random.choice(curr_files_single_sim)
+            #         plot_2D_stoch_process(data_directory_path_single, vis_directory_path, random_file)
 
         except Exception:
             print(traceback.format_exc())

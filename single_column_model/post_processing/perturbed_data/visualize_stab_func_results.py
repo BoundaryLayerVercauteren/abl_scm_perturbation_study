@@ -23,7 +23,7 @@ plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Define directory where simulation output is saved
-output_directory = "results/long_tail/stab_func/gauss_process_stab_func/1.7/1_0/"
+output_directory = "results/long_tail/stab_func/gauss_process_stab_func/negative/2.4/1_0/"
 
 # Get all solution files
 output_files = []
@@ -34,7 +34,7 @@ for path, subdirs, files in os.walk(output_directory):
 
 
 def combine_all_sim_files(file_paths):
-    wind_data_dict = {}
+    richardson_dict = {}
     delta_theta_data_dict = {}
 
     for file_path in file_paths:
@@ -46,32 +46,37 @@ def combine_all_sim_files(file_paths):
             delta_theta_data_dict[sim_idx] = theta[z_idx, :] - theta[0, :]
             u = file["u"][:]
             v = file["v"][:]
-            wind_data_dict[sim_idx] = np.sqrt(u[z_idx, :] ** 2 + v[z_idx, :] ** 2)
+            richardson_dict[sim_idx] =(9.81/300)*((theta[z_idx, :]-theta[0, :])/20)/(((u[z_idx, :]-u[0, :])/20) ** 2 + ((v[z_idx, :]-v[0, :])/20) ** 2)
             t = file['t'][:]
 
     delta_theta_data = pd.DataFrame.from_dict(delta_theta_data_dict)
-    wind_data = pd.DataFrame.from_dict(wind_data_dict)
+    richardson_data = pd.DataFrame.from_dict(richardson_dict)
 
     delta_theta_data = delta_theta_data.reindex(sorted(delta_theta_data.columns), axis=1)
-    wind_data = wind_data.reindex(sorted(wind_data.columns), axis=1)
+    richardson_data = richardson_data.reindex(sorted(richardson_data.columns), axis=1)
 
-    wind_data = wind_data.set_index(t.flatten())
+    richardson_data = richardson_data.set_index(t.flatten())
     delta_theta_data = delta_theta_data.set_index(t.flatten())
 
-    return delta_theta_data, wind_data
+    return delta_theta_data, richardson_data
 
 
-data_delta_theta, data_wind = combine_all_sim_files(output_files)
+data_delta_theta, data_richardson = combine_all_sim_files(output_files)
 
-fig, ax = plt.subplots(2, 1, figsize=(10, 10))
+fig, ax = plt.subplots(1, 1, figsize=(5, 5))
 
-data_wind.plot(ax=ax[0], kind="line", colormap="cmc.batlow", legend=False)
-data_delta_theta.plot(ax=ax[1], kind="line", colormap="cmc.batlow", legend=False)
+# data_richardson.plot(ax=ax[0], kind="line", colormap="gray_r", legend=False)
+# data_richardson.mean(axis=1).plot(ax=ax[0], kind="line", color="red", legend=False, marker='s', markevery=60)
 
-ax[0].set_xlabel('time [h]')
-ax[1].set_xlabel('time [h]')
+data_delta_theta.plot(ax=ax, kind="line", colormap="gray_r", legend=False)
+data_delta_theta.mean(axis=1).plot(ax=ax, kind="line", color="red", legend=False, marker='s', markevery=60)
 
-ax[0].set_ylabel("s [m/s]")
-ax[1].set_ylabel(r"$\Delta \theta$ [K]")
+# ax[0].set_xlabel('time [h]')
+# ax[1].set_xlabel('time [h]')
+ax.set_xlabel('time [h]')
+
+# ax[0].set_ylabel("Ri")
+# ax[1].set_ylabel(r"$\Delta \theta$ [K]")
+ax.set_ylabel(r"$\Delta \theta$ [K]")
 
 plt.savefig(output_directory + 'transitions.png', bbox_inches="tight", dpi=300)

@@ -10,9 +10,9 @@ import cmcrameri as cram
 plt.style.use("science")
 
 # set font sizes for plots
-SMALL_SIZE = 11*1.5
-MEDIUM_SIZE = 12*1.5
-BIGGER_SIZE = 15*1.5
+SMALL_SIZE = 18*1.5
+MEDIUM_SIZE = 22*1.5
+BIGGER_SIZE = 30*1.5
 
 plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
 plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
@@ -75,7 +75,7 @@ def calculate_perturbation_strength(variable, cur_r, r_range, height_idx):
     # Normalize the range of perturbation values
     idx_r = np.where(r_range == np.abs(np.round(cur_r,3)))[0]
     normalized_r_range = (r_range - r_range.min()) / (r_range.max() - r_range.min()) + 1
-    # Calculate percentage of related to variance
+    # Calculate percentage of perturbation related to variance
     perturbation_percentage = normalized_r_range[idx_r] / normalized_time_variance_data[height_idx] * 100
 
     return perturbation_percentage[0]
@@ -83,6 +83,7 @@ def calculate_perturbation_strength(variable, cur_r, r_range, height_idx):
 
 def get_temp_inversion_data(all_file_paths, r_range, z_idx=37):
     df_delta_theta_temp = {}
+    perturb_strength_relation = []
 
     for file_path in all_file_paths:
 
@@ -103,6 +104,7 @@ def get_temp_inversion_data(all_file_paths, r_range, z_idx=37):
                     print(file_path)
                 else:
                     df_delta_theta_temp[perturb_strength] = theta[z_idx, :] - theta[0, :]
+                    perturb_strength_relation.append((r, perturb_strength))
 
         except Exception as e:
             print(e)
@@ -112,7 +114,7 @@ def get_temp_inversion_data(all_file_paths, r_range, z_idx=37):
     df_delta_theta = df_delta_theta.reindex(sorted(df_delta_theta.columns), axis=1)
     df_delta_theta["time"] = t.flatten()
 
-    return df_delta_theta
+    return df_delta_theta, perturb_strength_relation
 
 
 def calculate_num_sim_with_transition(data):
@@ -131,15 +133,22 @@ def calculate_num_sim_with_transition(data):
 
 def get_transition_statistics(grouped_file_paths, perturb_range):
     min_perturb_strength = {}
+    perturbstrength = []
     for key, _ in grouped_file_paths.items():
-        data = get_temp_inversion_data(grouped_file_paths[key], perturb_range)
+        data, r_perturb_strength = get_temp_inversion_data(grouped_file_paths[key], perturb_range)
         min_perturb_strength[key] = calculate_num_sim_with_transition(data)
+        if np.isnan(min_perturb_strength[key]):
+            perturbstrength.append([key, np.nan, np.nan])
+        else:
+            idx_r = np.where(r_perturb_strength==min_perturb_strength[key])[0][0]
+            perturbstrength.append([key, min_perturb_strength[key], r_perturb_strength[idx_r][0]])
+    print(perturbstrength)
 
-    return min_perturb_strength
+    return min_perturb_strength, perturbstrength
 
 
 labels = [r'$\theta^-$', r'$\theta^+$', r'$u^-$', r'$u^+$']
-markers = ['v', '^', 's', 'd']
+markers = ['v', 'o', 's', 'd']
 colors = matplotlib.cm.get_cmap("cmc.batlow", 5).colors
 
 fig, ax = plt.subplots(5, 3, figsize=(25, 15), sharex=True, sharey=True)
@@ -150,12 +159,11 @@ for grid_idx, grid_dir in enumerate(grid_dirs):
 
         solution_files = get_all_data_files(directory_path)
         uGs, solution_files_uG, rs = group_solution_files_by_uG(solution_files)
-        min_r_for_uG = get_transition_statistics(solution_files_uG, rs)
+        min_r_for_uG, perturb_translation = get_transition_statistics(solution_files_uG, rs)
+        np.savetxt(f'{directory_path}perturb_strength_to_r.txt', perturb_translation, delimiter=",", fmt="%s")
 
-        ax[grid_idx].plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()), color=colors[idx])
-        ax[grid_idx].scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx], color=colors[idx])
-
-    ax[grid_idx].legend()
+        ax[grid_idx].plot(list(min_r_for_uG.keys()), list(min_r_for_uG.values()), color=colors[idx], lw=2)
+        ax[grid_idx].scatter(min_r_for_uG.keys(), min_r_for_uG.values(), label=labels[idx], marker=markers[idx], color=colors[idx], s=25)
 
     if grid_idx == 0 or grid_idx == 1 or grid_idx == 2:
         ax[grid_idx].set_title(rf'$z_s={directory_path.split("/")[3].split("_")[1]}$m')
@@ -163,6 +171,9 @@ for grid_idx, grid_dir in enumerate(grid_dirs):
         ax[grid_idx].annotate(rf'$t_s={directory_path.split("/")[3].split("_")[0]}$s', xy=(1.1, 0.5), rotation=90, ha='center', va='center', xycoords='axes fraction')
     if grid_idx == 12 or grid_idx == 13 or grid_idx == 14:
         ax[grid_idx].tick_params(axis='x', rotation=45)
+        ax[grid_idx].xaxis.set_major_locator(plt.MaxNLocator(8))
+    if grid_idx == 2:
+        ax[grid_idx].legend(loc='center left', bbox_to_anchor=(1.2, 0.5), frameon=True)
 
 
 fig.text(0.5, 0.05, r'$u_G$ [m/s]', ha='center')
@@ -171,7 +182,7 @@ fig.text(0.08, 0.5, r'perturbation strength [\%]', va='center', rotation='vertic
 
 plt.subplots_adjust(wspace=0.02, hspace=0.02)
 
-plt.savefig(data_directory + 'sensitivity_analysis_variance.png')
+plt.savefig(data_directory + 'sensitivity_analysis_variance.png', bbox_inches="tight", dpi=300)
 
 # Clear memory
 plt.cla()  # Clear the current axes.
