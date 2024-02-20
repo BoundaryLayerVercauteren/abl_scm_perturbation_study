@@ -5,19 +5,12 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.6.9"]
+    container:
+      image: docker://akaisercoding/abl_scm_venv:latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Build docker image
-        run: |
-          cd docker
-          docker build . -t abl_scm_venv
-          cd ..
-          docker run --rm -ti -v "$PWD:/home/fenics/shared" abl_scm_venv
-          cd shared
       - name: Test with pytest
         run: |
+          cd shared
           python3 -m pytest
