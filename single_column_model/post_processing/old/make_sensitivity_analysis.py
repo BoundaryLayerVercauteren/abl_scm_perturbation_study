@@ -42,8 +42,8 @@ def plot_line_transition_plots(vis_path, file_paths, height_z, file_spec):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, r, u, v, _, delta_theta, tke, _, _ = prepare_data.load_data_from_file_for_specific_height(
-            file_path, height_z
+        t, _, r, u, v, _, delta_theta, tke, _, _ = (
+            prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
         )
         # Skip file if perturbation should be positive bur r is negative
         if "neg" not in file_path and r < 0:
@@ -321,9 +321,18 @@ def make_plot_time_in_new_regime(file_paths, height_z):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, r, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
-            file_path, height_z
-        )
+        (
+            t,
+            _,
+            r,
+            _,
+            _,
+            _,
+            delta_theta,
+            _,
+            max_perturbation_perc_u,
+            max_perturbation_perc_theta,
+        ) = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
 
         if "/u_" in file_path:
             max_perturbation = r  # max_perturbation_perc_u
@@ -388,9 +397,18 @@ def make_plot_transition_time(file_paths, height_z):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        t, _, r, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
-            file_path, height_z
-        )
+        (
+            t,
+            _,
+            r,
+            _,
+            _,
+            _,
+            delta_theta,
+            _,
+            max_perturbation_perc_u,
+            max_perturbation_perc_theta,
+        ) = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
         if "/u_" in file_path:
             max_perturbation = r  # max_perturbation_perc_u
         elif "/theta_" in file_path:
@@ -464,9 +482,18 @@ def make_plot_permanently_transitioned(file_paths, height_z):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        _, _, r, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
-            file_path, height_z
-        )
+        (
+            _,
+            _,
+            r,
+            _,
+            _,
+            _,
+            delta_theta,
+            _,
+            max_perturbation_perc_u,
+            max_perturbation_perc_theta,
+        ) = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
         if "/u_" in file_path:
             max_perturbation = r  # max_perturbation_perc_u
         elif "/theta_" in file_path:
@@ -508,9 +535,18 @@ def make_plot_crashes(file_paths, height_z):
 
     for idx, file_path in enumerate(file_paths):
         # Load data
-        _, _, _, _, _, _, delta_theta, _, max_perturbation_perc_u, max_perturbation_perc_theta = prepare_data.load_data_from_file_for_specific_height(
-            file_path, height_z
-        )
+        (
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            delta_theta,
+            _,
+            max_perturbation_perc_u,
+            max_perturbation_perc_theta,
+        ) = prepare_data.load_data_from_file_for_specific_height(file_path, height_z)
         if "/u_" in file_path:
             max_perturbation = float(max_perturbation_perc_u) * 1000
         elif "/theta_" in file_path:

@@ -1,4 +1,5 @@
 """Script to handle fenics functions/ variables."""
+
 import fenics as fe
 import numpy as np
 

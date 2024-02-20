@@ -9,8 +9,8 @@ def two_dim_gaussian_function(
     height_perturb_center = 20
     gaussian = amplitude * np.exp(
         -(
-            (t - time_perturb_center) ** 2 / (2 * time_spread ** 2)
-            + (z - height_perturb_center) ** 2 / (2 * height_spread ** 2)
+            (t - time_perturb_center) ** 2 / (2 * time_spread**2)
+            + (z - height_perturb_center) ** 2 / (2 * height_spread**2)
         )
     )
     return amplitude, gaussian

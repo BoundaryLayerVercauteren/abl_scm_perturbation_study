@@ -60,7 +60,7 @@ def find_Ekman_layer_height(file_path, u_G):
         z = file["z"][:]
         t = file["t"][:]
 
-    wind_speed = np.sqrt(u ** 2 + v ** 2)
+    wind_speed = np.sqrt(u**2 + v**2)
 
     data = pd.DataFrame(data=wind_speed.T, columns=z.flatten())
 

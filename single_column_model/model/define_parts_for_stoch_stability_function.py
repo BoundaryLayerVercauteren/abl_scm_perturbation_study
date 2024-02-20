@@ -139,7 +139,7 @@ class SDEsolver:
         t = dt * np.arange(N_dash)
 
         # Define exponential covariance matrix
-        c = np.exp(-(t / q) ** 2)
+        c = np.exp(-((t / q) ** 2))
 
         # Sample random variable with X~N(0,c)
         X = self.__sample_gaussian_with_circulant_covariance(c)

@@ -88,7 +88,7 @@ def load_parameter_from_file():
 def test_initial_cond_u():
     params = load_parameter_from_file()
     c_f = 4 * 10 ** (-3)
-    u_star_ini = np.sqrt(0.5 * c_f * params.u_G ** 2)
+    u_star_ini = np.sqrt(0.5 * c_f * params.u_G**2)
     u_0 = u_star_ini / params.kappa * np.log(pytest.z / params.z0)
     assert np.all(np.isclose(pytest.u.iloc[:, 0].values, u_0, atol=1e-2))
 
@@ -119,8 +119,8 @@ def test_initial_cond_tke():
 
     params = load_parameter_from_file()
     c_f = 4 * 10 ** (-3)
-    u_star_ini = np.sqrt(0.5 * c_f * params.u_G ** 2)
-    tke_z0_t0 = u_star_ini ** 2 / np.sqrt(0.087)
+    u_star_ini = np.sqrt(0.5 * c_f * params.u_G**2)
+    tke_z0_t0 = u_star_ini**2 / np.sqrt(0.087)
 
     a = (tke_H_t0 - tke_z0_t0) / (np.log(pytest.z[-1]) - np.log(pytest.z[0]))
     b = tke_z0_t0 - a * np.log(pytest.z[0])
@@ -146,8 +146,8 @@ def test_lower_boundary_cond_v():
 def test_lower_boundary_cond_tke():
     params = load_parameter_from_file()
     c_f = 4 * 10 ** (-3)
-    u_star_ini = np.sqrt(0.5 * c_f * params.u_G ** 2)
-    tke_low = u_star_ini ** 2 / np.sqrt(0.087)
+    u_star_ini = np.sqrt(0.5 * c_f * params.u_G**2)
+    tke_low = u_star_ini**2 / np.sqrt(0.087)
     assert np.all(np.isclose(pytest.tke.iloc[0, :].values, tke_low, atol=1e-1))
 
 

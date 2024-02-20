@@ -77,7 +77,7 @@ def make_3D_plot(
         if variable_name == "wind_speed":
             u = file["u"][:]
             v = file["v"][:]
-            variable_val = np.sqrt(u ** 2 + v ** 2)
+            variable_val = np.sqrt(u**2 + v**2)
         elif variable_name == "wind_direction":
             u = file["u"][:]
             v = file["v"][:]

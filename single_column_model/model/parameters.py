@@ -23,15 +23,25 @@ class Parameters:
 
     stab_func_type: str = "short_tail"  # type of stability function
 
-    initial_cond_perturbation: float = -0.1  # Value by how much initial cond. for u shall be perturbed
+    initial_cond_perturbation: float = (
+        -0.1
+    )  # Value by how much initial cond. for u shall be perturbed
 
-    perturbation_param: str = None  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
-    perturbation_type: str = None  # type of perturbation to be added [neg, pos, neg and pos, gauss_process]
+    perturbation_param: str = (
+        None  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
+    )
+    perturbation_type: str = (
+        None  # type of perturbation to be added [neg, pos, neg and pos, gauss_process]
+    )
     perturbation_max: float = None  # strength of perturbation
     perturbation_step_size: float = None  # step size of sensitivity analysis
     perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
-    perturbation_time_spread: int = None  # either int or 'all'; all indicates that a range of perturbations should be tested
-    perturbation_height_spread: int = None  # either int or 'all'; all indicates that a range of perturbations should be tested
+    perturbation_time_spread: int = (
+        None  # either int or 'all'; all indicates that a range of perturbations should be tested
+    )
+    perturbation_height_spread: int = (
+        None  # either int or 'all'; all indicates that a range of perturbations should be tested
+    )
 
     num_simulation: int = 1
     num_proc: int = 2
@@ -51,8 +61,12 @@ class Parameters:
 
     # stochastic model specific parameter
     # H_sl: float = 50  # Height of the stochastic layer (excluding the blending height)
-    stoch_domain_ext: float = 2  # H_sl*stoch_domain_ext is the height of the stochastic layer incl. the blending height
-    z_l: float = 50  # height [m] till the stochastic model is active. Above the classical mixing is active
+    stoch_domain_ext: float = (
+        2  # H_sl*stoch_domain_ext is the height of the stochastic layer incl. the blending height
+    )
+    z_l: float = (
+        50  # height [m] till the stochastic model is active. Above the classical mixing is active
+    )
     lz: float = 20  # covariance length in height [m]
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
@@ -61,9 +75,9 @@ class Parameters:
     theta_A: float = 300  # potential temperature at the boundary layer top [K]
     rho: float = 1.225  # air density kg/m**3 at 15 C
     C_p: float = 1005  # specific heat capacity at constant pressure of air
-    C_g: float = 0.95 * (
-        1.45 * 3.58 * 1e6 / 2 / omega
-    ) ** 0.5  # heat capacity of ground per unit area
+    C_g: float = (
+        0.95 * (1.45 * 3.58 * 1e6 / 2 / omega) ** 0.5
+    )  # heat capacity of ground per unit area
     sig: float = 5.669e-8  # non-dimensional Stefan-Boltzmann constant
     Q_c: float = 0.0  # the cloud fraction
     Q_a: float = 0.003  # specific humidity [g kg^-1]
@@ -80,7 +94,9 @@ class Parameters:
     f_c: float = 2 * 7.27 * 1e-5 * np.sin(latitude * np.pi / 180)  # coriolis parameter
     gamma: float = 0.01  # atmospheric lapse rate at upper edge of ABL in K/m
 
-    EPS: float = 1e-16  # An imaginary numerical zero. Somehow the sqrt() of fenics needs this
+    EPS: float = (
+        1e-16  # An imaginary numerical zero. Somehow the sqrt() of fenics needs this
+    )
 
     # closure specific parameters
     tau: float = 3600 * 5.0  # relaxation time scale

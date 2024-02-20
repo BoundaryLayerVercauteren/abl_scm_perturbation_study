@@ -111,8 +111,8 @@ def define_boundary_conditions(fenics_params, params):
     top = f"near(x[0],{params.H},1E-6)"
 
     if params.load_ini_cond:
-        u_ground, v_ground, theta_ground, k_ground, theta_g_0 = load_boundary_conditions_from_files(
-            params.init_path
+        u_ground, v_ground, theta_ground, k_ground, theta_g_0 = (
+            load_boundary_conditions_from_files(params.init_path)
         )
 
         boundary_cond = turn_into_fenics_boundary_conditions(
@@ -169,13 +169,14 @@ def initial_theta_0(z, theta_initial, laps_rate, cut_height):
 def initial_k_0(z, u_G, z0, H, k_at_H=0.0):
     """Calculate  initial profile for TKE. See Parente, A., C. Gorlé, J. van Beeck, and C. Benocci, 2011: A
     Comprehensive Modelling Approach for the Neutral Atmospheric Boundary Layer: Consistent Inflow Conditions, Wall
-    Function and Turbulence Model. Boundary-Layer Meteorol, 140, 411–428, https://doi.org/10.1007/s10546-011-9621-5."""
+    Function and Turbulence Model. Boundary-Layer Meteorol, 140, 411–428, https://doi.org/10.1007/s10546-011-9621-5.
+    """
     # Set tuning parameter
     c_f = 4 * 10 ** (-3)
     # Calculate initial friction velocity
-    u_star_ini = np.sqrt(0.5 * c_f * u_G ** 2)
+    u_star_ini = np.sqrt(0.5 * c_f * u_G**2)
     # TKE for t=0 and z=z0
-    k_at_z0 = u_star_ini ** 2 / np.sqrt(0.087)
+    k_at_z0 = u_star_ini**2 / np.sqrt(0.087)
 
     def tke_profile(z, a, b):
         return a * np.log(z + z0) + b
@@ -194,4 +195,4 @@ def calculate_tke_at_the_ground(kappa, z, u_z1, v_z1, c_f_m=0.087):
 
 
 def calculate_u_star_at_the_ground(kappa, z, u_z1, v_z1):
-    return kappa / np.log(z[1][0] / z[0][0]) * np.sqrt(u_z1 ** 2 + v_z1 ** 2)
+    return kappa / np.log(z[1][0] / z[0][0]) * np.sqrt(u_z1**2 + v_z1**2)

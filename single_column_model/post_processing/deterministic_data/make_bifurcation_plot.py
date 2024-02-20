@@ -67,7 +67,7 @@ for idx, var in enumerate(param_range):
 
         wind_speed_u = df_u_det_sim.loc[steady_state : steady_state + 60]["sim_0"]
         wind_speed_v = df_v_det_sim.loc[steady_state : steady_state + 60]["sim_0"]
-        wind_speed = np.sqrt(wind_speed_u ** 2 + wind_speed_v ** 2)
+        wind_speed = np.sqrt(wind_speed_u**2 + wind_speed_v**2)
         delta_theta = df_delta_theta_det_sim.loc[steady_state : steady_state + 60][
             "sim_0"
         ]
@@ -108,7 +108,7 @@ for idx, var in enumerate(param_range):
         pass
 
 # Add line for mean
-mean_sG, = ax.plot(
+(mean_sG,) = ax.plot(
     param_range,
     mean_delta_theta,
     label="mean over $s_G$",
@@ -118,7 +118,7 @@ mean_sG, = ax.plot(
     linestyle="--",
     zorder=10,
 )
-mean_s, = ax.plot(
+(mean_s,) = ax.plot(
     mean_wind_speed,
     mean_delta_theta,
     label="mean over $s$",

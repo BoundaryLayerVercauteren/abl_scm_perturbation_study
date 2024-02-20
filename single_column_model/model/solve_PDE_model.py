@@ -104,17 +104,19 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
     for time_idx in range(params.num_steps):
         if params.perturbation_param != "stab_func":
             # Add perturbation to weak formulation of PDE model
-            perturbation_at_time_idx, perturbed_F = add_perturbation_to_weak_form_of_model(
-                params.perturbation_param,
-                output.perturbation,
-                fenics_params.Q,
-                fenics_params.F,
-                fenics_params.u_test,
-                fenics_params.theta_test,
-                fenics_params.v_test,
-                u_sol,
-                v_sol,
-                time_idx,
+            perturbation_at_time_idx, perturbed_F = (
+                add_perturbation_to_weak_form_of_model(
+                    params.perturbation_param,
+                    output.perturbation,
+                    fenics_params.Q,
+                    fenics_params.F,
+                    fenics_params.u_test,
+                    fenics_params.theta_test,
+                    fenics_params.v_test,
+                    u_sol,
+                    v_sol,
+                    time_idx,
+                )
             )
             # Solve PDE model with Finite Element Method in space
             solver = define_PDE_model.prepare_fenics_solver(fenics_params, perturbed_F)
@@ -145,8 +147,10 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
         if params.perturbation_param == "stab_func":
             # Get stoch stability function parameters for current u,v, theta
             Ri_stoch = get_richardson_number_stochastic_grid(fenics_params, params)
-            Lambda, Upsilon, Sigma = define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(
-                Ri_stoch, params.perturbation_strength
+            Lambda, Upsilon, Sigma = (
+                define_parts_for_stoch_stability_function.get_stoch_stab_function_parameter(
+                    Ri_stoch, params.perturbation_strength
+                )
             )
 
             # Calculate phi on stochastic grid
@@ -217,8 +221,10 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
         fenics_params.theta_D_low.value = np.copy(theta_g)
 
         # Update lower boundary condition for TKE
-        fenics_params.k_D_low.value = define_initial_and_boundary_conditions.update_tke_at_the_surface(
-            params.kappa, fenics_params.z, u_sol_np, v_sol_np, params.min_tke
+        fenics_params.k_D_low.value = (
+            define_initial_and_boundary_conditions.update_tke_at_the_surface(
+                params.kappa, fenics_params.z, u_sol_np, v_sol_np, params.min_tke
+            )
         )
 
         time_idx += 1

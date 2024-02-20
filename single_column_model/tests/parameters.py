@@ -19,11 +19,15 @@ class Parameters:
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
-    u_G_range: np.ndarray = None  # Values for geostrophic wind for different simulations
+    u_G_range: np.ndarray = (
+        None  # Values for geostrophic wind for different simulations
+    )
 
     sensitivity_study: bool = False  # perform sensitivity study
 
-    perturbation_param: str = "none"  # specify to which equation a perturbation is added
+    perturbation_param: str = (
+        "none"  # specify to which equation a perturbation is added
+    )
     # [net_rad, pde_u, pde_theta]
     perturbation_type: str = "none"  # type of perturbation to be added
     # [mod_abraham, neg_mod_abraham, gauss_process]

@@ -29,8 +29,8 @@ def make_setup_for_model_run():
         params.perturbation_strength = "nan"
 
     # Create directory for solutions and initial conditions (if required)
-    output.solution_directory, output.init_directory = save_solution.create_solution_directory(
-        params
+    output.solution_directory, output.init_directory = (
+        save_solution.create_solution_directory(params)
     )
     output.top_solution_directory = output.solution_directory
 
@@ -42,21 +42,27 @@ def combine_model_solver_functions(fenics_params, params, output):
     mesh = space_discretization.create_grid(params, "power")
 
     # Create stochastic grid
-    params.stoch_grid, params.Hs_det_idx, params.Hs, params.Ns_n, params.dz_s = define_parts_for_stoch_stability_function.make_stochastic_grid(
-        params, mesh.coordinates()
+    params.stoch_grid, params.Hs_det_idx, params.Hs, params.Ns_n, params.dz_s = (
+        define_parts_for_stoch_stability_function.make_stochastic_grid(
+            params, mesh.coordinates()
+        )
     )
 
     # Define variables to use the fenics library
     fenics_params = define_PDE_model.setup_fenics_variables(fenics_params, mesh)
 
     # Define boundary conditions
-    fenics_params, params = define_initial_and_boundary_conditions.define_boundary_conditions(
-        fenics_params, params
+    fenics_params, params = (
+        define_initial_and_boundary_conditions.define_boundary_conditions(
+            fenics_params, params
+        )
     )
 
     # Define initial profiles/ values
-    u_n, v_n, T_n, k_n = define_initial_and_boundary_conditions.define_initial_conditions(
-        fenics_params.Q, mesh, params
+    u_n, v_n, T_n, k_n = (
+        define_initial_and_boundary_conditions.define_initial_conditions(
+            fenics_params.Q, mesh, params
+        )
     )
 
     # Set up the weak formulation of the equations
@@ -65,8 +71,8 @@ def combine_model_solver_functions(fenics_params, params, output):
     )
 
     # Set up the stochastic solver
-    stoch_solver, params = define_parts_for_stoch_stability_function.initialize_SDEsolver(
-        params
+    stoch_solver, params = (
+        define_parts_for_stoch_stability_function.initialize_SDEsolver(params)
     )
 
     # Create the variables to write output

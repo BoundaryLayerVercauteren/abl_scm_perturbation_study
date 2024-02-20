@@ -46,7 +46,7 @@ def power_grid(z0, H, Nz):
     lb = z0 ** (1 / 3)
     rb = H ** (1 / 3)
     space = np.linspace(lb, rb, Nz)
-    return space ** 3
+    return space**3
 
 
 def log_grid(z0, H, Nz):

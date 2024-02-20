@@ -11,6 +11,8 @@ output_directory = "results/long_tail/stab_func/gauss_process_stab_func/positive
 # ---------------------------------------------------------------------------
 # Define where the unstable equilibrium is located
 location_unstable_eq = 5
+
+
 # ---------------------------------------------------------------------------
 def check_if_transitioned(values):
     if values[0] > location_unstable_eq:

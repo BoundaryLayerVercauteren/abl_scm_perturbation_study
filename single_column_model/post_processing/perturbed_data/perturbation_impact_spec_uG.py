@@ -54,7 +54,7 @@ def get_data(full_file_path):
         t = file["t"][:]
         u = file["u"][:]
         v = file["v"][:]
-        wind_speed = np.sqrt(u ** 2 + v ** 2)
+        wind_speed = np.sqrt(u**2 + v**2)
         theta = file["theta"][:]
 
     return wind_speed, theta, t, z
