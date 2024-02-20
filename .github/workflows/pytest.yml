@@ -1,0 +1,27 @@
+name: Pytest
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6.9"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build docker image
+        run: |
+          cd docker
+          docker build . -t abl_scm_venv
+          cd ..
+          docker run --rm -ti -v "$PWD:/home/fenics/shared" abl_scm_venv
+          cd shared
+      - name: Test with pytest
+        run: |
+          python3 -m pytest
