@@ -5,6 +5,7 @@
 *.sif
 # tar files
 *.tar
+FLOSS/
 
 # extra code
 supplementary/
