@@ -25,7 +25,9 @@ class Parameters:
 
     sensitivity_study: bool = False  # perform sensitivity study
 
-    initial_cond_perturbation: float = 0  # Value by how much initial cond. for u shall be perturbed
+    initial_cond_perturbation: float = (
+        0  # Value by how much initial cond. for u shall be perturbed
+    )
 
     perturbation_param: str = (
         None  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
@@ -40,8 +42,8 @@ class Parameters:
         None  # either int or 'all'; all indicates that a range of perturbations should be tested
     )
     perturbation_height_spread: int = (
-        None  # either int or 'all'; all indicates that a range of perturbations should be tested
-    ) # length of perturbation, only relevant for gauss perturbation
+        None  # either int or 'all'; all indicates that a range of perturbations should be tested  # length of perturbation, only relevant for gauss perturbation
+    )
 
     stab_func_type: str = "short_tail"  # type of stability function
 
