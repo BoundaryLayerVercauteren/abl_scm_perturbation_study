@@ -14,7 +14,7 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 10  # hour
+    T_end_h: float = 1  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 10  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
@@ -25,17 +25,23 @@ class Parameters:
 
     sensitivity_study: bool = False  # perform sensitivity study
 
+    initial_cond_perturbation: float = 0  # Value by how much initial cond. for u shall be perturbed
+
     perturbation_param: str = (
-        "none"  # specify to which equation a perturbation is added
+        None  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
     )
-    # [net_rad, pde_u, pde_theta]
-    perturbation_type: str = "none"  # type of perturbation to be added
-    # [mod_abraham, neg_mod_abraham, gauss_process]
-    perturbation_strength: float = 0.03  # strength of perturbation
-    perturbation_start: int = int(0 * 3600 / dt)  # start time of perturbation
-    perturbation_length: int = (
-        num_steps - perturbation_start + 1
-    )  # length of perturbation, only relevant for gauss perturbation
+    perturbation_type: str = (
+        None  # type of perturbation to be added [neg, pos, neg and pos, gauss_process]
+    )
+    perturbation_max: float = None  # strength of perturbation
+    perturbation_step_size: float = None  # step size of sensitivity analysis
+    perturbation_start: int = int(0.5 * 3600 / dt)  # start time of perturbation
+    perturbation_time_spread: int = (
+        None  # either int or 'all'; all indicates that a range of perturbations should be tested
+    )
+    perturbation_height_spread: int = (
+        None  # either int or 'all'; all indicates that a range of perturbations should be tested
+    ) # length of perturbation, only relevant for gauss perturbation
 
     stab_func_type: str = "short_tail"  # type of stability function
 
@@ -54,6 +60,16 @@ class Parameters:
     z0: float = 0.044  # roughness length in meter
     z0h: float = z0 * 0.1  # roughness length for heat in meter
     H: float = 300.0  # domain height in meters  ! should be H > z_l * s_dom_ext
+
+    # stochastic model specific parameter
+    # H_sl: float = 50  # Height of the stochastic layer (excluding the blending height)
+    stoch_domain_ext: float = (
+        2  # H_sl*stoch_domain_ext is the height of the stochastic layer incl. the blending height
+    )
+    z_l: float = (
+        50  # height [m] till the stochastic model is active. Above the classical mixing is active
+    )
+    lz: float = 20  # covariance length in height [m]
 
     omega: float = (2 * np.pi) / (24 * 60 * 60)  # angular earth velocity
     theta_m: float = 290  # restoring temperature of peat soil [K]
