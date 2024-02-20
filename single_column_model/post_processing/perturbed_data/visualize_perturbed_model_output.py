@@ -69,19 +69,19 @@ def find_min_max_in_files(directory_path, file_list, variable):
 
 
 def make_3D_plot(
-        data_path, vis_path, file_name, curr_param, variable_name, suffix="", z_max=""
+    data_path, vis_path, file_name, curr_param, variable_name, suffix="", z_max=""
 ):
     full_file_path = data_path + file_name
     # Open output file and load variables
     with h5py.File(full_file_path, "r+") as file:
-        if variable_name == 'wind_speed':
-            u = file['u'][:]
-            v = file['v'][:]
-            variable_val = np.sqrt(u**2 + v**2)
-        elif variable_name == 'wind_direction':
-            u = file['u'][:]
-            v = file['v'][:]
-            variable_val = np.arctan2(v,u)*180/np.pi
+        if variable_name == "wind_speed":
+            u = file["u"][:]
+            v = file["v"][:]
+            variable_val = np.sqrt(u ** 2 + v ** 2)
+        elif variable_name == "wind_direction":
+            u = file["u"][:]
+            v = file["v"][:]
+            variable_val = np.arctan2(v, u) * 180 / np.pi
         else:
             variable_val = file[variable_name][:]
         z = file["z"][:]
@@ -96,7 +96,11 @@ def make_3D_plot(
     # Choose colour
     if variable_name == "theta":
         colours = cram.lajolla
-    elif variable_name == "u" or variable_name == 'wind_direction' or variable_name == 'wind_speed':
+    elif (
+        variable_name == "u"
+        or variable_name == "wind_direction"
+        or variable_name == "wind_speed"
+    ):
         colours = cram.davos
     elif variable_name == "v":
         colours = cram.davos
@@ -114,13 +118,13 @@ def make_3D_plot(
         plt.title(r"$u_G = $" + str(curr_param))
     plt.xlabel("time [h]")
     plt.ylabel("z [m]")
-    plt.xlim((0,1))
+    plt.xlim((0, 1))
     cbar = plt.colorbar()
     if variable_name == "theta":
         cbar.set_label(r"$\theta$", rotation=0)
-    elif variable_name == 'wind_direction':
+    elif variable_name == "wind_direction":
         cbar.set_label(r"$\gamma$", rotation=0)
-    elif variable_name == 'wind_speed':
+    elif variable_name == "wind_speed":
         cbar.set_label(r"S", rotation=0)
     else:
         cbar.set_label(variable_name, rotation=0)
@@ -219,7 +223,9 @@ def plot_delta_theta_over_u(vis_path, data_u, data_delta_theta, suffix):
     cbar.set_label("r", rotation=0)
 
     plt.savefig(
-        vis_path + "/delta_theta_over_u/delta_theta_over_u" + suffix + ".png", bbox_inches="tight", dpi=300
+        vis_path + "/delta_theta_over_u/delta_theta_over_u" + suffix + ".png",
+        bbox_inches="tight",
+        dpi=300,
     )
 
     # To clear memory
@@ -257,7 +263,9 @@ def plot_data_over_t(vis_path, data, suffix):
         # plt.ylim((0, 0.2))
 
     plt.savefig(
-        vis_path + "/delta_theta_over_t/var_over_t" + suffix + ".png", bbox_inches="tight", dpi=300
+        vis_path + "/delta_theta_over_t/var_over_t" + suffix + ".png",
+        bbox_inches="tight",
+        dpi=300,
     )
 
     # To clear memory
@@ -274,7 +282,7 @@ def plot_histogram(vis_path, data, variable_name, suffix):
     # data.stack().plot.hist(grid=False, bins=10, color='blue')
     # data = data.drop(data.index[0:14400])
     data.stack().plot.hist(grid=False, bins=10, color="black")
-    #plt.xlim((0, 10))
+    # plt.xlim((0, 10))
     plt.xlabel(r"$\Delta \theta$ [K]")
     plt.title(r"$t \geq 4 h$")
 
@@ -347,7 +355,7 @@ def plot_2D_stoch_process(directory_path, vis_path, file_path):
 
 
 def plot_transitioned_solutions(
-        data_path, vis_path, list_files, var, data_delta_theta, z_top
+    data_path, vis_path, list_files, var, data_delta_theta, z_top
 ):
     data_delta_theta = data_delta_theta.drop(columns=["time"])
 
@@ -376,11 +384,36 @@ def plot_transitioned_solutions(
     # Find corresponding file
     for column in data_delta_theta.columns:
         file_name = list_files.iloc[0, data_delta_theta.columns.get_loc(column)]
-        make_3D_plot(data_path, vis_path, file_name, var, "u", suffix=str(np.round(column, 3)))
-        make_3D_plot(data_path, vis_path, file_name, var, "v", suffix=str(np.round(column, 3)))
-        make_3D_plot(data_path, vis_path, file_name, var, "theta", suffix=str(np.round(column, 3)))
-        make_3D_plot(data_path, vis_path, file_name, var, "wind_speed", suffix=str(np.round(column, 3)))
-        make_3D_plot(data_path, vis_path, file_name, var, "wind_direction", suffix=str(np.round(column, 3)))
+        make_3D_plot(
+            data_path, vis_path, file_name, var, "u", suffix=str(np.round(column, 3))
+        )
+        make_3D_plot(
+            data_path, vis_path, file_name, var, "v", suffix=str(np.round(column, 3))
+        )
+        make_3D_plot(
+            data_path,
+            vis_path,
+            file_name,
+            var,
+            "theta",
+            suffix=str(np.round(column, 3)),
+        )
+        make_3D_plot(
+            data_path,
+            vis_path,
+            file_name,
+            var,
+            "wind_speed",
+            suffix=str(np.round(column, 3)),
+        )
+        make_3D_plot(
+            data_path,
+            vis_path,
+            file_name,
+            var,
+            "wind_direction",
+            suffix=str(np.round(column, 3)),
+        )
 
         # make_3D_plot(data_path, vis_path, file_name, var, "u", suffix=str(column), z_max=z_top)
         # make_3D_plot(data_path, vis_path, file_name, var, "v", suffix=str(column), z_max=z_top)
@@ -396,16 +429,16 @@ if __name__ == "__main__":
     vis_directory_path = os.path.join(data_directory_path, "visualization")
     if not os.path.exists(vis_directory_path):
         os.makedirs(vis_directory_path)
-        os.makedirs(vis_directory_path + '/perturbed')
-        os.makedirs(vis_directory_path + '/delta_theta_over_t')
-        os.makedirs(vis_directory_path + '/delta_theta_over_u')
-        os.makedirs(vis_directory_path + '/histograms')
-        os.makedirs(vis_directory_path + '/3D')
+        os.makedirs(vis_directory_path + "/perturbed")
+        os.makedirs(vis_directory_path + "/delta_theta_over_t")
+        os.makedirs(vis_directory_path + "/delta_theta_over_u")
+        os.makedirs(vis_directory_path + "/histograms")
+        os.makedirs(vis_directory_path + "/3D")
 
     # Get a list of all file names in given directory for u and theta
     _, _, files_sin = find_files_in_directory(data_directory_path_single)
 
-    for var in np.array([2.3]):#np.arange(1.8, 1.8, 0.1):
+    for var in np.array([2.3]):  # np.arange(1.8, 1.8, 0.1):
         try:
             var = np.around(var, 1)
 
@@ -430,8 +463,14 @@ if __name__ == "__main__":
             )
 
             # Make 3D plot of time series with transitions
-            plot_transitioned_solutions(data_directory_path_single, vis_directory_path, df_files_names, var,
-                                        df_delta_theta_sing_sim, idx_bl_top_height)
+            plot_transitioned_solutions(
+                data_directory_path_single,
+                vis_directory_path,
+                df_files_names,
+                var,
+                df_delta_theta_sing_sim,
+                idx_bl_top_height,
+            )
 
             # # Make histogram for delta theta (i.e. theta_top - theta_0) (single simulations)
             # plot_histogram(vis_directory_path, df_delta_theta_sing_sim, 'delta_theta', '_' + str(var))
@@ -440,7 +479,9 @@ if __name__ == "__main__":
             # plot_delta_theta_over_u(vis_directory_path, df_u_sing_sim, df_delta_theta_sing_sim, '_' + str(var))
 
             # Plot delta theta over t (single simulations)
-            plot_data_over_t(vis_directory_path, df_delta_theta_sing_sim, '_delta_theta_' + str(var))
+            plot_data_over_t(
+                vis_directory_path, df_delta_theta_sing_sim, "_delta_theta_" + str(var)
+            )
             #
             # # Plot u over t (single simulations)
             # plot_data_over_t(vis_directory_path, df_u_sing_sim, '_u_' + str(var))

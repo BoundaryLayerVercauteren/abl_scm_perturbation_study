@@ -8,14 +8,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scienceplots
 
-from single_column_model.post_processing import (extract_steady_state,
-                                                 prepare_data)
+from single_column_model.post_processing import extract_steady_state, prepare_data
 
 # warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 
-#matplotlib.use("webagg")
-#plt.style.use("science")
+# matplotlib.use("webagg")
+# plt.style.use("science")
 
 # set font sizes for plots
 SMALL_SIZE = 11
@@ -98,7 +97,7 @@ def make_3D_plot_increments(data_path, vis_path, file_name, curr_param, variable
 
     for col_idx in np.arange(1800, np.shape(variable_val)[1]):
         moving_sum[:, col_idx] = (
-                np.sum(variable_val[:, col_idx - 1800: col_idx], axis=1) / 1800
+            np.sum(variable_val[:, col_idx - 1800 : col_idx], axis=1) / 1800
         )
 
     increments = np.abs(variable_val - moving_sum)
@@ -115,7 +114,9 @@ def make_3D_plot_increments(data_path, vis_path, file_name, curr_param, variable
         if len(last_idx_non_consecutive) == 0:
             min_idx_increment_small = idx_small_increments[0]
         else:
-            min_idx_increment_small = idx_small_increments[last_idx_non_consecutive.max() + 1]
+            min_idx_increment_small = idx_small_increments[
+                last_idx_non_consecutive.max() + 1
+            ]
 
     # Create mesh
     X, Y = np.meshgrid(t, z)
@@ -193,7 +194,7 @@ def plot_data_over_t(vis_path, data, suffix, steady_stat):
 
 
 def plot_combined_data_over_t(
-        vis_path, data_u, data_v, data_delta_theta, data_tke, suffix, steady_state
+    vis_path, data_u, data_v, data_delta_theta, data_tke, suffix, steady_state
 ):
     steady_state = int(steady_state)
 
@@ -212,32 +213,32 @@ def plot_combined_data_over_t(
     time_range = [0, steady_state + 10 * 60]
 
     (u_line,) = ax1.plot(
-        data_u.iloc[time_range[0]: time_range[1], 1],
-        data_u.iloc[time_range[0]: time_range[1], 0],
+        data_u.iloc[time_range[0] : time_range[1], 1],
+        data_u.iloc[time_range[0] : time_range[1], 0],
         color=color[0],
         marker=markers[0],
         markevery=mark_distance,
         label=r"$u$",
     )
     (delta_theta_line,) = ax2.plot(
-        data_delta_theta.iloc[time_range[0]: time_range[1], 1],
-        data_delta_theta.iloc[time_range[0]: time_range[1], 0],
+        data_delta_theta.iloc[time_range[0] : time_range[1], 1],
+        data_delta_theta.iloc[time_range[0] : time_range[1], 0],
         color=color[2],
         marker=markers[2],
         markevery=mark_distance,
         label=r"$\Delta \theta$",
     )
     (v_line,) = ax3.plot(
-        data_v.iloc[time_range[0]: time_range[1], 1],
-        data_v.iloc[time_range[0]: time_range[1], 0],
+        data_v.iloc[time_range[0] : time_range[1], 1],
+        data_v.iloc[time_range[0] : time_range[1], 0],
         color=color[1],
         marker=markers[1],
         markevery=mark_distance,
         label=r"$v$",
     )
     (tke_line,) = ax3.plot(
-        data_tke.iloc[time_range[0]: time_range[1], 1],
-        data_tke.iloc[time_range[0]: time_range[1], 0],
+        data_tke.iloc[time_range[0] : time_range[1], 1],
+        data_tke.iloc[time_range[0] : time_range[1], 0],
         color=color[3],
         marker=markers[3],
         markevery=mark_distance,
@@ -257,8 +258,7 @@ def plot_combined_data_over_t(
     ax1.set_ylabel(r"$u$ [m/s]", color=color[0])
     ax2.set_ylabel(r"$\Delta \theta$ [K]", color=color[2])
 
-    from matplotlib.offsetbox import (AnchoredOffsetbox, HPacker, TextArea,
-                                      VPacker)
+    from matplotlib.offsetbox import AnchoredOffsetbox, HPacker, TextArea, VPacker
 
     boxes = [
         TextArea(text, textprops=dict(color=color, ha="left", va="bottom", rotation=90))
@@ -305,7 +305,7 @@ def plot_combined_data_over_t(
 
 
 def make_bifurcation_plot_with_Ekman_height(
-        det_data_directory_path, vis_directory_path, param_range
+    det_data_directory_path, vis_directory_path, param_range
 ):
     # Define colors for plot
     NUM_COLORS = len(param_range) + 1
@@ -363,9 +363,7 @@ def make_bifurcation_plot_with_Ekman_height(
 
 if __name__ == "__main__":
     # Define path to deterministic data
-    det_directory_path = (
-        "single_column_model/solution/long_tail/deterministic/"
-    )
+    det_directory_path = "single_column_model/solution/long_tail/deterministic/"
     det_data_directory_path = det_directory_path + "simulations/"
 
     # Create directory to store visualization
@@ -426,9 +424,9 @@ if __name__ == "__main__":
     mean_u = []
     mean_delta_theta = []
 
-    #param_range = np.arange(0.6, 4.4, 0.1)
+    # param_range = np.arange(0.6, 4.4, 0.1)
 
-    #height_idx = 37  # 37, z=20m
+    # height_idx = 37  # 37, z=20m
 
     NUM_COLORS = len(param_range) + 1
     cmap = matplotlib.cm.get_cmap("cmc.batlow", NUM_COLORS)
@@ -460,10 +458,10 @@ if __name__ == "__main__":
                 df_u_det_sim, df_v_det_sim, df_delta_theta_det_sim, df_tke
             )
 
-            df_u_det_sim = df_u_det_sim.loc[steady_state: steady_state + 60]
+            df_u_det_sim = df_u_det_sim.loc[steady_state : steady_state + 60]
             df_delta_theta_det_sim = df_delta_theta_det_sim.loc[
-                                     steady_state: steady_state + 60
-                                     ]
+                steady_state : steady_state + 60
+            ]
 
             mean_u.append(np.mean(df_u_det_sim["sim_0"]))
             mean_delta_theta.append(np.mean(df_delta_theta_det_sim["sim_0"]))
@@ -555,4 +553,8 @@ if __name__ == "__main__":
         print(traceback.format_exc())
         pass
 
-    plt.savefig(f'{vis_directory_path}/delta_theta_over_u_all_sim_h{top_height}m.png', bbox_inches="tight", dpi=300)
+    plt.savefig(
+        f"{vis_directory_path}/delta_theta_over_u_all_sim_h{top_height}m.png",
+        bbox_inches="tight",
+        dpi=300,
+    )

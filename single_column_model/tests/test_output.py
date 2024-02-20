@@ -46,9 +46,15 @@ def test_data_has_no_nan():
         theta = file["theta"][:]
         tke = file["TKE"][:]
 
-    if (np.isnan(t).any() or np.isnan(z).any() or np.isnan(u).any() or np.isnan(v).any() or np.isnan(theta).any()
-            or np.isnan(tke).any()):
-        assert False, 'At least one output variable contains a NaN.'
+    if (
+        np.isnan(t).any()
+        or np.isnan(z).any()
+        or np.isnan(u).any()
+        or np.isnan(v).any()
+        or np.isnan(theta).any()
+        or np.isnan(tke).any()
+    ):
+        assert False, "At least one output variable contains a NaN."
 
     pytest.theta = pd.DataFrame(data=theta, columns=t.flatten(), index=z.flatten())
     pytest.u = pd.DataFrame(data=u, columns=t.flatten(), index=z.flatten())
@@ -95,9 +101,17 @@ def test_initial_cond_theta():
     params = load_parameter_from_file()
     z_cut = 200
     z_idx = (np.abs(pytest.z - z_cut)).argmin()
-    theta_above_z_cut = params.theta_ref + (pytest.z[z_idx + 1:] - z_cut) * params.gamma
-    assert np.all(np.isclose(pytest.theta.iloc[:z_idx, 0].values, params.theta_ref, rtol=1e-3))
-    assert np.all(np.isclose(pytest.theta.iloc[z_idx + 1:, 0].values, theta_above_z_cut, rtol=1e-3))
+    theta_above_z_cut = (
+        params.theta_ref + (pytest.z[z_idx + 1 :] - z_cut) * params.gamma
+    )
+    assert np.all(
+        np.isclose(pytest.theta.iloc[:z_idx, 0].values, params.theta_ref, rtol=1e-3)
+    )
+    assert np.all(
+        np.isclose(
+            pytest.theta.iloc[z_idx + 1 :, 0].values, theta_above_z_cut, rtol=1e-3
+        )
+    )
 
 
 def test_initial_cond_tke():
@@ -139,7 +153,9 @@ def test_lower_boundary_cond_tke():
 
 def test_upper_boundary_cond_u():
     params = load_parameter_from_file()
-    gradient = (pytest.u.iloc[-1, :] - pytest.u.iloc[-2, :]) / (pytest.z[-1] - pytest.z[-2])
+    gradient = (pytest.u.iloc[-1, :] - pytest.u.iloc[-2, :]) / (
+        pytest.z[-1] - pytest.z[-2]
+    )
     assert np.all(np.isclose(pytest.u.iloc[-1, :].values, params.u_G, atol=1e-1))
     assert np.all(np.isclose(gradient.values, 0.0, atol=1e-3))
 
@@ -150,12 +166,16 @@ def test_upper_boundary_cond_v():
 
 def test_upper_boundary_cond_theta():
     params = load_parameter_from_file()
-    gradient = (pytest.theta.iloc[-1, :] - pytest.theta.iloc[-2, :]) / (pytest.z[-1] - pytest.z[-2])
+    gradient = (pytest.theta.iloc[-1, :] - pytest.theta.iloc[-2, :]) / (
+        pytest.z[-1] - pytest.z[-2]
+    )
     assert np.all(np.isclose(gradient.values, params.gamma, atol=1e-3))
 
 
 def test_upper_boundary_cond_tke():
-    gradient = (pytest.tke.iloc[-1, :] - pytest.tke.iloc[-2, :]) / (pytest.z[-1] - pytest.z[-2])
+    gradient = (pytest.tke.iloc[-1, :] - pytest.tke.iloc[-2, :]) / (
+        pytest.z[-1] - pytest.z[-2]
+    )
     assert np.all(np.isclose(gradient.values, 0.0, atol=1e-3))
 
 

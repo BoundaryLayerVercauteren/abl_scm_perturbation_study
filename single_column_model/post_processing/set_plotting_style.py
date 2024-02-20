@@ -1,15 +1,16 @@
 import scienceplots
 import matplotlib.pyplot as plt
 
+
 def set_style_of_plots(figsize):
     plt.style.use("science")
 
     # Set font sizes for plots
-    if figsize == (10,5) or figsize == (5,5):
+    if figsize == (10, 5) or figsize == (5, 5):
         SMALL_SIZE = 11
         MEDIUM_SIZE = 12
         BIGGER_SIZE = 15
-    elif figsize == (10,10):
+    elif figsize == (10, 10):
         SMALL_SIZE = 16
         MEDIUM_SIZE = 18
         BIGGER_SIZE = 22

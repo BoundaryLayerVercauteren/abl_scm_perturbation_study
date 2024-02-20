@@ -11,7 +11,7 @@ import pandas as pd
 from single_column_model.post_processing import prepare_data
 
 matplotlib.use("webagg")
-#plt.style.use("science")
+# plt.style.use("science")
 
 # set font sizes for plots
 SMALL_SIZE = 18
@@ -127,7 +127,7 @@ def plot_line_transition_plots(vis_path, file_paths, height_z, file_spec):
 
 
 def calculate_time_spend_in_regime(
-        t_values, delta_theta_values, regime_threshold, threshold_type
+    t_values, delta_theta_values, regime_threshold, threshold_type
 ):
     # Find delta theta values which are above/below threshold
     if threshold_type == "above":
@@ -235,7 +235,7 @@ def calculate_time_spend_in_regime(
 
 
 def make_sensitivity_plot(
-        data, save_directory, plot_name, plot_label, categorical=False
+    data, save_directory, plot_name, plot_label, categorical=False
 ):
     # Replace nan with 0
     data = data.fillna(-2)
@@ -379,7 +379,7 @@ def make_plot_time_in_new_regime(file_paths, height_z):
 
 
 def calculate_time_entered_regime(
-        t_values, delta_theta_values, regime_threshold, threshold_type
+    t_values, delta_theta_values, regime_threshold, threshold_type
 ):
     # Find when regime was entered
     if threshold_type == "above":
@@ -601,7 +601,9 @@ if __name__ == "__main__":
     height_z_in_m = 20
 
     for idx_perturb_type in range(len(data_directory_path_sub)):
-        data_directory_path = data_directory_path_top + data_directory_path_sub[idx_perturb_type]
+        data_directory_path = (
+            data_directory_path_top + data_directory_path_sub[idx_perturb_type]
+        )
 
         # Define path to simulation output files
         data_directory_path_sim = data_directory_path + "simulations/"

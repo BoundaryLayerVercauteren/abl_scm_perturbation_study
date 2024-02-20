@@ -1,4 +1,6 @@
-def find_Ekman_layer_height(data_path, vis_path, file_name, u_G, steady_state_coord=None, make_plot=True):
+def find_Ekman_layer_height(
+    data_path, vis_path, file_name, u_G, steady_state_coord=None, make_plot=True
+):
 
     full_file_path = data_path + file_name
     # Open output file and load variables
@@ -13,7 +15,9 @@ def find_Ekman_layer_height(data_path, vis_path, file_name, u_G, steady_state_co
     ekman_height_idx = np.zeros((1, len(t.flatten())))
     ekman_height_idx[...] = np.nan
     for row_idx in data.index:
-        ekman_height_idx[0, row_idx] = np.argmax(np.around(data.iloc[row_idx, :], 1) == u_G)
+        ekman_height_idx[0, row_idx] = np.argmax(
+            np.around(data.iloc[row_idx, :], 1) == u_G
+        )
 
     if make_plot:
         # Create mesh
@@ -68,7 +72,6 @@ def find_Ekman_layer_height(data_path, vis_path, file_name, u_G, steady_state_co
                 bbox_inches="tight",
                 dpi=300,
             )
-
 
         # Clear memory
         plt.cla()  # Clear the current axes.

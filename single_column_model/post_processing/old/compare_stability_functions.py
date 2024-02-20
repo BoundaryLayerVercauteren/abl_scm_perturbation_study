@@ -39,7 +39,9 @@ def define_delage_long_tail_stab_function(Ri):
 def make_comparison():
     richardson_num = np.linspace(10 ** (-4), 10 ** (1), 1000)
 
-    vec_delage_short_tail_stab_func = np.vectorize(define_delage_short_tail_stab_function)
+    vec_delage_short_tail_stab_func = np.vectorize(
+        define_delage_short_tail_stab_function
+    )
     vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_function)
 
     # Create plot
@@ -66,7 +68,7 @@ def make_comparison():
     #     markevery=100,
     # )
 
-    ax1.set_xscale('log')
+    ax1.set_xscale("log")
     ax1.set_xlabel("Ri")
     ax1.set_ylabel(r"$\phi$")
 

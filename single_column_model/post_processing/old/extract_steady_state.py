@@ -4,7 +4,7 @@ import traceback
 import warnings
 from functools import reduce
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 import cmcrameri.cm as cram
 import h5py
@@ -13,7 +13,9 @@ import numpy as np
 import pandas as pd
 
 from single_column_model.post_processing import (
-    prepare_data, visualize_deterministic_model_output)
+    prepare_data,
+    visualize_deterministic_model_output,
+)
 
 
 def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
@@ -30,7 +32,9 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
         data_v["sim_0"].rolling(num_hours * one_h_num_steps, min_periods=1).mean()
     )
     data_delta_theta["rol_mean"] = (
-        data_delta_theta["sim_0"].rolling(num_hours * one_h_num_steps, min_periods=1).mean()
+        data_delta_theta["sim_0"]
+        .rolling(num_hours * one_h_num_steps, min_periods=1)
+        .mean()
     )
     data_tke["rol_mean"] = (
         data_tke["sim_0"].rolling(num_hours * one_h_num_steps, min_periods=1).mean()
@@ -56,7 +60,9 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
     deviation_percentage = 0.05
     data_u["bel_thresh"] = data_u["diff_mean"] <= deviation_percentage
     data_v["bel_thresh"] = data_v["diff_mean"] <= deviation_percentage
-    data_delta_theta["bel_thresh"] = data_delta_theta["diff_mean"] <= deviation_percentage
+    data_delta_theta["bel_thresh"] = (
+        data_delta_theta["diff_mean"] <= deviation_percentage
+    )
     data_tke["bel_thresh"] = data_tke["diff_mean"] <= deviation_percentage
 
     # Find continuous time series where the deviance from the mean is below the threshold for at least one hour
@@ -69,23 +75,23 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
 
     len_steady_state_h = 1
     for k, v in data_u.groupby(
-            (data_u["bel_thresh"].shift() != data_u["bel_thresh"]).cumsum()
+        (data_u["bel_thresh"].shift() != data_u["bel_thresh"]).cumsum()
     ):
         if v["bel_thresh"].all():
             if len(v) >= len_steady_state_h * one_h_num_steps:
                 steady_state_range_u = np.append(steady_state_range_u, v.index.tolist())
 
     for k, v in data_v.groupby(
-            (data_v["bel_thresh"].shift() != data_v["bel_thresh"]).cumsum()
+        (data_v["bel_thresh"].shift() != data_v["bel_thresh"]).cumsum()
     ):
         if v["bel_thresh"].all():
             if len(v) >= len_steady_state_h * one_h_num_steps:
                 steady_state_range_v = np.append(steady_state_range_v, v.index.tolist())
 
     for k, v in data_delta_theta.groupby(
-            (
-                    data_delta_theta["bel_thresh"].shift() != data_delta_theta["bel_thresh"]
-            ).cumsum()
+        (
+            data_delta_theta["bel_thresh"].shift() != data_delta_theta["bel_thresh"]
+        ).cumsum()
     ):
         if v["bel_thresh"].all():
             if len(v) >= len_steady_state_h * one_h_num_steps:
@@ -94,7 +100,7 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
                 )
 
     for k, v in data_tke.groupby(
-            (data_tke["bel_thresh"].shift() != data_tke["bel_thresh"]).cumsum()
+        (data_tke["bel_thresh"].shift() != data_tke["bel_thresh"]).cumsum()
     ):
         if v["bel_thresh"].all():
             if len(v) >= len_steady_state_h * one_h_num_steps:
@@ -123,9 +129,9 @@ def plot_time_differences(data_path, vis_path, file_name, curr_param, variable_n
     # Open output file and load variables
     with h5py.File(full_file_path, "r+") as file:
         # perform byteswap to make handling with pandas dataframe possible
-        variable_val = file[variable_name][:]#.byteswap().newbyteorder()
-        z = file["z"][:]#.byteswap().newbyteorder()
-        t = file["t"][:]#.byteswap().newbyteorder()
+        variable_val = file[variable_name][:]  # .byteswap().newbyteorder()
+        z = file["z"][:]  # .byteswap().newbyteorder()
+        t = file["t"][:]  # .byteswap().newbyteorder()
 
     data = pd.DataFrame(data=variable_val.T, columns=z.flatten())
     data["time"] = t.flatten()
@@ -179,13 +185,13 @@ def plot_time_differences(data_path, vis_path, file_name, curr_param, variable_n
 
 
 def plot_inversion_strength(
-        data_path, vis_path, file_name, curr_param, steady_state_coord
+    data_path, vis_path, file_name, curr_param, steady_state_coord
 ):
     full_file_path = data_path + file_name
     # Open output file and load variables
     with h5py.File(full_file_path, "r+") as file:
         # perform byteswap to make handling with pandas dataframe possible
-        theta = file["theta"][:]#.byteswap().newbyteorder()
+        theta = file["theta"][:]  # .byteswap().newbyteorder()
         z = file["z"][:]
         t = file["t"][:]
 
@@ -257,13 +263,13 @@ def plot_inversion_strength(
 
 
 def find_Ekman_layer_height(
-        data_path, vis_path, file_name, u_G, steady_state_coord=None, make_plot=True
+    data_path, vis_path, file_name, u_G, steady_state_coord=None, make_plot=True
 ):
     full_file_path = data_path + file_name
     # Open output file and load variables
     with h5py.File(full_file_path, "r+") as file:
         # perform byteswap to make handling with pandas dataframe possible
-        u = file["u"][:]#.byteswap().newbyteorder()
+        u = file["u"][:]  # .byteswap().newbyteorder()
         z = file["z"][:]  # #.byteswap().newbyteorder()
         t = file["t"][:]  # #.byteswap().newbyteorder()
 
@@ -330,7 +336,6 @@ def find_Ekman_layer_height(
                 dpi=300,
             )
 
-
         # Clear memory
         plt.cla()  # Clear the current axes.
         plt.clf()  # Clear the current figure.
@@ -339,23 +344,25 @@ def find_Ekman_layer_height(
     return z[list(map(int, ekman_height_idx.flatten())), :].flatten()
 
 
-def calculate_stable_BL_height_based_on_Richardson_number(data_path, vis_path, file_name, u_G, steady_state_coord=None):
+def calculate_stable_BL_height_based_on_Richardson_number(
+    data_path, vis_path, file_name, u_G, steady_state_coord=None
+):
     full_file_path = data_path + file_name
     # Open output file and load variables
     with h5py.File(full_file_path, "r+") as file:
         # perform byteswap to make handling with pandas dataframe possible
-        u = file["u"][:]#.byteswap().newbyteorder()
-        v = file["v"][:]#.byteswap().newbyteorder()
-        theta = file["theta"][:]#.byteswap().newbyteorder()
+        u = file["u"][:]  # .byteswap().newbyteorder()
+        v = file["v"][:]  # .byteswap().newbyteorder()
+        theta = file["theta"][:]  # .byteswap().newbyteorder()
         z = file["z"][:]
         t = file["t"][:]
-        Ri = file["Ri"][:]#.byteswap().newbyteorder()
+        Ri = file["Ri"][:]  # .byteswap().newbyteorder()
 
     g = 9.81
     theta_ref = 290
     z_0 = 0.044
 
-    #Ri = (g / theta_ref) * (z - z_0) * (theta - theta[0, :]) / ((u - u[0, :]) ** 2 + (v - v[0, :]) ** 2)
+    # Ri = (g / theta_ref) * (z - z_0) * (theta - theta[0, :]) / ((u - u[0, :]) ** 2 + (v - v[0, :]) ** 2)
 
     Ri_critical = 0.5
     idx_Ri_eq_cr = []
@@ -374,7 +381,7 @@ def calculate_stable_BL_height_based_on_Richardson_number(data_path, vis_path, f
         label="critical Richardson number",
     )
 
-    plt.ylim((0,50))
+    plt.ylim((0, 50))
 
     cbar = plt.colorbar()
     cbar.set_label("Ri", rotation=0, labelpad=2)
@@ -384,7 +391,7 @@ def calculate_stable_BL_height_based_on_Richardson_number(data_path, vis_path, f
 
     plt.legend()
 
-    plt.savefig(f'{vis_path}/Richardson_number_{u_G}.png', bbox_inches="tight", dpi=300)
+    plt.savefig(f"{vis_path}/Richardson_number_{u_G}.png", bbox_inches="tight", dpi=300)
 
     # Clear memory
     plt.cla()  # Clear the current axes.
@@ -393,21 +400,21 @@ def calculate_stable_BL_height_based_on_Richardson_number(data_path, vis_path, f
 
 
 def extract_initial_cond(
-        curr_steady_state, data_file_path, init_file_path, variable_name
+    curr_steady_state, data_file_path, init_file_path, variable_name
 ):
     with h5py.File(data_file_path, "r+") as file:
         variable_val = file[variable_name][:]
-        time = file['t'][:]
+        time = file["t"][:]
 
     idx = 850
     initial_cond = variable_val[:, int(curr_steady_state)]
-    #print(time[:,idx])
+    # print(time[:,idx])
     np.save(init_file_path + variable_name, initial_cond)
 
 
 if __name__ == "__main__":
     # Define path to deterministic data
-    stab_func_type = 'short_tail'
+    stab_func_type = "short_tail"
     det_directory_path = f"single_column_model/solution/{stab_func_type}/deterministic/"
     det_data_directory_path = det_directory_path + "simulations/"
 
@@ -443,23 +450,29 @@ if __name__ == "__main__":
                 det_data_directory_path, curr_file_det_sim, bl_top_height_det_sim
             )
 
-            calculate_stable_BL_height_based_on_Richardson_number(det_data_directory_path, vis_directory_path,
-                                                                  curr_file_det_sim[0], var)
+            calculate_stable_BL_height_based_on_Richardson_number(
+                det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var
+            )
 
             steady_state = find_steady_state_fixed_height(
                 df_u, df_v, df_delta_theta, df_tke
             )
             print(var, steady_state)
-            #Plot variables over time at BL height
-            visualize_deterministic_model_output.plot_combined_data_over_t(vis_directory_path, df_u, df_v,
-                                                                           df_delta_theta, df_tke,
-                                                                           f'_z_20_steady_{var}',
-                                                                           steady_state)
+            # Plot variables over time at BL height
+            visualize_deterministic_model_output.plot_combined_data_over_t(
+                vis_directory_path,
+                df_u,
+                df_v,
+                df_delta_theta,
+                df_tke,
+                f"_z_20_steady_{var}",
+                steady_state,
+            )
 
             # Extract initial condition
             init_dir_path = "single_column_model/init_condition/"
             init_file_path = (
-                    init_dir_path + f"{stab_func_type}_steady_state_Ug" + str(var) + "_"
+                init_dir_path + f"{stab_func_type}_steady_state_Ug" + str(var) + "_"
             )
             extract_initial_cond(
                 steady_state,
@@ -491,8 +504,13 @@ if __name__ == "__main__":
             #                         [steady_state, bl_top_height_det_sim])
             #
             # Plot Ekman layer height
-            _ = find_Ekman_layer_height(det_data_directory_path, vis_directory_path, curr_file_det_sim[0], var,
-                                        [steady_state, bl_top_height_det_sim])
+            _ = find_Ekman_layer_height(
+                det_data_directory_path,
+                vis_directory_path,
+                curr_file_det_sim[0],
+                var,
+                [steady_state, bl_top_height_det_sim],
+            )
 
         except Exception:
             print(traceback.format_exc())
