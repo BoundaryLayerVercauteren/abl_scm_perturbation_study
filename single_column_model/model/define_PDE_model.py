@@ -25,8 +25,10 @@ def f_m(fenics_params, params):
     elif params.stab_func_type == "short_tail":
         fm = define_short_tail_stability_function(fenics_params, params)
 
-    if params.perturbation_param == 'stab_func':
-        fm = fm * sigmoid(fenics_params, params) + fenics_params.f_ms * (1 - sigmoid(fenics_params, params))
+    if params.perturbation_param == "stab_func":
+        fm = fm * sigmoid(fenics_params, params) + fenics_params.f_ms * (
+            1 - sigmoid(fenics_params, params)
+        )
     return fm
 
 
@@ -133,8 +135,12 @@ def setup_fenics_variables(fenics_params, mesh):
     fenics_params.W = fe.VectorFunctionSpace(mesh, "CG", 1, dim=4)
 
     # Define test functions
-    (fenics_params.u_test, fenics_params.v_test, fenics_params.theta_test,
-     fenics_params.k_test) = fe.TestFunctions(fenics_params.W)
+    (
+        fenics_params.u_test,
+        fenics_params.v_test,
+        fenics_params.theta_test,
+        fenics_params.k_test,
+    ) = fe.TestFunctions(fenics_params.W)
 
     # Split system functions to access components
     fenics_params.uvTk = fe.Function(fenics_params.W)

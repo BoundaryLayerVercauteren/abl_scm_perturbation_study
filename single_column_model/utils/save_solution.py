@@ -30,7 +30,7 @@ def create_solution_directory(params):
     # Get current date and time
     timestr = time.strftime("%Y%m%d_%H%M%S")
     # Define name of directory where solutions will be stored
-    solution_directory = 'single_column_model/solution/' + timestr + '/'
+    solution_directory = "single_column_model/solution/" + timestr + "/"
     # Create directory (if it does not exist already)
     current_directory = os.getcwd()
     sol_directory = os.path.join(current_directory, solution_directory)
@@ -38,26 +38,42 @@ def create_solution_directory(params):
         os.makedirs(sol_directory)
     print("The solution files and plots are in: " + str(sol_directory))
     if params.save_ini_cond:
-        init_directory = os.path.join(current_directory, 'single_column_model/init_condition/')
+        init_directory = os.path.join(
+            current_directory, "single_column_model/init_condition/"
+        )
         if not os.path.exists(init_directory):
             os.makedirs(init_directory)
         print("The initial condition files are in: " + str(init_directory))
     elif params.load_ini_cond:
-        init_directory = os.path.join(current_directory, 'single_column_model/init_condition/')
+        init_directory = os.path.join(
+            current_directory, "single_column_model/init_condition/"
+        )
     else:
-        init_directory = ''
+        init_directory = ""
     return sol_directory, init_directory
 
 
 def create_sub_solution_directory(params, output):
-    if params.perturbation_time_spread is not None and params.perturbation_height_spread is not None:
-        output.solution_directory = output.top_solution_directory + f'{params.perturbation_time_spread}_{params.perturbation_height_spread}/'
+    if (
+        params.perturbation_time_spread is not None
+        and params.perturbation_height_spread is not None
+    ):
+        output.solution_directory = (
+            output.top_solution_directory
+            + f"{params.perturbation_time_spread}_{params.perturbation_height_spread}/"
+        )
         if params.perturbation_param is not None:
-            output.solution_directory = output.solution_directory + f'{params.perturbation_type}_{params.perturbation_param.replace(" ", "_")}/'
+            output.solution_directory = (
+                output.solution_directory
+                + f'{params.perturbation_type}_{params.perturbation_param.replace(" ", "_")}/'
+            )
     else:
         if params.perturbation_param is not None:
-            output.solution_directory = output.top_solution_directory + f'{params.perturbation_type}_{params.perturbation_param.replace(" ", "_")}/'
-        if params.perturbation_param=='stab_func':
+            output.solution_directory = (
+                output.top_solution_directory
+                + f'{params.perturbation_type}_{params.perturbation_param.replace(" ", "_")}/'
+            )
+        if params.perturbation_param == "stab_func":
             output.solution_directory += f'{params.u_G}/{str(params.perturbation_strength).replace(".", "_").replace("-", "")}/'
 
     try:
@@ -68,7 +84,8 @@ def create_sub_solution_directory(params, output):
 
     return output
 
-def save_parameters_in_file(params, output, file_spec=''):
+
+def save_parameters_in_file(params, output, file_spec=""):
     """
     Save values in parameter class to file
     :param output: class which includes name of directory where the file will be stored
@@ -76,11 +93,11 @@ def save_parameters_in_file(params, output, file_spec=''):
     :return: none
     """
     # Define name of parameter file
-    file_name = str(output.solution_directory) + 'parameters_' + file_spec + '.json'
+    file_name = str(output.solution_directory) + "parameters_" + file_spec + ".json"
     # Transform parameter class to json
     params_json = params.to_json()
     # Save json to file + remove unnecessary characters
-    with open(file_name, 'w') as file:
+    with open(file_name, "w") as file:
         json.dump(json.loads(params_json), file)
 
 
@@ -90,7 +107,9 @@ def save_current_result(output, params, fparams, i, us, vs, Ts, ks, phi_s):
     output.V_save[:, i] = np.flipud(interpolate(vs, fparams.Q).vector().get_local())
     output.T_save[:, i] = np.flipud(interpolate(Ts, fparams.Q).vector().get_local())
     output.k_save[:, i] = np.flipud(interpolate(ks, fparams.Q).vector().get_local())
-    output.phi_stoch[:, i] = np.flipud(interpolate(phi_s, fparams.Q).vector().get_local())
+    output.phi_stoch[:, i] = np.flipud(
+        interpolate(phi_s, fparams.Q).vector().get_local()
+    )
 
     # Write Ri number
     calc_Ri = project(fut.Ri(fparams, params), fparams.Q)
@@ -141,31 +160,49 @@ def initialize(output, params):
     return output
 
 
-def save_solution(output, params, fparams, file_spec=''):
+def save_solution(output, params, fparams, file_spec=""):
     if params.save_ini_cond:
-        np.save(params.init_path + '_u', output.U_save[:, -2])
-        np.save(params.init_path + '_v', output.V_save[:, -2])
-        np.save(params.init_path + '_theta', output.T_save[:, -2])
-        np.save(params.init_path + '_TKE', output.k_save[:, -2])
-        print('\n Current solution saved as initial condition')
+        np.save(params.init_path + "_u", output.U_save[:, -2])
+        np.save(params.init_path + "_v", output.V_save[:, -2])
+        np.save(params.init_path + "_theta", output.T_save[:, -2])
+        np.save(params.init_path + "_TKE", output.k_save[:, -2])
+        print("\n Current solution saved as initial condition")
 
-    saveFile = h5py.File(str(output.solution_directory) + 'solution_' + file_spec + '.h5', 'w')
+    saveFile = h5py.File(
+        str(output.solution_directory) + "solution_" + file_spec + ".h5", "w"
+    )
 
-    U_ds = saveFile.create_dataset('/u', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    V_ds = saveFile.create_dataset('/v', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    T_ds = saveFile.create_dataset('/theta', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    k_ds = saveFile.create_dataset('/TKE', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    Ri_ds = saveFile.create_dataset('/Ri', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    Kh_ds = saveFile.create_dataset('/Kh', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    Km_ds = saveFile.create_dataset('/Km', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    phi_ds = saveFile.create_dataset('/phi', (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE)
-    perturbation_ds = saveFile.create_dataset('/perturbation',
-                                              (params.Nz, params.save_num_steps),
-                                              h5py.h5t.IEEE_F64BE)
-    r_ds = saveFile.create_dataset('/r', (1, 1))
+    U_ds = saveFile.create_dataset(
+        "/u", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    V_ds = saveFile.create_dataset(
+        "/v", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    T_ds = saveFile.create_dataset(
+        "/theta", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    k_ds = saveFile.create_dataset(
+        "/TKE", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    Ri_ds = saveFile.create_dataset(
+        "/Ri", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    Kh_ds = saveFile.create_dataset(
+        "/Kh", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    Km_ds = saveFile.create_dataset(
+        "/Km", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    phi_ds = saveFile.create_dataset(
+        "/phi", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    perturbation_ds = saveFile.create_dataset(
+        "/perturbation", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
+    r_ds = saveFile.create_dataset("/r", (1, 1))
 
-    z_ds = saveFile.create_dataset('/z', (np.size(fparams.z), 1), h5py.h5t.IEEE_F64BE)
-    t_ds = saveFile.create_dataset('/t', (1, params.save_num_steps))
+    z_ds = saveFile.create_dataset("/z", (np.size(fparams.z), 1), h5py.h5t.IEEE_F64BE)
+    t_ds = saveFile.create_dataset("/t", (1, params.save_num_steps))
 
     U_ds[...] = output.U_save
     V_ds[...] = output.V_save
@@ -180,7 +217,7 @@ def save_solution(output, params, fparams, file_spec=''):
     t_ds[...] = np.linspace(0, params.T_end_h, params.save_num_steps)
 
     r_ds[...] = output.r
-    perturbation_ds[...] = output.perturbation[:,::params.save_dt_sim]
+    perturbation_ds[...] = output.perturbation[:, :: params.save_dt_sim]
 
     saveFile.close()
-    print('simulation is done')
+    print("simulation is done")

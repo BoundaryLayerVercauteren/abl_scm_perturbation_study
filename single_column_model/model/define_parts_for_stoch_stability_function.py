@@ -37,9 +37,13 @@ def define_grid_for_stoch_stab_function(lowest_grid_point, height, num_grid_poin
 
 
 def get_stoch_stab_function_parameter(richardson_num, perturbation_strength):
-    return (define_stoch_stab_function_param_Lambda(richardson_num),
-            define_stoch_stab_function_param_Upsilon(richardson_num),
-            define_stoch_stab_function_param_Sigma(richardson_num, sigma_s=perturbation_strength))
+    return (
+        define_stoch_stab_function_param_Lambda(richardson_num),
+        define_stoch_stab_function_param_Upsilon(richardson_num),
+        define_stoch_stab_function_param_Sigma(
+            richardson_num, sigma_s=perturbation_strength
+        ),
+    )
 
 
 def define_stoch_stab_function_param_Lambda(Ri):
@@ -103,7 +107,11 @@ class SDEsolver:
 
         # Inform that the matrix is non-negative
         if np.max(-d_min) > 1e-9:
-            print('Covariance matrix is not non-negative.', 'Max negative value: ', np.max(-d_min))
+            print(
+                "Covariance matrix is not non-negative.",
+                "Max negative value: ",
+                np.max(-d_min),
+            )
 
         # Generate random variable with complex gaussian distribution
         xi = np.dot(np.random.randn(N_circ, 2), np.array([1, 1j]))
@@ -149,17 +157,23 @@ class SDEsolver:
         # E(dWt)^2 = dt, the process dWt has the units of sqrt(time), and hence the transformation of units for the
         # noise (stochastic) term is different than in the drift (deterministic) term.
         tau_h = 3600
-        dphi_deterministic_part = (1.0 + Lambda * phi_k - Upsilon * np.power(phi_k, 2)) / tau_h
+        dphi_deterministic_part = (
+            1.0 + Lambda * phi_k - Upsilon * np.power(phi_k, 2)
+        ) / tau_h
         dphi_stochastic_part = Sigma * phi_k / np.sqrt(tau_h)
 
         derivative_dphi_stochastic_part = Sigma / np.sqrt(tau_h)
 
         # Calculate the value of phi at the next iteration step with the Milstein method
-        phi_kp1 = (phi_k +
-                   dphi_deterministic_part * dt +
-                   dphi_stochastic_part * v_sqrt * dW +
-                   0.5 * dphi_stochastic_part * derivative_dphi_stochastic_part * (np.power(v_sqrt * dW, 2) - dt)
-                   )
+        phi_kp1 = (
+            phi_k
+            + dphi_deterministic_part * dt
+            + dphi_stochastic_part * v_sqrt * dW
+            + 0.5
+            * dphi_stochastic_part
+            * derivative_dphi_stochastic_part
+            * (np.power(v_sqrt * dW, 2) - dt)
+        )
 
         self.__state = phi_kp1
 

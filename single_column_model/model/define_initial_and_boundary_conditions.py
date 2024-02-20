@@ -17,17 +17,37 @@ def load_initial_conditions_from_files(file_path):
     return u, v, theta, k
 
 
-def calculate_initial_conditions(mesh_coordinates, roughness_length, geo_wind_vert, kappa, domain_height,
-                                 horiz_resolution, theta_reference, gamma, initial_cond_perturbation):
-    u = initial_u_0(mesh_coordinates, geo_wind_vert, roughness_length, kappa, initial_cond_perturbation)
+def calculate_initial_conditions(
+    mesh_coordinates,
+    roughness_length,
+    geo_wind_vert,
+    kappa,
+    domain_height,
+    horiz_resolution,
+    theta_reference,
+    gamma,
+    initial_cond_perturbation,
+):
+    u = initial_u_0(
+        mesh_coordinates,
+        geo_wind_vert,
+        roughness_length,
+        kappa,
+        initial_cond_perturbation,
+    )
     v = 0 * np.ones(horiz_resolution)
     theta = initial_theta_0(mesh_coordinates, theta_reference, gamma, 200)
-    k = initial_k_0(mesh_coordinates, geo_wind_vert, roughness_length, domain_height) + 0.01
+    k = (
+        initial_k_0(mesh_coordinates, geo_wind_vert, roughness_length, domain_height)
+        + 0.01
+    )
 
     return u, v, theta, k
 
 
-def transfer_all_variables_to_fenics_functions(var1, var2, var3, var4, function_space_projection):
+def transfer_all_variables_to_fenics_functions(
+    var1, var2, var3, var4, function_space_projection
+):
     var1 = tv.convert_numpy_array_to_fenics_function(var1, function_space_projection)
     var2 = tv.convert_numpy_array_to_fenics_function(var2, function_space_projection)
     var3 = tv.convert_numpy_array_to_fenics_function(var3, function_space_projection)
@@ -39,12 +59,22 @@ def transfer_all_variables_to_fenics_functions(var1, var2, var3, var4, function_
 def define_initial_conditions(Q, mesh, params):
     """Combine functions to either load initial conditions from files or calculate them ad hoc."""
     if params.load_ini_cond:
-        u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(params.init_path)
+        u_t0, v_t0, theta_t0, k_t0 = load_initial_conditions_from_files(
+            params.init_path
+        )
 
     else:
-        u_t0, v_t0, theta_t0, k_t0 = calculate_initial_conditions(mesh.coordinates(), params.z0, params.u_G,
-                                                                  params.kappa, params.H, params.Nz, params.theta_ref,
-                                                                  params.gamma, params.initial_cond_perturbation)
+        u_t0, v_t0, theta_t0, k_t0 = calculate_initial_conditions(
+            mesh.coordinates(),
+            params.z0,
+            params.u_G,
+            params.kappa,
+            params.H,
+            params.Nz,
+            params.theta_ref,
+            params.gamma,
+            params.initial_cond_perturbation,
+        )
 
     return transfer_all_variables_to_fenics_functions(u_t0, v_t0, theta_t0, k_t0, Q)
 
@@ -62,7 +92,9 @@ def load_boundary_conditions_from_files(initial_cond_path):
     return u_z0, v_z0, theta_z0, k_z0, theta_g_0
 
 
-def turn_into_fenics_boundary_conditions(u_z0, v_z0, theta_z0, k_z0, vector_space, ground_def, top_def):
+def turn_into_fenics_boundary_conditions(
+    u_z0, v_z0, theta_z0, k_z0, vector_space, ground_def, top_def
+):
     bc_u_ground = fe.DirichletBC(vector_space.sub(0), u_z0, ground_def)
     bc_v_ground = fe.DirichletBC(vector_space.sub(1), v_z0, ground_def)
     bc_theta_ground = fe.DirichletBC(vector_space.sub(2), theta_z0, ground_def)
@@ -79,17 +111,23 @@ def define_boundary_conditions(fenics_params, params):
     top = f"near(x[0],{params.H},1E-6)"
 
     if params.load_ini_cond:
-        u_ground, v_ground, theta_ground, k_ground, theta_g_0 = load_boundary_conditions_from_files(params.init_path)
+        u_ground, v_ground, theta_ground, k_ground, theta_g_0 = load_boundary_conditions_from_files(
+            params.init_path
+        )
 
-        boundary_cond = turn_into_fenics_boundary_conditions(u_ground, v_ground, theta_ground, k_ground,
-                                                             fenics_params.W, ground, top)
+        boundary_cond = turn_into_fenics_boundary_conditions(
+            u_ground, v_ground, theta_ground, k_ground, fenics_params.W, ground, top
+        )
 
     else:
         theta_ground = fe.Expression("value", degree=0, value=params.theta_ref)
-        k_ground = fe.Expression("value", degree=0, value=initial_k_0(params.z0, params.u_G, params.z0, 200))
+        k_ground = fe.Expression(
+            "value", degree=0, value=initial_k_0(params.z0, params.u_G, params.z0, 200)
+        )
 
-        boundary_cond = turn_into_fenics_boundary_conditions(0.0, 0.0, theta_ground, k_ground,
-                                                             fenics_params.W, ground, top)
+        boundary_cond = turn_into_fenics_boundary_conditions(
+            0.0, 0.0, theta_ground, k_ground, fenics_params.W, ground, top
+        )
 
         theta_g_0 = params.theta_ref
 
@@ -124,7 +162,7 @@ def initial_theta_0(z, theta_initial, laps_rate, cut_height):
     # Find index of value where z - cut_height = 0
     index_cut_height = int(np.abs(z - cut_height).argmin())
     # Set initial theta below reference height
-    theta_0[0:index_cut_height + 1] = theta_initial
+    theta_0[0 : index_cut_height + 1] = theta_initial
     return theta_0
 
 
@@ -145,6 +183,7 @@ def initial_k_0(z, u_G, z0, H, k_at_H=0.0):
     a = (k_at_H - k_at_z0) / (np.log(H) - np.log(z0))
     b = k_at_z0 - a * np.log(z0)
     return tke_profile(z, a, b)
+
 
 def update_tke_at_the_surface(kappa, z, u, v, min_tke):
     return np.max([calculate_tke_at_the_ground(kappa, z, u[1], v[1]), min_tke])
