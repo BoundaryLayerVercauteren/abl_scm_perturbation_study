@@ -1,4 +1,4 @@
-name: black check on push and PR
+name: black (check on push to main)
 
 on:
   pull_request:
