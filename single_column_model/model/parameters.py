@@ -20,9 +20,7 @@ class Parameters:
 
     stab_func_type: str = "short_tail"  # type of stability function
 
-    initial_cond_perturbation: float = (
-        -0.1
-    )  # Value by how much initial cond. for u shall be perturbed
+    initial_cond_perturbation: float = 0  # Value by how much initial cond. for u shall be perturbed
 
     perturbation_param: str = (
         None  # specify to which equation a perturbation is added [u, theta, u and theta, net_rad, stab_func]
