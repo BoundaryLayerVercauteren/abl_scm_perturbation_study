@@ -1,8 +1,8 @@
-name: black (check on push to main)
-
-on:
-  pull_request:
-    branches: [main]
+name: black check
+#
+# Run the python formatting in check mode
+#
+on: [push, pull_request]
 
 jobs:
   black-check:
@@ -11,9 +11,9 @@ jobs:
        - name: Checkout repo
          id: checkout
          uses: actions/checkout@v4
-       - name: Format with black
+       - name: Check format with black
          id: black_format
          uses: psf/black@stable
          with:
-           src: "./single_column_model"
-           version: "22.3.0"
+           options: "--check --verbose"
+           version: "24.2.0"
