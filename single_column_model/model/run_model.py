@@ -290,6 +290,6 @@ def run_model():
     elif input_params.u_G_range is not None:
         run_multi_uG_simulations(input_params, fenics_params, output_params)
     else:
-        run_single_simulation_model(input_params, fenics_params, output_params)
+        run_single_simulation_model(input_params, fenics_params, output_params, input_params.u_G)
 
     return output_params.solution_directory
