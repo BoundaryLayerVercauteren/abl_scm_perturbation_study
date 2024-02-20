@@ -1,0 +1,19 @@
+name: black check on push and PR
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  black-check:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Checkout repo
+         id: checkout
+         uses: actions/checkout@v4
+       - name: Format with black
+         id: black_format
+         uses: psf/black@stable
+         with:
+           src: "./single_column_model"
+           version: "22.3.0"
