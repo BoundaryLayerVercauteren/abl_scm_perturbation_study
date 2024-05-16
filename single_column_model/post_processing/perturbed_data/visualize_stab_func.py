@@ -92,12 +92,12 @@ vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_funct
 
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
-norm = plt.Normalize(data['z'].min(), data['z'].max())
-sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
+# norm = plt.Normalize(data['z'].min(), data['z'].max())
+# sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
 
-sns.scatterplot(x='richardson',y='phi',data=data, ax=ax,legend=False, s=2, linewidth=0, color='black')#,hue='z', palette="cmc.batlow")
+sns.scatterplot(x='richardson',y='phi',data=data, ax=ax,legend=False, s=2, linewidth=0, color='black', label='stochastic')#,hue='z', palette="cmc.batlow")
 
-ax.figure.colorbar(sm, ax=ax)
+# ax.figure.colorbar(sm, ax=ax)
 
 ax.plot(
     richardson_num,
@@ -118,9 +118,10 @@ ax.plot(
 ax.legend()
 ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
-ax.set_ylabel(r"$\phi$")
+ax.set_ylabel(r"stability function")
 
 ax.set_ylim(0,10)
+ax.set_xlim(10^(-1),10)
 
 plt.savefig(
     f"{output_directory}stab_func_{perturbation_strength}.png",
