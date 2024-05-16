@@ -115,7 +115,10 @@ ax.plot(
     marker="s",
     markevery=10,
 )
-ax.legend()
+
+lgnd = ax.legend(loc='upper left')
+lgnd.legendHandles[0]._legmarker.set_markersize(5)
+
 ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"stability function")
