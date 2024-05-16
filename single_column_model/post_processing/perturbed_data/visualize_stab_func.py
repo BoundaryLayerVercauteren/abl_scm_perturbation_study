@@ -66,8 +66,11 @@ data_dict['phi'] = np.array(data_dict['phi']).flatten()
 data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
 data_dict['z'] = np.array(data_dict['z']).flatten()
 
-print(data_dict)
 data = pd.DataFrame.from_dict(data_dict)
+
+# Reduce size of data frame
+print(data)
+data.drop_duplicates(inplace=True)
 print(data)
 def define_delage_short_tail_stab_function(Ri):
     return 1 + 12 * Ri
