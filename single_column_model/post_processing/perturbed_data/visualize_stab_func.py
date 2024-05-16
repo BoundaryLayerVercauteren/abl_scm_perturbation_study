@@ -75,7 +75,7 @@ data_dict['z'] = np.array(data_dict['z']).flatten()
 data = pd.DataFrame.from_dict(data_dict)
 
 # Reduce size of data frame
-data = data.round(2)
+data = data.round(3)
 data.drop_duplicates(inplace=True)
 
 def define_delage_short_tail_stab_function(Ri):
@@ -95,27 +95,27 @@ fig, ax = plt.subplots(1, figsize=(10, 10))
 norm = plt.Normalize(data['z'].min(), data['z'].max())
 sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
 
-sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow",legend=False, s=2, linewidth=0)
+sns.scatterplot(x='richardson',y='phi',data=data, ax=ax,legend=False, s=2, linewidth=0, color='black')#,hue='z', palette="cmc.batlow")
 
 ax.figure.colorbar(sm, ax=ax)
 
 ax.plot(
     richardson_num,
     vec_delage_long_tail_stab_func(richardson_num),
-    label=r"$long-tail$",
+    label="long-tail",
     color='red',
     marker="v",
-    markevery=100,
+    markevery=10,
 )
 ax.plot(
     richardson_num,
     vec_delage_short_tail_stab_func(richardson_num),
-    label=r"$short-tail$",
+    label="short-tail",
     color='blue',
     marker="s",
-    markevery=100,
+    markevery=10,
 )
-
+ax.legend()
 ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"$\phi$")
