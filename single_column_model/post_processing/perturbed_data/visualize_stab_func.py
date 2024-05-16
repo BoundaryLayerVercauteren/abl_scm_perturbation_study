@@ -117,7 +117,7 @@ ax.plot(
 )
 
 lgnd = ax.legend(loc='upper left')
-lgnd.legendHandles[0]._legmarker.set_markersize(5)
+lgnd.legend_handles[0]._legmarker.set_markersize(5)
 
 ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
