@@ -76,7 +76,7 @@ data = pd.DataFrame.from_dict(data_dict)
 
 # Reduce size of data frame
 print(data)
-data = data.round(3)
+data = data.round(2)
 print(data)
 data.drop_duplicates(inplace=True)
 print(data)
