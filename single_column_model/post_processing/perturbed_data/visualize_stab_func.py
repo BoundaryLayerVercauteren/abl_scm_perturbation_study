@@ -70,6 +70,8 @@ data = pd.DataFrame.from_dict(data_dict)
 
 # Reduce size of data frame
 print(data)
+data = data.round(3)
+print(data)
 data.drop_duplicates(inplace=True)
 print(data)
 def define_delage_short_tail_stab_function(Ri):
