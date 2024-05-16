@@ -60,7 +60,7 @@ for idx, tuple in enumerate(path_with_ug):
     phi_array = np.array(phi).flatten('F')
     data_dict['phi'].append(phi_array)
     data_dict['richardson'].append(np.array(richardson).flatten('F'))
-    data_dict['z'].append(np.repeat(z, int(len(phi_array)/len(z)), axis=1))
+    data_dict['z'].append(np.repeat(z, int(len(phi_array)/len(z)), axis=0))
 
 data_dict['phi'] = np.array(data_dict['phi']).flatten()
 data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
