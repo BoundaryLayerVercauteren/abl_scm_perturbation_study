@@ -94,9 +94,12 @@ vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_funct
 
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
-phi_plt = sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow")
+norm = plt.Normalize(data['z'].min(), data['z'].max())
+sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
 
-plt.colorbar(phi_plt)
+sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow",legend=False)
+
+ax.figure.colorbar(sm, ax=ax)
 
 ax.plot(
     richardson_num,
