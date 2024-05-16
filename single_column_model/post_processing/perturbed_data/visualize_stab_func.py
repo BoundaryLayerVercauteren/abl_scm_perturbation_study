@@ -7,6 +7,8 @@ import h5py
 import scienceplots
 import cmcrameri.cm as cmc
 import seaborn as sns
+import traceback
+
 
 plt.style.use("science")
 
