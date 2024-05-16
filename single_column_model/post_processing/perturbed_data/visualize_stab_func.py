@@ -57,16 +57,18 @@ data_dict['z'] = []
 
 for idx, tuple in enumerate(path_with_ug):
     phi, richardson, z = get_data(tuple[1])
-    data_dict['phi'].append(phi)
-    data_dict['richardson'].append(richardson)
-    data_dict['z'].append(z)
+    phi_array = np.array(phi).flatten('F')
+    data_dict['phi'].append(phi_array)
+    data_dict['richardson'].append(np.array(phi).flatten('richardson'))
+    data_dict['z'].append(np.repeat(z, int(len(phi_array)/len(z))))
 
 data_dict['phi'] = np.array(data_dict['phi']).flatten()
 data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
 data_dict['z'] = np.array(data_dict['z']).flatten()
 
+print(data_dict)
 data = pd.DataFrame.from_dict(data_dict)
-
+print(data)
 def define_delage_short_tail_stab_function(Ri):
     return 1 + 12 * Ri
 
