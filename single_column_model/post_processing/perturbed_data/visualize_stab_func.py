@@ -75,11 +75,9 @@ data_dict['z'] = np.array(data_dict['z']).flatten()
 data = pd.DataFrame.from_dict(data_dict)
 
 # Reduce size of data frame
-print(data)
 data = data.round(2)
-print(data)
 data.drop_duplicates(inplace=True)
-print(data)
+
 def define_delage_short_tail_stab_function(Ri):
     return 1 + 12 * Ri
 
@@ -97,7 +95,7 @@ fig, ax = plt.subplots(1, figsize=(10, 10))
 norm = plt.Normalize(data['z'].min(), data['z'].max())
 sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
 
-sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow",legend=False)
+sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow",legend=False, s=2, linewidth=0)
 
 ax.figure.colorbar(sm, ax=ax)
 
@@ -118,8 +116,11 @@ ax.plot(
     markevery=100,
 )
 
+ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"$\phi$")
+
+ax.set_ylim(0,10)
 
 plt.savefig(
     f"{output_directory}stab_func_{perturbation_strength}.png",
