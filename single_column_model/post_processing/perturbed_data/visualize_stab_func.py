@@ -96,7 +96,7 @@ fig, ax = plt.subplots(1, figsize=(10, 10))
 
 phi_plt = sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow")
 
-ax.colorbar(phi_plt)
+plt.colorbar(phi_plt)
 
 ax.plot(
     richardson_num,
