@@ -6,6 +6,7 @@ import pandas as pd
 import h5py
 import scienceplots
 import cmcrameri.cm as cmc
+import seaborn as sns
 
 plt.style.use("science")
 
@@ -23,7 +24,7 @@ plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Define directory where simulation output is saved
-output_directory = "results/long_tail/stab_func/gauss_process_stab_func/"
+output_directory = "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/"
 perturbation_strength = "0_0"
 
 # Get all solution files
@@ -43,40 +44,61 @@ for path in output_files:
 def get_data(full_file_path):
     with h5py.File(full_file_path, "r+") as file:
         z = file["z"][:]
-        z_idx = (np.abs(z - 20)).argmin()
-        phi = file["phi"][z_idx, :]
-        theta = file["theta"][:]
-        u = file["u"][:]
-        v = file["v"][:]
-        richardson = (
-            (9.81 / 300)
-            * ((theta[z_idx, :] - theta[0, :]) / 20)
-            / (
-                ((u[z_idx, :] - u[0, :]) / 20) ** 2
-                + ((v[z_idx, :] - v[0, :]) / 20) ** 2
-            )
-        )
+        z_idx = (np.abs(z - 40)).argmin()
+        phi = file["phi"][:z_idx, :]
+        richardson = file['Ri'][:z_idx,:]
 
-    return phi, richardson
+    return phi, richardson, z[:z_idx, 0]
 
-
-richardson_dict = {}
-phi_dict = {}
+data_dict = {}
+data_dict['phi'] = []
+data_dict['richardson'] = []
+data_dict['z'] = []
 
 for idx, tuple in enumerate(path_with_ug):
-    phi, richardson = get_data(tuple[1])
-    phi_dict[idx] = phi
-    richardson_dict[idx] = richardson
+    phi, richardson, z = get_data(tuple[1])
+    data_dict['phi'].append(phi)
+    data_dict['richardson'].append(richardson)
+    data_dict['z'].append(z)
 
-phi_data = pd.DataFrame.from_dict(phi_dict)
-richardson_data = pd.DataFrame.from_dict(richardson_dict)
+data = pd.DataFrame.from_dict(data_dict)
+
+def define_delage_short_tail_stab_function(Ri):
+    return 1 + 12 * Ri
+
+
+def define_delage_long_tail_stab_function(Ri):
+    return 1 + 4.7 * Ri
+
+
+richardson_num = np.linspace(data['richardson'].min(), data['richardson'].max(), 1000)
+vec_delage_short_tail_stab_func = np.vectorize(define_delage_short_tail_stab_function)
+vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_function)
 
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
-for col in phi_data.columns:
-    ax.scatter(richardson_data[col], phi_data[col], color="black")
+phi_plt = sns.scatterplot(x='richardson',y='phi',data=data,hue='z', ax=ax, palette="cmc.batlow")
 
-ax.set_xlabel(r"$Ri_{20m}$")
+ax.colorbar(phi_plt)
+
+ax.plot(
+    richardson_num,
+    vec_delage_long_tail_stab_func(richardson_num),
+    label=r"$long-tail$",
+    color='red',
+    marker="v",
+    markevery=100,
+)
+ax.plot(
+    richardson_num,
+    vec_delage_short_tail_stab_func(richardson_num),
+    label=r"$short-tail$",
+    color='blue',
+    marker="s",
+    markevery=100,
+)
+
+ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"$\phi$")
 
 plt.savefig(
