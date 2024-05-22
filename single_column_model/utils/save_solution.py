@@ -101,7 +101,7 @@ def save_parameters_in_file(params, output, file_spec=""):
         json.dump(json.loads(params_json), file)
 
 
-def save_current_result(output, params, fparams, i, us, vs, Ts, ks, phi_s):
+def save_current_result(output, params, fparams, i, us, vs, Ts, ks, phi_s, theta_gs):
     # convert 2 numpy array and save
     output.U_save[:, i] = np.flipud(interpolate(us, fparams.Q).vector().get_local())
     output.V_save[:, i] = np.flipud(interpolate(vs, fparams.Q).vector().get_local())
@@ -122,6 +122,9 @@ def save_current_result(output, params, fparams, i, us, vs, Ts, ks, phi_s):
     # Write Kh
     calc_Kh = project(fut.K_h(fparams, params), fparams.Q)
     output.Kh_save[:, i] = np.flipud(calc_Kh.vector().get_local())
+
+    # Write surface temperature
+    output.T_g_save[:, i] = theta_gs
 
     return output
 
@@ -147,6 +150,7 @@ def initialize(output, params):
     output.Kh_save = np.zeros((params.Nz, params.save_num_steps))
     output.Km_save = np.zeros((params.Nz, params.save_num_steps))
     output.phi_stoch = np.zeros((params.Nz, params.save_num_steps))
+    output.T_g_save = np.zeros((1, params.save_num_steps))
 
     output.U_save[:] = np.nan
     output.V_save[:] = np.nan
@@ -156,6 +160,7 @@ def initialize(output, params):
     output.Kh_save[:] = np.nan
     output.Km_save[:] = np.nan
     output.phi_stoch[:] = np.nan
+    output.T_g_save[:] = np.nan
 
     return output
 
@@ -199,6 +204,9 @@ def save_solution(output, params, fparams, file_spec=""):
     perturbation_ds = saveFile.create_dataset(
         "/perturbation", (params.Nz, params.save_num_steps), h5py.h5t.IEEE_F64BE
     )
+    T_g_ds = saveFile.create_dataset(
+        "/theta_g", (1, params.save_num_steps), h5py.h5t.IEEE_F64BE
+    )
     r_ds = saveFile.create_dataset("/r", (1, 1))
 
     z_ds = saveFile.create_dataset("/z", (np.size(fparams.z), 1), h5py.h5t.IEEE_F64BE)
@@ -212,6 +220,7 @@ def save_solution(output, params, fparams, file_spec=""):
     Kh_ds[...] = output.Kh_save
     Km_ds[...] = output.Km_save
     phi_ds[...] = output.phi_stoch
+    T_g_ds[...] = output.T_g_save
 
     z_ds[...] = fparams.z
     t_ds[...] = np.linspace(0, params.T_end_h, params.save_num_steps)
