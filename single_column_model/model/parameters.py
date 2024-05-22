@@ -10,13 +10,13 @@ class Parameters:
     save_ini_cond: bool = False  # save simulations solution as initial condition
     load_ini_cond: bool = False  # load existing initial condition
 
-    T_end_h: float = 60  # hour
+    T_end_h: float = 120  # hour
     T_end: float = T_end_h * 3600  # seconds
     dt: float = 1  # seconds
     num_steps: int = int(T_end / dt)  # number of time steps
 
     sensitivity_study: bool = False  # perform sensitivity study
-    u_G_range: np.ndarray = np.arange(1.6, 2.3, 0.1)
+    u_G_range: np.ndarray = np.arange(1.0, 10, 0.2)
 
     stab_func_type: str = "short_tail"  # type of stability function
 
@@ -41,7 +41,7 @@ class Parameters:
     )
 
     num_simulation: int = 1
-    num_proc: int = 2
+    num_proc: int = 4
 
     # file name for initial conditions
     init_cond_path: str = f"{stab_func_type}_steady_state_"

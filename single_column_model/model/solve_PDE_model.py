@@ -176,21 +176,6 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
         else:
             phi_sol = fe.project(fenics_params.f_ms, fenics_params.Q)
 
-        # Save solution at current time step if it fits with the saving time interval
-        if time_idx % params.save_dt_sim == 0:
-            output = save_solution.save_current_result(
-                output,
-                params,
-                fenics_params,
-                saving_idx,
-                u_sol,
-                v_sol,
-                theta_sol,
-                k_sol,
-                phi_sol,
-            )
-            saving_idx += 1
-
         # Transform values to numpy arrays
         u_sol_np = transform_values.interpolate_fenics_function_to_numpy_array(
             u_sol, fenics_params.Q
@@ -226,6 +211,22 @@ def solution_loop(params, output, fenics_params, stoch_solver, u_n, v_n, theta_n
                 params.kappa, fenics_params.z, u_sol_np, v_sol_np, params.min_tke
             )
         )
+
+        # Save solution at current time step if it fits with the saving time interval
+        if time_idx % params.save_dt_sim == 0:
+            output = save_solution.save_current_result(
+                output,
+                params,
+                fenics_params,
+                saving_idx,
+                u_sol,
+                v_sol,
+                theta_sol,
+                k_sol,
+                phi_sol,
+                theta_g,
+            )
+            saving_idx += 1
 
         time_idx += 1
 
