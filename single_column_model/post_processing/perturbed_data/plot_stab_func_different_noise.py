@@ -12,23 +12,22 @@ from single_column_model.post_processing import set_plotting_style
 set_plotting_style.set_style_of_plots(figsize=(10, 10))
 
 # Define directory where simulation output is saved
-output_directory = (
-    "single_column_model/solution/short_tail/perturbed/stab_func/simulations/"
-)
-perturbation_strengths = [1.0]  # , 0, -0.07, -1]
-uG = "1.0"
+output_directories = [
+    "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/positive/1.0/1_0/",
+    "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/positive/1.0/0_0/",
+    "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/negative/1.0/0_07/",
+    "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/negative/1.0/1_0/",
+]
+
 simulation_indices = np.arange(0, 100, 1)
 
 
-def get_solution_files(path, sim_range, sim_classifier, uG_val):
+def get_solution_files(path, sim_range):
     output_files = []
     for root, _, files in os.walk(path):
         for name in files:
-            if (
-                "solution" in name
-                and any(f"sim_{sim_idx}.0" in name for sim_idx in sim_range)
-                and f"perturbstr_{sim_classifier}_" in name
-                and f"uG_{uG_val}_" in name
+            if "solution" in name and any(
+                f"sim_{sim_idx}.0" in name for sim_idx in sim_range
             ):
                 output_files.append(os.path.join(root, name))
     return output_files
@@ -49,10 +48,8 @@ titles = ["a)", "b)", "c)", "d)"]
 fig, ax = plt.subplots(2, 2, figsize=(10, 10), sharex=True, constrained_layout=True)
 ax = ax.ravel()
 
-for idx, perturbation_strength in enumerate(perturbation_strengths):
-    solution_files = get_solution_files(
-        output_directory, simulation_indices, perturbation_strength, uG
-    )
+for idx, dir in enumerate(output_directories):
+    solution_files = get_solution_files(dir, simulation_indices)
 
     phi_all_sim = []
     for file in solution_files:
