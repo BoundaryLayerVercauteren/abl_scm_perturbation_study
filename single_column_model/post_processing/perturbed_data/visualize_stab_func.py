@@ -40,11 +40,12 @@ for path, subdirs, files in os.walk(output_directory):
 def get_data(full_file_path):
     with h5py.File(full_file_path, "r+") as file:
         z = file["z"][:]
-        #z_idx = (np.abs(z - 40)).argmin()
-        phi = file["phi"][:].flatten()#[:z_idx, :]
-        richardson = file['Ri'][:].flatten()#:z_idx,:]
+        # z_idx = (np.abs(z - 40)).argmin()
+        phi = file["phi"][:].flatten()  # [:z_idx, :]
+        richardson = file["Ri"][:].flatten()  #:z_idx,:]
 
-    return phi, richardson, np.tile(z, int(len(phi)/len(z))).flatten()
+    return phi, richardson, np.tile(z, int(len(phi) / len(z))).flatten()
+
 
 # data_dict = {}
 # data_dict['phi'] = np.array([])
@@ -75,9 +76,9 @@ def get_data(full_file_path):
 #         data_dict['richardson'] = np.array([])
 #         data_dict['z'] = np.array([])
 
-path = f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/'
+path = f"/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/"
 file_list = os.listdir(path)
-file_path_list = [os.path.join(path,file) for file in file_list if '.png' not in file]
+file_path_list = [os.path.join(path, file) for file in file_list if ".png" not in file]
 
 data = pd.DataFrame(pd.read_csv(file_path_list[0]))
 
@@ -87,55 +88,67 @@ for file_path in file_path_list:
 print(data)
 
 # Reduce size of data frame
-data = data.drop(data[data['z'] > 50].index)
-data['z'] = data['z'].astype('int')
+data = data.drop(data[data["z"] > 50].index)
+data["z"] = data["z"].astype("int")
 data = data.round(3)
 data.drop_duplicates(inplace=True)
+
+
 def define_delage_short_tail_stab_function(Ri):
-    return (1 + 12 * Ri)**(-1)
+    return 1 + 12 * Ri
 
 
 def define_delage_long_tail_stab_function(Ri):
-    return (1 + 4.7 * Ri)**(-1)
+    return 1 + 4.7 * Ri
 
 
-richardson_num = np.linspace(data['richardson'].min(), data['richardson'].max(), 1000)
+richardson_num = np.linspace(data["richardson"].min(), data["richardson"].max(), 1000)
 vec_delage_short_tail_stab_func = np.vectorize(define_delage_short_tail_stab_function)
 vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_function)
 
 print(data)
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
-norm = plt.Normalize(data['z'].min(), data['z'].max())
+norm = plt.Normalize(data["z"].min(), data["z"].max())
 sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
-sns.scatterplot(x='richardson',y='phi',data=data, ax=ax,legend=False, s=2, linewidth=0, hue='z', palette="cmc.batlow")
-ax.figure.colorbar(sm, ax=ax)
+sns.scatterplot(
+    x="richardson",
+    y="phi",
+    data=data,
+    ax=ax,
+    legend=False,
+    s=2,
+    linewidth=0,
+    hue="z",
+    palette="cmc.batlow",
+)
+ax.figure.colorbar(sm, ax=ax, label="z [m]")
 
 ax.plot(
     richardson_num,
-    1/vec_delage_long_tail_stab_func(richardson_num),
+    vec_delage_long_tail_stab_func(richardson_num),
     label="long-tail",
-    color='red',
+    color="red",
     marker="v",
     markevery=10,
 )
 ax.plot(
     richardson_num,
-    1/vec_delage_short_tail_stab_func(richardson_num),
+    vec_delage_short_tail_stab_func(richardson_num),
     label="short-tail",
-    color='blue',
+    color="blue",
     marker="s",
     markevery=10,
 )
 
-ax.legend(loc='upper left')#, markerscale=1)
+ax.legend(loc="upper left")
 
 ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"stability function")
 
-ax.set_ylim(0,10)
-ax.set_xlim(0,10)
+ax.set_ylim(0, 10)
+ax.set_xlim(0, 10)
 
 plt.savefig(
     f"/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/stab_func_{perturbation_strength}.png",
