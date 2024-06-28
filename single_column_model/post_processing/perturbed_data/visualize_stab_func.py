@@ -26,78 +26,88 @@ plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Define directory where simulation output is saved
-output_directory = "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/positive/"
-perturbation_strength = "0_0"
+output_directory = "single_column_model/solution/short_tail/perturbed/stab_func/simulations/"
+perturbation_strength = "1_0"
 
 # Get all solution files
 output_files = []
 for path, subdirs, files in os.walk(output_directory):
-    if path.split("/")[-1] == perturbation_strength:
-        for name in files:
-            if "solution" in name:
-                output_files.append(os.path.join(path, name))
-
-path_with_ug = []
-
-for path in output_files:
-    path_with_ug.append((path.split("/")[-3], path))
+    for name in files:
+        if "solution" in name:
+            output_files.append(os.path.join(path, name))
 
 
 def get_data(full_file_path):
     with h5py.File(full_file_path, "r+") as file:
         z = file["z"][:]
-        z_idx = (np.abs(z - 40)).argmin()
-        phi = file["phi"][:z_idx, :]
-        richardson = file['Ri'][:z_idx,:]
+        #z_idx = (np.abs(z - 40)).argmin()
+        phi = file["phi"][:].flatten()#[:z_idx, :]
+        richardson = file['Ri'][:].flatten()#:z_idx,:]
 
-    return phi, richardson, z[:z_idx, 0]
+    return phi, richardson, np.tile(z, int(len(phi)/len(z))).flatten()
 
 data_dict = {}
-data_dict['phi'] = []
-data_dict['richardson'] = []
-data_dict['z'] = []
+data_dict['phi'] = np.array([])
+data_dict['richardson'] = np.array([])
+data_dict['z'] = np.array([])
 
-for idx, tuple in enumerate(path_with_ug):
+for idx, file in enumerate(output_files):
+    print(idx, len(output_files))
     try:
-        phi, richardson, z = get_data(tuple[1])
-        phi_array = np.array(phi).flatten('F')
-        data_dict['phi'].append(phi_array)
-        data_dict['richardson'].append(np.array(richardson).flatten('F'))
-        data_dict['z'].append(np.tile(z, int(len(phi_array)/len(z))))
+        phi, richardson, z = get_data(file)
+        data_dict['phi']= np.append(data_dict['phi'], phi)
+        data_dict['richardson']= np.append(data_dict['richardson'], richardson)
+        data_dict['z']= np.append(data_dict['z'], z)
     except Exception:
         print(traceback.format_exc())
         pass
+    # Store data in between to free up memory
+    if idx>0 and (idx%100==0 or idx==len(output_files)):
+        data_dict['phi'] = np.array(data_dict['phi']).flatten()
+        data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
+        data_dict['z'] = np.array(data_dict['z']).flatten()
 
-data_dict['phi'] = np.array(data_dict['phi']).flatten()
-data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
-data_dict['z'] = np.array(data_dict['z']).flatten()
+        data = pd.DataFrame.from_dict(data_dict)
+        data.to_csv(f'single_column_model/solution/short_tail/perturbed/stab_func/phi_summary/summary_{idx}.csv', index=False)
 
-data = pd.DataFrame.from_dict(data_dict)
+        del data
+        data_dict['phi'] = np.array([])
+        data_dict['richardson'] = np.array([])
+        data_dict['z'] = np.array([])
+
+path = 'single_column_model/solution/short_tail/perturbed/stab_func/phi_summary/'
+file_list = os.listdir(path)
+file_path_list = [os.path.join(path,file) for file in file_list]
+
+data = pd.DataFrame(pd.read_csv(file_path_list[0]))
+
+for file_path in file_path_list:
+    sub_data = pd.read_csv(file_path)
+    data = pd.concat([data, sub_data], ignore_index=True)
+print(data)
 
 # Reduce size of data frame
 data = data.round(3)
 data.drop_duplicates(inplace=True)
-
 def define_delage_short_tail_stab_function(Ri):
-    return 1 + 12 * Ri
+    return (1 + 12 * Ri)**(-1)
 
 
 def define_delage_long_tail_stab_function(Ri):
-    return 1 + 4.7 * Ri
+    return (1 + 4.7 * Ri)**(-1)
 
 
 richardson_num = np.linspace(data['richardson'].min(), data['richardson'].max(), 1000)
 vec_delage_short_tail_stab_func = np.vectorize(define_delage_short_tail_stab_function)
 vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_function)
 
+print(data)
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
-# norm = plt.Normalize(data['z'].min(), data['z'].max())
-# sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
-
-sns.scatterplot(x='richardson',y='phi',data=data, ax=ax,legend=False, s=2, linewidth=0, color='black', label='stochastic')#,hue='z', palette="cmc.batlow")
-
-# ax.figure.colorbar(sm, ax=ax)
+norm = plt.Normalize(data['z'].min(), data['z'].max())
+sm = plt.cm.ScalarMappable(cmap="cmc.batlow", norm=norm)
+sns.scatterplot(x='richardson',y='phi',data=data, ax=ax,legend=False, s=2, linewidth=0, hue='z', palette="cmc.batlow")
+ax.figure.colorbar(sm, ax=ax)
 
 ax.plot(
     richardson_num,
@@ -126,7 +136,7 @@ ax.set_ylim(0,10)
 ax.set_xlim(10^(-1),10)
 
 plt.savefig(
-    f"{output_directory}stab_func_{perturbation_strength}.png",
+    f"single_column_model/solution/short_tail/perturbed/stab_func/visualizations/stab_func_{perturbation_strength}.png",
     bbox_inches="tight",
     dpi=300,
 )
