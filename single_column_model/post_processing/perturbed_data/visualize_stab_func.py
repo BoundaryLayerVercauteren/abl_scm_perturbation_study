@@ -134,7 +134,7 @@ ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"stability function")
 
 ax.set_ylim(0,10)
-ax.set_xlim(10^(-1),10)
+ax.set_xlim(10**(-1),10)
 
 plt.savefig(
     f"/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/stab_func_{perturbation_strength}.png",
