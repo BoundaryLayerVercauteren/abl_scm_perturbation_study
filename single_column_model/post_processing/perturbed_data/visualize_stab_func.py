@@ -85,7 +85,6 @@ data = pd.DataFrame(pd.read_csv(file_path_list[0]))
 for file_path in file_path_list:
     sub_data = pd.read_csv(file_path)
     data = pd.concat([data, sub_data], ignore_index=True)
-print(data)
 
 # Reduce size of data frame
 data = data.drop(data[data["z"] > 50].index)
@@ -106,7 +105,6 @@ richardson_num = np.linspace(data["richardson"].min(), data["richardson"].max(),
 vec_delage_short_tail_stab_func = np.vectorize(define_delage_short_tail_stab_function)
 vec_delage_long_tail_stab_func = np.vectorize(define_delage_long_tail_stab_function)
 
-print(data)
 fig, ax = plt.subplots(1, figsize=(10, 10))
 
 norm = plt.Normalize(data["z"].min(), data["z"].max())
