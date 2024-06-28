@@ -26,7 +26,7 @@ plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Define directory where simulation output is saved
-output_directory = "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/negative/*/1_0/"
+output_directory = "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/negative/"
 perturbation_strength = "-1.0"
 
 # Get all solution files
@@ -46,34 +46,34 @@ def get_data(full_file_path):
 
     return phi, richardson, np.tile(z, int(len(phi)/len(z))).flatten()
 
-data_dict = {}
-data_dict['phi'] = np.array([])
-data_dict['richardson'] = np.array([])
-data_dict['z'] = np.array([])
-
-for idx, file in enumerate(output_files):
-    print(idx, len(output_files))
-    try:
-        phi, richardson, z = get_data(file)
-        data_dict['phi']= np.append(data_dict['phi'], phi)
-        data_dict['richardson']= np.append(data_dict['richardson'], richardson)
-        data_dict['z']= np.append(data_dict['z'], z)
-    except Exception:
-        print(traceback.format_exc())
-        pass
-    # Store data in between to free up memory
-    if idx>0 and (idx%100==0 or idx==len(output_files)):
-        data_dict['phi'] = np.array(data_dict['phi']).flatten()
-        data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
-        data_dict['z'] = np.array(data_dict['z']).flatten()
-
-        data = pd.DataFrame.from_dict(data_dict)
-        data.to_csv(f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/summary_{idx}.csv', index=False)
-
-        del data
-        data_dict['phi'] = np.array([])
-        data_dict['richardson'] = np.array([])
-        data_dict['z'] = np.array([])
+# data_dict = {}
+# data_dict['phi'] = np.array([])
+# data_dict['richardson'] = np.array([])
+# data_dict['z'] = np.array([])
+#
+# for idx, file in enumerate(output_files):
+#     print(idx, len(output_files))
+#     try:
+#         phi, richardson, z = get_data(file)
+#         data_dict['phi']= np.append(data_dict['phi'], phi)
+#         data_dict['richardson']= np.append(data_dict['richardson'], richardson)
+#         data_dict['z']= np.append(data_dict['z'], z)
+#     except Exception:
+#         print(traceback.format_exc())
+#         pass
+#     # Store data in between to free up memory
+#     if idx>0 and (idx%100==0 or idx==len(output_files)):
+#         data_dict['phi'] = np.array(data_dict['phi']).flatten()
+#         data_dict['richardson'] = np.array(data_dict['richardson']).flatten()
+#         data_dict['z'] = np.array(data_dict['z']).flatten()
+#
+#         data = pd.DataFrame.from_dict(data_dict)
+#         data.to_csv(f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/summary_{idx}.csv', index=False)
+#
+#         del data
+#         data_dict['phi'] = np.array([])
+#         data_dict['richardson'] = np.array([])
+#         data_dict['z'] = np.array([])
 
 path = f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/'
 file_list = os.listdir(path)
@@ -87,6 +87,7 @@ for file_path in file_path_list:
 print(data)
 
 # Reduce size of data frame
+data['z'] = data['z'].astype('int')
 data = data.round(3)
 data.drop_duplicates(inplace=True)
 def define_delage_short_tail_stab_function(Ri):
