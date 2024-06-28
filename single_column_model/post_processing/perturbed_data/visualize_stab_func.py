@@ -77,7 +77,7 @@ def get_data(full_file_path):
 
 path = f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/'
 file_list = os.listdir(path)
-file_path_list = [os.path.join(path,file) for file in file_list]
+file_path_list = [os.path.join(path,file) for file in file_list if '.png' not in file]
 
 data = pd.DataFrame(pd.read_csv(file_path_list[0]))
 
