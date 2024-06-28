@@ -26,8 +26,8 @@ plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Define directory where simulation output is saved
-output_directory = "single_column_model/solution/short_tail/perturbed/stab_func/simulations/"
-perturbation_strength = "1_0"
+output_directory = "/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/negative/*/1_0/"
+perturbation_strength = "-1.0"
 
 # Get all solution files
 output_files = []
@@ -68,14 +68,14 @@ for idx, file in enumerate(output_files):
         data_dict['z'] = np.array(data_dict['z']).flatten()
 
         data = pd.DataFrame.from_dict(data_dict)
-        data.to_csv(f'single_column_model/solution/short_tail/perturbed/stab_func/phi_summary/summary_{idx}.csv', index=False)
+        data.to_csv(f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/summary_{idx}.csv', index=False)
 
         del data
         data_dict['phi'] = np.array([])
         data_dict['richardson'] = np.array([])
         data_dict['z'] = np.array([])
 
-path = 'single_column_model/solution/short_tail/perturbed/stab_func/phi_summary/'
+path = f'/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/'
 file_list = os.listdir(path)
 file_path_list = [os.path.join(path,file) for file in file_list]
 
@@ -136,7 +136,7 @@ ax.set_ylim(0,10)
 ax.set_xlim(10^(-1),10)
 
 plt.savefig(
-    f"single_column_model/solution/short_tail/perturbed/stab_func/visualizations/stab_func_{perturbation_strength}.png",
+    f"/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/stab_func_{perturbation_strength}.png",
     bbox_inches="tight",
     dpi=300,
 )
