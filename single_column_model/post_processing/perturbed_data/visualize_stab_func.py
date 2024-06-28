@@ -87,7 +87,7 @@ for file_path in file_path_list:
 print(data)
 
 # Reduce size of data frame
-data['z'] = data['z'].astype('int')
+data['z'] = np.round(data['z'],-1)
 data = data.round(3)
 data.drop_duplicates(inplace=True)
 def define_delage_short_tail_stab_function(Ri):
