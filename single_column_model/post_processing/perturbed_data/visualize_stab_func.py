@@ -87,7 +87,8 @@ for file_path in file_path_list:
 print(data)
 
 # Reduce size of data frame
-data['z'] = np.round(data['z'],-1)
+data = data.drop(data[data['z'] > 50].index)
+data['z'] = data['z'].astype('int')
 data = data.round(3)
 data.drop_duplicates(inplace=True)
 def define_delage_short_tail_stab_function(Ri):
@@ -112,7 +113,7 @@ ax.figure.colorbar(sm, ax=ax)
 
 ax.plot(
     richardson_num,
-    vec_delage_long_tail_stab_func(richardson_num),
+    1/vec_delage_long_tail_stab_func(richardson_num),
     label="long-tail",
     color='red',
     marker="v",
@@ -120,14 +121,14 @@ ax.plot(
 )
 ax.plot(
     richardson_num,
-    vec_delage_short_tail_stab_func(richardson_num),
+    1/vec_delage_short_tail_stab_func(richardson_num),
     label="short-tail",
     color='blue',
     marker="s",
     markevery=10,
 )
 
-ax.legend(loc='upper left', markerscale=4)
+ax.legend(loc='upper left')#, markerscale=1)
 
 ax.set_xscale("log")
 ax.set_xlabel(r"$Ri$")
