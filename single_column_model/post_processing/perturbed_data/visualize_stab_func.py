@@ -119,6 +119,7 @@ sns.scatterplot(
     linewidth=0,
     hue="z",
     palette="cmc.batlow",
+    alpha=0.7
 )
 ax.figure.colorbar(sm, ax=ax, label="z [m]")
 
@@ -146,7 +147,6 @@ ax.set_xlabel(r"$Ri$")
 ax.set_ylabel(r"stability function")
 
 ax.set_ylim(0, 10)
-ax.set_xlim(0, 10)
 
 plt.savefig(
     f"/mn/vann/amandink/02_sbl_single_column_model/output/short_tail/stab_func/gauss_process_stab_func/phi_summary_{perturbation_strength}/stab_func_{perturbation_strength}.png",
