@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Kaiser"
+  given-names: "Amandine"
+  orcid: "https://orcid.org/0000-0002-2756-9964"
+- family-names: "Vercauteren"
+  given-names: "Nikki"
+  orcid: "https://orcid.org/0000-0003-2893-9186"
+title: "BoundaryLayerVercauteren/abl_scm_perturbation_study: Version 2.0"
+version: 2.0
+date-released: 2024-10-10
