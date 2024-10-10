@@ -119,7 +119,7 @@ sns.scatterplot(
     linewidth=0,
     hue="z",
     palette="cmc.batlow",
-    alpha=0.7
+    alpha=0.7,
 )
 ax.figure.colorbar(sm, ax=ax, label="z [m]")
 

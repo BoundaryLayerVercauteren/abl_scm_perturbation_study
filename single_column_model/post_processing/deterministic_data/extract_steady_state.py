@@ -17,7 +17,6 @@ set_plotting_style.set_style_of_plots(figsize=(10, 5))
 
 def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
     """A steady state is defined as a time point where the value minus a 3 hours average is smaller than 0.1."""
-
     # Calculate rolling mean
     num_hours = 5
     one_h_num_steps = data_u.index[np.round(data_u["time"], 3) == 1.0].tolist()[0]
@@ -38,7 +37,7 @@ def find_steady_state_fixed_height(data_u, data_v, data_delta_theta, data_tke):
     )
 
     # Drop first 8 hours
-    eighth_h_index = 8 * one_h_num_steps
+    eighth_h_index = 10 * one_h_num_steps
 
     data_u = data_u.iloc[eighth_h_index:, :].copy()
     data_v = data_v.iloc[eighth_h_index:, :].copy()
@@ -132,10 +131,12 @@ def save_initial_cond_for_single_variable_to_file(
 
 
 def save_initial_cond_for_all_variable_to_file(
-    stab_func_type, uG_value, steady_state, data_path
+    stab_func_type, uG_value, steady_state, data_path, tau
 ):
     init_dir_path = "single_column_model/init_condition/"
-    init_file_path = init_dir_path + f"{stab_func_type}_steady_state_Ug{uG_value}_"
+    init_file_path = (
+        init_dir_path + f"{stab_func_type}_{tau}_steady_state_Ug{uG_value}_"
+    )
 
     variables = ["theta", "u", "v", "TKE"]
 
@@ -225,48 +226,125 @@ def plot_steady_state_for_all_variables(
 
 
 # Define path to data for which the steady state shall be determined
-stab_func_type = "long_tail"
-data_path = f"single_column_model/solution/{stab_func_type}/deterministic/simulations/"
-vis_path = f"single_column_model/solution/{stab_func_type}/deterministic/visualization/"
+stab_func_type = "short_tail"
+data_path = "single_column_model/solution/short_tail/nudging_test/tau_2/deterministic/simulations/"  # f"single_column_model/solution/{stab_func_type}/deterministic/simulations/"
+vis_path = "single_column_model/solution/short_tail/nudging_test/visualization/"  # f"single_column_model/solution/{stab_func_type}/deterministic/visualization/"
 
-uG_range = np.arange(1.0, 2.5, 0.1)
+uG_range = [2.2]  # ,2.0,2.2]#np.arange(1.0, 2.6, 0.1)
+taus = [2, 5, 8]
 steady_state_height = 20  # in meters
+colors = ["red", "orange", "blue"]
+fig, ax = plt.subplots(2, 2, figsize=[10, 5], sharex=True)
+ax = ax.ravel()
 
-# Get a list of all solution file names in given directory
-data_files = prepare_data.find_solution_files_in_directory(data_path)
+for idx, tau in enumerate(taus):
+    data_path = f"single_column_model/solution/short_tail/nudging_test/tau_{tau}/deterministic/simulations/"
+    # Get a list of all solution file names in given directory
+    data_files = prepare_data.find_solution_files_in_directory(data_path)
 
-for uG in uG_range:
+    for uG in uG_range:
 
-    uG = np.round(uG, 1)
+        uG = np.round(uG, 1)
 
-    # Find file which corresponds to uG
-    curr_file = [s for s in data_files if f"_{uG}_" in s]
+        # Find file which corresponds to uG
+        curr_file = [s for s in data_files if f"_{uG}_" in s]
 
-    try:
-        # Get simulation data for uG
-        df_u, df_v, df_delta_theta, df_tke, _ = prepare_data.create_df_for_fixed_z(
-            data_path, curr_file, steady_state_height
+        try:
+            # Get simulation data for uG
+            df_u, df_v, df_delta_theta, df_tke, _ = prepare_data.create_df_for_fixed_z(
+                data_path, curr_file, steady_state_height
+            )
+        except Exception as e:
+            print(e)
+            print(f"error for uG={uG}")
+            continue
+
+        # Determine steady state
+        steady_state = find_steady_state_fixed_height(
+            df_u, df_v, df_delta_theta, df_tke
         )
-    except Exception:
-        print(f"error for uG={uG}")
-        continue
-
-    # Determine steady state
-    steady_state = find_steady_state_fixed_height(df_u, df_v, df_delta_theta, df_tke)
-
-    if np.isnan(steady_state):
-        print(f"for ugG={uG} no steady state was found.")
-        plot_steady_state_for_all_variables(
-            vis_path, uG, df_u, df_v, df_delta_theta, df_tke, df_u.shape[0] - 600
+        print(
+            uG,
+            df_u["sim_0"].iloc[int(steady_state)],
+            df_v["sim_0"].iloc[int(steady_state)],
+            df_delta_theta["sim_0"].iloc[int(steady_state)],
+            df_tke["sim_0"].iloc[int(steady_state)],
         )
-        continue
+        if np.isnan(steady_state):
+            print(f"for ugG={uG} no steady state was found.")
+            plot_steady_state_for_all_variables(
+                vis_path, uG, df_u, df_v, df_delta_theta, df_tke, df_u.shape[0] - 600
+            )
+            continue
 
-    # Save steady state as initial condition
-    save_initial_cond_for_all_variable_to_file(
-        stab_func_type, uG, steady_state, data_path + curr_file[0]
-    )
+        # Save steady state as initial condition
+        save_initial_cond_for_all_variable_to_file(
+            stab_func_type, uG, steady_state, data_path + curr_file[0], tau
+        )
 
-    # Plot steady state
-    plot_steady_state_for_all_variables(
-        vis_path, uG, df_u, df_v, df_delta_theta, df_tke, steady_state
-    )
+        # # Plot steady state
+        # plot_steady_state_for_all_variables(
+        #     vis_path, uG, df_u, df_v, df_delta_theta, df_tke, steady_state
+        # )
+
+        steady_state = int(steady_state)
+
+        time_range = [0, steady_state + 10 * 60]
+
+        ax[0].plot(df_u.iloc[:, 1], df_u.iloc[:, 0], color=colors[idx], label=tau)
+        ax[1].plot(
+            df_delta_theta.iloc[:, 1],
+            df_delta_theta.iloc[:, 0],
+            color=colors[idx],
+            label=tau,
+        )
+        ax[2].plot(df_v.iloc[:, 1], df_v.iloc[:, 0], color=colors[idx], label=tau)
+        ax[3].plot(df_tke.iloc[:, 1], df_tke.iloc[:, 0], color=colors[idx], label=tau)
+
+        ax[0].axvspan(
+            df_u.iloc[steady_state, 1],
+            df_u.iloc[60 + steady_state, 1],
+            color=colors[idx],
+            alpha=0.5,
+            # label=f"steady state region{uG}",
+        )
+        ax[1].axvspan(
+            df_delta_theta.iloc[steady_state, 1],
+            df_delta_theta.iloc[60 + steady_state, 1],
+            color=colors[idx],
+            alpha=0.5,
+            # label=f"steady state region{uG}",
+        )
+        ax[2].axvspan(
+            df_v.iloc[steady_state, 1],
+            df_v.iloc[60 + steady_state, 1],
+            color=colors[idx],
+            alpha=0.5,
+            # label=f"steady state region{uG}",
+        )
+        ax[3].axvspan(
+            df_tke.iloc[steady_state, 1],
+            df_tke.iloc[60 + steady_state, 1],
+            color=colors[idx],
+            alpha=0.5,
+            # label=f"steady state region{uG}",
+        )
+
+ax[2].set_xlabel("time [h]")
+ax[3].set_xlabel("time [h]")
+
+ax[0].set_ylabel(r"$u \ [\mathrm{ms^{-1}}]$")
+ax[1].set_ylabel(r"$\Delta \theta$ [K]")
+ax[2].set_ylabel(r"$v \ [\mathrm{ms^{-1}}]$")
+ax[3].set_ylabel(r"TKE [$\mathrm{m^2s^{-2}}$]")
+
+ax[0].legend()
+ax[1].legend()
+ax[2].legend()
+ax[3].legend()
+
+fig.tight_layout()
+
+plt.savefig(
+    f"{vis_path}/steady_state_uG_{uG}_all_tau.png", bbox_inches="tight", dpi=300
+)

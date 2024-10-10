@@ -18,7 +18,7 @@ from single_column_model.post_processing import set_plotting_style
 set_plotting_style.set_style_of_plots(figsize=(10, 5))
 
 # Define path to deterministic data
-det_directory_path = "single_column_model/solution/short_tail/deterministic/"
+det_directory_path = "single_column_model/solution/short_tail/deterministic/"  # "single_column_model/solution/short_tail_more_uG/"
 det_data_directory_path = det_directory_path + "simulations/"
 
 # Create directory to store visualization
@@ -31,7 +31,8 @@ files_det = prepare_data.find_solution_files_in_directory(det_data_directory_pat
 
 param_range = np.arange(1.0, 2.9, 0.1)
 
-fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+fig, ax = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
+ax = ax.ravel()
 
 mean_wind_speed = []
 mean_delta_theta = []
@@ -40,6 +41,9 @@ NUM_COLORS = len(param_range) + 1
 cmap = matplotlib.cm.get_cmap("cmc.batlow", NUM_COLORS)
 color = cmap.colors
 norm = matplotlib.colors.BoundaryNorm(param_range, cmap.N)
+
+wind_speed_list = []
+deltaTheta_list = []
 
 for idx, var in enumerate(param_range):
     try:
@@ -72,18 +76,21 @@ for idx, var in enumerate(param_range):
             "sim_0"
         ]
 
+        wind_speed_list.append(wind_speed)
+        deltaTheta_list.append(delta_theta)
+
         mean_wind_speed.append(np.mean(wind_speed))
         mean_delta_theta.append(np.mean(delta_theta))
 
         if not np.isnan(mean_wind_speed[idx]) and not np.isnan(mean_delta_theta[idx]):
-            ax.scatter(
+            ax[0].scatter(
                 np.repeat(var, len(delta_theta)),
                 delta_theta,
                 s=20,
-                color="grey",
+                color="black",
                 zorder=20,
             )
-            ax.scatter(
+            ax[1].scatter(
                 wind_speed,
                 delta_theta,
                 label=r"$s_G = $" + str(np.around(var, 1)),
@@ -94,7 +101,7 @@ for idx, var in enumerate(param_range):
 
         if not np.isnan(steady_state):
             steady_state = int(steady_state)
-            ax.scatter(
+            ax[1].scatter(
                 wind_speed[steady_state : steady_state + 60],
                 delta_theta[steady_state : steady_state + 60],
                 s=20,
@@ -108,17 +115,17 @@ for idx, var in enumerate(param_range):
         pass
 
 # Add line for mean
-(mean_sG,) = ax.plot(
+(mean_sG,) = ax[0].plot(
     param_range,
     mean_delta_theta,
     label="mean over $s_G$",
-    color="grey",
+    color="black",
     linewidth=2,
     alpha=0.5,
-    linestyle="--",
+    linestyle=":",
     zorder=10,
 )
-(mean_s,) = ax.plot(
+(mean_s,) = ax[1].plot(
     mean_wind_speed,
     mean_delta_theta,
     label="mean over $s$",
@@ -149,7 +156,7 @@ trans_range_mean_u.sort()
 trans_range_uG.sort()
 
 try:
-    bif_reg = plt.axvspan(
+    bif_reg = ax[1].axvspan(
         trans_range_mean_u[0],
         trans_range_mean_u[-1],
         color="r",
@@ -157,15 +164,20 @@ try:
         zorder=0,
         label="transition region",
     )
-    plt.legend(handles=[bif_reg, mean_s, mean_sG])
+    ax[1].legend(handles=[bif_reg])
 except Exception:
     print(traceback.format_exc())
     pass
 
-ax.set_xlim((1, 1.9))
+# ax[0].set_xlim((1, 3.6))
+# ax[1].set_xlim((1, 3.6))
 # ax.set_ylim((0, 12))
-ax.set_xlabel("s, $s_G [\mathrm{ms^{-1}}]$")
-ax.set_ylabel(r"$\Delta \theta$ [K]")
+ax[1].set_xlabel("s $[\mathrm{ms^{-1}}]$")
+ax[0].set_xlabel("$s_G \ [\mathrm{ms^{-1}}]$")
+ax[0].set_ylabel(r"$\Delta \theta$ [K]")
+
+ax[0].set_title("a)", loc="left")
+ax[1].set_title("b)", loc="left")
 
 cbar = fig.colorbar(
     matplotlib.cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -182,8 +194,12 @@ except Exception:
     print(traceback.format_exc())
     pass
 
+plt.tight_layout()
 plt.savefig(
     f"{vis_directory_path}/delta_theta_over_u_all_sim_h{top_height}m.png",
     bbox_inches="tight",
     dpi=300,
 )
+
+# dataset = pd.DataFrame({'ws': np.array(wind_speed_list).flatten(), 'deltaTheta': np.array(deltaTheta_list).flatten()})
+# dataset.to_csv(f'FLOSS/original_data/model_bifurcation_{top_height}.csv', index=False)
